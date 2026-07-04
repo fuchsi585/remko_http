@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Remko Wärmepumpe",
+        "description": "Verbindungsdaten",
+        "data": {
+          "host": "IP-Adresse",
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "host": "Lokale IP-Adresse der Wärmepumpe",
+          "scan_interval": "Wie oft Werte abgefragt werden (10–60 Sekunden)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen – IP-Adresse prüfen"
+    },
+    "abort": {
+      "already_configured": "Dieses Gerät ist bereits eingerichtet"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Remko Wärmepumpe – Einstellungen",
+        "description": "Verbindung und Abfrageeinstellungen anpassen.",
+        "data": {
+          "host": "IP-Adresse",
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "host": "Lokale IP-Adresse der Wärmepumpe",
+          "scan_interval": "Wie oft Werte abgefragt werden (10–60 Sekunden)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen – IP-Adresse und Port prüfen"
+    }
+  }
+}
