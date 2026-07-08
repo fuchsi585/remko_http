@@ -4,8 +4,9 @@
     "codeowners": ["@fuchsi585"],
     "config_flow": true,
     "documentation": "https://github.com/fuchsi585/remko_http",
-    "iot_class": "local_polling",
     "integration_type": "device",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/fuchsi585/remko_http/issues",
     "loggers": ["custom_components.remko-http"],
     "requirements": [],
     "version": "1.0.0"
