@@ -37,6 +37,16 @@ class DeviceValue:
     timestamp: float | None = None
 
 
+# TODO:
+# - Add error handling for HTTP client methods, e.g., retries, logging, etc.
+# - Consider adding a method to refresh the client session if needed, e.g., in case of connection issues.
+# - Implement a method to gracefully shut down the HTTP client session when the coordinator is stopped or removed.
+# - Add type hints for all methods and properties for better code clarity and maintainability.
+# - Consider adding a method to handle specific pump commands or settings changes, if applicable.
+# - Implement a method to validate the configuration entry data, e.g., check if the host is reachable before setting up the client.
+# - Add logging for important events, e.g., when the client is set up, when data is fetched, when errors occur, etc.
+
+
 class RemkoCoordinator(DataUpdateCoordinator):
     """Fetches data from Remko via HTTP request."""
 
@@ -59,27 +69,33 @@ class RemkoCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=self._polling),
         )
 
+        self._firmware: str = ""
+        self._serial_number: str = ""
+
     @property
     def firmware(self):  # 'SMT_VERSION'
-        return "1234"
+        return self._firmware
 
     @property
     def serial_number(self):  # '5700'
-        return "1234"
+        return self._serial_number
 
-    async def async_shutdown(self) -> None:
+    async def async_client_shutdown(self) -> None:
         await super().async_shutdown()
 
     async def async_setup_client(self):
         self._client = RemkoHttpClient(self._entry.data.get(CONF_HOST))
         await self._client.async_setup_client(self._hass)
 
+        self._serial_number = await self._client.async_get_serial_number()
+        self._firmware = await self._client.async_get_firmware()
+
     @staticmethod
     def _hex2number(hex_value: str, factor: Factor) -> float:
         raw = int(hex_value, 16)
         return (raw - 0x10000 if raw > 0x7FFF else raw) * factor
 
-    async def _fetch_all(self) -> dict:
+    async def async_fetch_all(self) -> dict:
         data: dict = {}
 
         raw_data = await self._client.async_get_pump_data(self._all_queries)
@@ -110,9 +126,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            return await self._fetch_all()
-        except Exception as err:
-            raise UpdateFailed(f"read error: {err}") from err
+            result = await self.async_fetch_all()
+
+            return dict(result)
+        except Exception:
+            raise UpdateFailed(
+                f"Remko update failed! Retry in 120 seconds.", retry_after=120
+            )
 
     async def async_set_value(self, remko_reg: int, value: str) -> str:
         values = {str(remko_reg): value}
@@ -120,7 +140,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         try:
             response = await self._client.async_set_pump_data(remko_reg, values)
         except:
-            _LOGGER.error(f"request for {self._url} of ID {remko_reg} with {values}")
+            _LOGGER.error(f"Request for {self._url} of ID {remko_reg} with {values}")
             return None
 
         return response.get(str(remko_reg), None)

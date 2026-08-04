@@ -38,6 +38,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     coordinator: RemkoCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
-    await coordinator.async_shutdown()
+    await coordinator.async_client_shutdown()
 
     return True

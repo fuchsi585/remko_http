@@ -10,14 +10,14 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import DOMAIN, CONF_HOST, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
 USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required("host"): str,
-        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
+        vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
             int, vol.Range(min=10, max=60)
         ),
     }
@@ -88,14 +88,14 @@ class RemkoHeatPumpOptionsFlow(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is not None:
-            host = user_input["host"]
+            host = user_input[CONF_HOST]
 
             # current_host = self._config_entry.data.get("host")
 
             # Update entry data for host, store rest in options
             self.hass.config_entries.async_update_entry(
                 self._config_entry,
-                data={**self._config_entry.data, "host": host},
+                data={**self._config_entry.data, CONF_HOST: host},
             )
             return self.async_create_entry(
                 title="",
@@ -112,9 +112,9 @@ class RemkoHeatPumpOptionsFlow(config_entries.OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(
-                    "host", default=self._config_entry.data.get("host", "")
+                    CONF_HOST, default=self._config_entry.data.get(CONF_HOST, "")
                 ): str,
-                vol.Optional(
+                vol.Required(
                     CONF_SCAN_INTERVAL,
                     default=_current(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                 ): vol.All(int, vol.Range(min=10, max=60)),

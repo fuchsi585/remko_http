@@ -73,13 +73,15 @@ class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
         self._attr_icon = definition.icon
         self._attr_name = definition.name
         self._restored_value: float | int | str | None = None
-        self._last_written_value: float | int | str | None = None
+        self._last_value: float | int | str | None = None
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Remko Wärmepumpe",
             manufacturer="Remko",
             model="WKF120",
+            # serial_number=coordinator.serial_number,
+            sw_version=coordinator.firmware,
         )
         if definition.device_class:
             self._attr_device_class = SensorDeviceClass(definition.device_class)
@@ -104,8 +106,8 @@ class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         new_value = self.native_value
-        if new_value != self._last_written_value:
-            self._last_written_value = new_value
+        if new_value != self._last_value:
+            self._last_value = new_value
             self.async_write_ha_state()
 
     @property
@@ -115,7 +117,9 @@ class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
             if value is not None:
                 return self._round_value(value.phys_value)
 
-        return self._restored_value
+        return (
+            self._last_value if self._last_value is not None else self._restored_value
+        )
 
     def _round_value(self, value: float | int | str) -> float | int | str:
         """Round numeric values based on suggested_display_precision."""
@@ -142,7 +146,7 @@ class RemkoDiagnosticSensor(CoordinatorEntity[RemkoCoordinator], SensorEntity):
         self._key = key
         self._attr_unique_id = f"{coordinator.entry_id}_{key}"
         # self._attr_translation_key = key
-        self._last_written_value: str | None = None
+        self._last_value: str | None = None
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -154,8 +158,8 @@ class RemkoDiagnosticSensor(CoordinatorEntity[RemkoCoordinator], SensorEntity):
         """Handle updated data from the coordinator."""
         new_value = self.native_value
 
-        if new_value != self._last_written_value:
-            self._last_written_value = new_value
+        if new_value != self._last_value:
+            self._last_value = new_value
             self.async_write_ha_state()
 
     @property
@@ -187,6 +191,8 @@ class RemkoEnergySensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
             name="Remko Wärmepumpe",
             manufacturer="Remko",
             model="WKF120",
+            # serial_number=coordinator.serial_number,
+            sw_version=coordinator.firmware,
         )
 
     async def async_added_to_hass(self) -> None:
@@ -204,9 +210,10 @@ class RemkoEnergySensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
     def _handle_coordinator_update(self) -> None:
         """Wird aufgerufen, wenn der Coordinator neue Daten hat."""
         # Hol dir die Watt aus den neuen Daten deines Coordinators
-        current_power: DeviceValue = self.coordinator.data.get("power", 0)
+        current_power: DeviceValue = self.coordinator.data.get("power", None)
         # now = time.monotonic()  # -> time im coordinator schreiben
-
+        if current_power is None:
+            return
         # Falls dies der erste Durchlauf nach Start ist: nur Zeitstempel merken
         if self._last_time is None:
             self._last_time = current_power.timestamp

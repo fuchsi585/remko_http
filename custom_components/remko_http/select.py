@@ -56,12 +56,13 @@ class RemkoSelect(CoordinatorEntity[RemkoCoordinator], SelectEntity):
         self._attr_unique_id = f"{entry.entry_id}_{definition.key}"
         self._attr_translation_key = definition.key
         self._attr_icon = definition.icon
-        self._last_written_value: str | None = None
+        self._last_value: str | None = None
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Remko Wärmepumpe",
             manufacturer="Remko",
             model="WKF120",
+            sw_version=coordinator.firmware,
         )
         self._attr_options = list(
             STATE_MAPPING.get(self._definition.http_req, {}).values()

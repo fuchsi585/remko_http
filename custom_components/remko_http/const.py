@@ -78,7 +78,7 @@ SELECTORS: list[RemkoSelectDef] = [
         "Raumklima-Modus",
         "room_climate_mode",
         "mdi:home",
-        http_req=1951,
+        http_req=1088,
     ),
 ]
 
@@ -303,7 +303,7 @@ SENSORS: list[RemkoSensorDef] = [
         "enum",
         None,
         "mdi:cog",
-        http_req=1951,
+        http_req=1088,
         disabled_by_default=True,
         entity_category="diagnostic",
     ),
@@ -345,7 +345,7 @@ STATE_MAPPING = {
         "03": "Aus",
     },
     5064: {"00": "Standby", "01": "Aktiv"},
-    1951: {
+    1088: {
         "01": "Auto",
         "02": "Heizen",
         "03": "Standby",

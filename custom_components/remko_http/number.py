@@ -62,12 +62,13 @@ class RemkoNumber(CoordinatorEntity[RemkoCoordinator], NumberEntity):
         self._attr_native_step = definition.step
         self._attr_native_value: float | None = None
 
-        self._last_written_value: float | None = None
+        self._last_value: float | None = None
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Remko Wärmepumpe",
             manufacturer="Remko",
             model="WKF120",
+            sw_version=coordinator.firmware,
         )
 
     @property
@@ -83,8 +84,8 @@ class RemkoNumber(CoordinatorEntity[RemkoCoordinator], NumberEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         new_value = self.native_value
-        if new_value != self._last_written_value:
-            self._last_written_value = new_value
+        if new_value != self._last_value:
+            self._last_value = new_value
             self.async_write_ha_state()
 
     @property
@@ -111,7 +112,6 @@ class RemkoNumber(CoordinatorEntity[RemkoCoordinator], NumberEntity):
             else int(self._round_number(value))
         )
         # würde auch hex(rounded_value)[2:].zfill(self._definition.byte_len) gehen
-
         hex_value = f"%0{self.response_size}X" % rounded_value
 
         _LOGGER.debug(
