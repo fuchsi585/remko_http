@@ -60,6 +60,7 @@ Das Besondere: Da diese Firmware-Version im lokalen Netz keine Authentifizierung
 # Beispiel via SSH
 cd /config/custom_components
 git clone https://github.com/dein-username/remko_http.git   
+```
 
 ## ⚙️ Konfiguration
 
@@ -80,6 +81,7 @@ remko_http:
   - host: "192.168.1.50"
     scan_interval: 30
     # Keine username/password Felder nötig
+```
 
 ## 📄 Lizenz
 
