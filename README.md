@@ -60,7 +60,7 @@ Das Besondere: Da diese Firmware-Version im lokalen Netz keine Authentifizierung
 ```bash
 # Beispiel via SSH
 cd /config/custom_components
-git clone https://github.com/dein-username/remko_http.git   
+git clone https://github.com/fuchsi585/remko_http.git   
 ```
 
 ## ⚙️ Konfiguration
