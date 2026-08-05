@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background-color: #f0f0f0; border-radius: 8px; padding: 10px;">
+  <!-- Hintergrundkreis -->
+  <circle cx="12" cy="12" r="10" fill="#ffffff" stroke="#41BDF5" stroke-width="1.5"/>
+  
+  <!-- Stilisiertes 'R' für Remko -->
+  <path d="M8 16V8h4a3 3 0 0 1 0 6H8" stroke="#41BDF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 14l4 4" stroke="#41BDF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Wärmewellen / Energie-Symbol -->
+  <path d="M15.5 5.5a2 2 0 1 1 3 3" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M17 3.5a4 4 0 0 1 6 6" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+</svg>
