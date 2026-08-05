@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Firmware](https://img.shields.io/badge/firmware-4.25-orange.svg)](https://github.com/fuchsi585/remko_http)
 [![Home Assistant](https://img.shields.io/badge/platform-Home%20Assistant-41BDF5.svg)](https://www.home-assistant.io/)
-[![HACS Installations](https://img.shields.io/endpoint?url=https://hacs-badges.vercel.app/api/badges/fuchsi585/remko_http)](https://github.com/dein-username/remko_http)   
+[![HACS Installations](https://img.shields.io/endpoint?url=https://hacs-badges.vercel.app/api/badges/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http)   
 
 > **Eine schlanke Home Assistant Custom Integration für Remko Wärmepumpen (Firmware 4.25).**
 > *Direkter Datenabruf über die lokale HTTP-Schnittstelle – ganz ohne MQTT-Broker und ohne Passwort.*
