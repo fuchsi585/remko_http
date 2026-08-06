@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
-from httpx import Timeout, HTTPStatusError, RequestError, InvalidURL
+from httpx import HTTPStatusError, RequestError, InvalidURL
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.httpx_client import get_async_client
@@ -18,7 +18,7 @@ class RemkoHttpClient:
         self._last_query = None
         self._last_response = None
         self._payload = {"SMT_ID": "0000000000000000"}
-        self._timeout = Timeout(1)
+        self._timeout = 10.0
         self._url = f"http://{host}/cgi-bin/webapi.cgi"
 
     async def async_setup_client(self, hass: HomeAssistant = None) -> None:
@@ -26,11 +26,11 @@ class RemkoHttpClient:
 
     async def async_get_firmware(self) -> str:
         response = await self.async_get_pump_data(["SMT_VERSION"])
-        return response.get("SMT_VERSION", "invalid")
+        return response.get("SMT_VERSION", "unknown")
 
     async def async_get_serial_number(self) -> str:
         response = await self.async_get_pump_data([5700])
-        return response.get(5700, "invalid")
+        return response.get(5700, "unknown")
 
     async def async_get_pump_data(self, queries: list[int] = None) -> dict | None:
         if not queries or not self._session:
