@@ -19,6 +19,7 @@ from .const import (
     Factor,
     RemkoNumberDef,
 )
+from .entity import RemkoBaseEntity
 from .coordinator import RemkoCoordinator, DeviceValue
 
 
@@ -40,45 +41,26 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class RemkoNumber(CoordinatorEntity[RemkoCoordinator], NumberEntity):
+class RemkoNumber(RemkoBaseEntity, NumberEntity):
     """An Remko number entity."""
 
-    _attr_has_entity_name = True
     _attr_mode = NumberMode.BOX
 
     def __init__(
         self, coordinator: RemkoCoordinator, definition: RemkoNumberDef, entry
     ) -> None:
         """Initialize the number entity."""
-        super().__init__(coordinator)
-        self._definition = definition
-        self._attr_name = definition.name
-        self._attr_unique_id = f"{entry.entry_id}_{definition.key}"
-        self._attr_translation_key = definition.key
-        self._attr_icon = definition.icon
-        self._attr_native_unit_of_measurement = definition.unit
+        super().__init__(coordinator, entry, definition)
         self._attr_native_min_value = definition.min_value
         self._attr_native_max_value = definition.max_value
         self._attr_native_step = definition.step
         self._attr_native_value: float | None = None
 
         self._last_value: float | None = None
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name="Remko Wärmepumpe",
-            manufacturer="Remko",
-            model="WKF120",
-            sw_version=coordinator.firmware,
-        )
 
     @property
     def response_size(self):
         return len(self.coordinator.data.get(self._definition.state_key).raw_value)
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device info from coordinator."""
-        return self._attr_device_info
 
     @callback
     def _handle_coordinator_update(self) -> None:

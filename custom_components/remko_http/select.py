@@ -19,6 +19,7 @@ from .const import (
     SLEEP_TIME_AFTER_SET_REQ,
     RemkoSelectDef,
 )
+from .entity import RemkoBaseEntity
 from .coordinator import RemkoCoordinator, DeviceValue
 
 
@@ -40,30 +41,18 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class RemkoSelect(CoordinatorEntity[RemkoCoordinator], SelectEntity):
+class RemkoSelect(RemkoBaseEntity, SelectEntity):
     """An Renko number entity."""
 
-    _attr_available = True
     _attr_has_entity_name = True
 
     def __init__(
         self, coordinator: RemkoCoordinator, definition: RemkoSelectDef, entry
     ) -> None:
         """Initialize the select entity."""
-        super().__init__(coordinator)
-        self._definition = definition
-        self._attr_name = definition.name
-        self._attr_unique_id = f"{entry.entry_id}_{definition.key}"
-        self._attr_translation_key = definition.key
-        self._attr_icon = definition.icon
+        super().__init__(coordinator, entry, definition)
         self._last_value: str | None = None
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name="Remko Wärmepumpe",
-            manufacturer="Remko",
-            model="WKF120",
-            sw_version=coordinator.firmware,
-        )
+
         self._attr_options = list(
             STATE_MAPPING.get(self._definition.http_req, {}).values()
         )
@@ -72,11 +61,6 @@ class RemkoSelect(CoordinatorEntity[RemkoCoordinator], SelectEntity):
     @property
     def byte_size(self):
         return len(self.coordinator.data.get(self._definition.state_key).raw_value)
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device info from coordinator."""
-        return self._attr_device_info
 
     @callback
     def _handle_coordinator_update(self) -> None:

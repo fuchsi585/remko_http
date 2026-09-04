@@ -73,11 +73,11 @@ class RemkoCoordinator(DataUpdateCoordinator):
         self._serial_number: str = ""
 
     @property
-    def firmware(self):  # 'SMT_VERSION'
+    def firmware(self):
         return self._firmware
 
     @property
-    def serial_number(self):  # '5700'
+    def serial_number(self):
         return self._serial_number
 
     async def async_client_shutdown(self) -> None:

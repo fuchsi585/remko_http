@@ -39,6 +39,7 @@ class RemkoSelectDef:
     key: str
     name: str
     state_key: str
+    unit: str | None = None
     icon: str | None = None
     http_req: int | None = None
 
@@ -62,6 +63,7 @@ class RemkoSwitchDef:
     key: str
     name: str
     state_key: str
+    unit: str | None = None
     icon: str | None = None
     http_req: int | None = None
 

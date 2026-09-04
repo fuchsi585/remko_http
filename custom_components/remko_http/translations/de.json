@@ -3,41 +3,132 @@
     "step": {
       "user": {
         "title": "Remko Wärmepumpe",
-        "description": "Verbindungsdaten",
+        "description": "Gib die Verbindungsdaten deiner Remko Wärmepumpe ein.",
         "data": {
           "host": "IP-Adresse",
           "scan_interval": "Abfrageintervall (Sekunden)"
         },
         "data_description": {
           "host": "Lokale IP-Adresse der Wärmepumpe",
-          "scan_interval": "Wie oft Werte abgefragt werden (10–60 Sekunden)"
+          "scan_interval": "Wie oft die Werte der Wärmepumpe abgefragt werden."
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung fehlgeschlagen – IP-Adresse prüfen"
+      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen."
     },
     "abort": {
-      "already_configured": "Dieses Gerät ist bereits eingerichtet"
+      "already_configured": "Dieses Gerät ist bereits eingerichtet."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Remko Wärmepumpe – Einstellungen",
-        "description": "Verbindung und Abfrageeinstellungen anpassen.",
+        "description": "Verbindungs- und Abfrageeinstellungen anpassen.",
         "data": {
           "host": "IP-Adresse",
           "scan_interval": "Abfrageintervall (Sekunden)"
         },
         "data_description": {
           "host": "Lokale IP-Adresse der Wärmepumpe",
-          "scan_interval": "Wie oft Werte abgefragt werden (10–60 Sekunden)"
+          "scan_interval": "Wie oft die Werte der Wärmepumpe abgefragt werden."
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung fehlgeschlagen – IP-Adresse und Port prüfen"
+      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen."
+    }
+  },
+  "device": {
+    "heat_pump": {
+      "name": "Wärmepumpe"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cold_hotter_state": {
+        "name": "Kälter / Wärmer"
+      },
+      "water_temp_req": {
+        "name": "Wassertank Solltemperatur"
+      },
+      "water_temp": {
+        "name": "Wassertank Isttemperatur"
+      },
+      "heating_req_temp": {
+        "name": "Heizwasser Solltemperatur"
+      },
+      "heating_actual_temp": {
+        "name": "Heizwasser Isttemperatur"
+      },
+      "circulation_temp": {
+        "name": "Zirkulationstemperatur"
+      },
+      "out_temp": {
+        "name": "Außentemperatur"
+      },
+      "mixed_temp": {
+        "name": "Gemischte Außentemperatur"
+      },
+      "room_temp_req": {
+        "name": "Raum Solltemperatur"
+      },
+      "room_temp_act": {
+        "name": "Raum Isttemperatur"
+      },
+      "room_humidity": {
+        "name": "Raumfeuchtigkeit"
+      },
+      "power": {
+        "name": "Leistung"
+      },
+      "power_thermal": {
+        "name": "Thermische Leistung"
+      },
+      "energy_electical": {
+        "name": "Elektrische Energie"
+      },
+      "compressor_starts": {
+        "name": "Kompressorstarts"
+      },
+      "runtime_hours": {
+        "name": "Laufzeit"
+      },
+      "operating_status": {
+        "name": "Aktuelle Betriebsart"
+      },
+      "hot_water_req_state": {
+        "name": "Warmwasseranforderung"
+      },
+      "circulation_pump_state": {
+        "name": "Zirkulationspumpe"
+      },
+      "room_climate_mode": {
+        "name": "Raumklima-Modus"
+      },
+      "energy_calc": {
+        "name": "Berechnete Energie"
+      }
+    },
+    "number": {
+      "set_cold_hotter": {
+        "name": "Kälter / Wärmer"
+      },
+      "set_water_temp_req": {
+        "name": "Wassertank Solltemperatur"
+      }
+    },
+    "select": {
+      "set_room_climate_mode": {
+        "name": "Raumklima-Modus",
+        "state": {
+          "auto": "Auto",
+          "heizen": "Heizen",
+          "standby": "Standby",
+          "kühlen": "Kühlen"
+        }
+      }
     }
   }
 }

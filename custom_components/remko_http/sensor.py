@@ -20,6 +20,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, SENSORS, RemkoSensorDef
+from .entity import RemkoBaseEntity
 from .coordinator import RemkoCoordinator, DeviceValue
 
 
@@ -50,39 +51,20 @@ async def async_setup_entry(
     for definition in SENSORS:
         entities.append(RemkoSensor(coordinator, definition, entry))
 
-    # entities.append(RemkoDiagnosticSensor(coordinator, "firmware"))
-    # entities.append(RemkoDiagnosticSensor(coordinator, "serial_number"))
     entities.append(RemkoEnergySensor(coordinator, entry))
 
     async_add_entities(entities)
 
 
-class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
-    # entity_description: RemkoSensorDescription
-
-    _attr_has_entity_name = True
-
+class RemkoSensor(RemkoBaseEntity, RestoreSensor):
     def __init__(
         self, coordinator: RemkoCoordinator, definition: RemkoSensorDef, entry
     ) -> None:
-        super().__init__(coordinator)
-        self._definition = definition
-        self._attr_unique_id = f"{entry.entry_id}_{definition.key}"
+        super().__init__(coordinator, entry, definition)
         # self._attr_translation_key = definition.name
-        self._attr_native_unit_of_measurement = definition.unit
-        self._attr_icon = definition.icon
-        self._attr_name = definition.name
         self._restored_value: float | int | str | None = None
         self._last_value: float | int | str | None = None
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name="Remko Wärmepumpe",
-            manufacturer="Remko",
-            model="WKF120",
-            # serial_number=coordinator.serial_number,
-            sw_version=coordinator.firmware,
-        )
         if definition.device_class:
             self._attr_device_class = SensorDeviceClass(definition.device_class)
         if definition.state_class:
@@ -95,12 +77,6 @@ class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
             self._attr_entity_registry_enabled_default = False
         if definition.display_precision is not None:
             self._attr_suggested_display_precision = definition.display_precision
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device info from coordinator."""
-        # return self.coordinator.device_info
-        return self._attr_device_info
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -129,49 +105,6 @@ class RemkoSensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
         return round(value, precision) if precision > 0 else int(round(value, 0))
 
 
-class RemkoDiagnosticSensor(CoordinatorEntity[RemkoCoordinator], SensorEntity):
-    """Diagnostic sensor that reads coordinator properties directly."""
-
-    _attr_has_entity_name = True
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_entity_registry_enabled_default = False
-
-    def __init__(
-        self,
-        coordinator: RemkoCoordinator,
-        key: str,
-    ) -> None:
-        """Initialize the diagnostic sensor."""
-        super().__init__(coordinator)
-        self._key = key
-        self._attr_unique_id = f"{coordinator.entry_id}_{key}"
-        # self._attr_translation_key = key
-        self._last_value: str | None = None
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device info from coordinator."""
-        return self.coordinator.device_info
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        new_value = self.native_value
-
-        if new_value != self._last_value:
-            self._last_value = new_value
-            self.async_write_ha_state()
-
-    @property
-    def native_value(self) -> str | None:
-        """Return the diagnostic sensor value from coordinator property."""
-        if self._key == "firmware":
-            return self.coordinator.firmware
-        if self._key == "serial_number":
-            return self.coordinator.serial_number
-        return None
-
-
 class RemkoEnergySensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
@@ -187,12 +120,13 @@ class RemkoEnergySensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
         self._state = 0.0  # Total kWh
         self._last_time = None
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name="Remko Wärmepumpe",
-            manufacturer="Remko",
-            model="WKF120",
-            # serial_number=coordinator.serial_number,
-            sw_version=coordinator.firmware,
+            {
+                "identifiers": {(DOMAIN, entry.entry_id)},
+                "translation_key": "heat_pump",
+                "manufacturer": "Remko",
+                "model": "WKF120",
+                "sw_version": coordinator.firmware,
+            }
         )
 
     async def async_added_to_hass(self) -> None:
