@@ -23,7 +23,6 @@ class Factor(float, Enum):
 @dataclass(frozen=True)
 class RemkoSensorDef:
     key: str
-    name: str
     unit: str | None = None
     device_class: str | None = None
     state_class: str | None = None
@@ -37,7 +36,6 @@ class RemkoSensorDef:
 @dataclass(frozen=True)
 class RemkoSelectDef:
     key: str
-    name: str
     state_key: str
     unit: str | None = None
     icon: str | None = None
@@ -47,7 +45,6 @@ class RemkoSelectDef:
 @dataclass(frozen=True)
 class RemkoNumberDef:
     key: str
-    name: str
     state_key: str
     device_class: str | None = None
     unit: str | None = None
@@ -61,7 +58,6 @@ class RemkoNumberDef:
 @dataclass(frozen=True)
 class RemkoSwitchDef:
     key: str
-    name: str
     state_key: str
     unit: str | None = None
     icon: str | None = None
@@ -69,15 +65,12 @@ class RemkoSwitchDef:
 
 
 SWITCHES: list[RemkoSwitchDef] = [
-    RemkoSwitchDef(
-        "set_action_heat_warm_water", "1 x WW aufheizen", "", "", http_req=5693
-    )
+    RemkoSwitchDef("set_action_heat_warm_water", "", "", http_req=5693)
 ]
 
 SELECTORS: list[RemkoSelectDef] = [
     RemkoSelectDef(
         "set_room_climate_mode",
-        "Raumklima-Modus",
         "room_climate_mode",
         "mdi:home",
         http_req=1088,
@@ -87,7 +80,6 @@ SELECTORS: list[RemkoSelectDef] = [
 NUMBERS: list[RemkoNumberDef] = [
     RemkoNumberDef(
         "set_cold_hotter",
-        "Kälter / Wärmer",
         "cold_hotter_state",
         "temperature",
         "K",
@@ -99,7 +91,6 @@ NUMBERS: list[RemkoNumberDef] = [
     ),
     RemkoNumberDef(
         "set_water_temp_req",
-        "Wassertank Soll-Temp.",
         "water_temp_req",
         "temperature",
         "°C",
@@ -114,7 +105,6 @@ NUMBERS: list[RemkoNumberDef] = [
 SENSORS: list[RemkoSensorDef] = [
     RemkoSensorDef(
         "cold_hotter_state",
-        "Kälter / Wärmer",
         "K",
         "temperature",
         "measurement",
@@ -124,7 +114,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "water_temp_req",
-        "Wassertank Soll-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -134,7 +123,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "water_temp",
-        "Wassertank Ist-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -143,7 +131,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "heating_req_temp",
-        "Heizwasser Soll-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -152,7 +139,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "heating_actual_temp",
-        "Heizwasser Ist-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -161,7 +147,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "circulation_temp",
-        "Zirkulation Temperatur",
         "°C",
         "temperature",
         "measurement",
@@ -170,7 +155,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "out_temp",
-        "Außentemperatur",
         "°C",
         "temperature",
         "measurement",
@@ -179,7 +163,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "mixed_temp",
-        "Gemischte Außentemp.",
         "°C",
         "temperature",
         "measurement",
@@ -188,7 +171,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "room_temp_req",
-        "Raum Soll-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -197,7 +179,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "room_temp_act",
-        "Raum Ist-Temp.",
         "°C",
         "temperature",
         "measurement",
@@ -206,7 +187,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "room_humidity",
-        "Raum Feuchtigkeit",
         "%",
         "humidity",
         "measurement",
@@ -217,7 +197,6 @@ SENSORS: list[RemkoSensorDef] = [
     # --- Power and Energy
     RemkoSensorDef(
         "power",
-        "Leistung",
         "W",
         "power",
         "measurement",
@@ -227,7 +206,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "power_thermal",
-        "Leistung thermisch",
         "W",
         "power",
         "measurement",
@@ -237,7 +215,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "energy_electical",
-        "elektr. Energie",
         "kWh",
         "energy",
         "total_increasing",
@@ -246,19 +223,17 @@ SENSORS: list[RemkoSensorDef] = [
         http_req=5105,
     ),
     RemkoSensorDef(
-        "compressor_starts",
-        "Kompressorstarts",
+        compressor_starts",
         None,
         None,
         "measurement",
         "mdi:counter",
         # entity_category="diagnostic",
         display_precision=0,
-        http_req=5822,
+        http_req=5822
     ),
     RemkoSensorDef(
         "runtime_hours",
-        "Laufzeit (Stunden)",
         "h",
         "duration",
         "total_increasing",
@@ -270,7 +245,6 @@ SENSORS: list[RemkoSensorDef] = [
     # -- Diagnostics
     RemkoSensorDef(
         "operating_status",
-        "Aktuelle Betriebsart",
         None,
         "enum",
         None,
@@ -280,7 +254,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "hot_water_req_state",
-        "WW-Anforderung",
         None,
         "enum",
         None,
@@ -290,7 +263,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "circulation_pump_state",
-        "Zirkulationspumpe",
         None,
         "enum",
         None,
@@ -300,7 +272,6 @@ SENSORS: list[RemkoSensorDef] = [
     ),
     RemkoSensorDef(
         "room_climate_mode",
-        "Raumklima-Modus",
         None,
         "enum",
         None,
@@ -340,34 +311,34 @@ def _get_all_queries():
 ALL_QUERIES = _get_all_queries()
 
 STATE_MAPPING = {
-    1079: {  # hot_water_op_mode
-        "00": "Automatik Komfort",
-        "01": "Automatik Eco",
-        "02": "Solar/PV",
-        "03": "Aus",
-    },
-    5064: {"00": "Standby", "01": "Aktiv"},
+    # 1079: {  # hot_water_op_mode
+    #     "00": "Automatik Komfort",
+    #     "01": "Automatik Eco",
+    #     "02": "Solar/PV",
+    #     "03": "Aus",
+    # },
+    5064: {"00": "standby", "01": "active"},
     1088: {
-        "01": "Auto",
-        "02": "Heizen",
-        "03": "Standby",
-        "04": "Kühlen",
+        "01": "auto",
+        "02": "heating",
+        "03": "standby",
+        "04": "cooling",
     },
     5001: {  # operating_status
-        "00": "Unbekannt / Aus",  # "Blocked",
-        "01": "Störung",
-        "02": "Abtauen",  # "Defrosting",
-        "03": "Abtaupuffer",  # "Loading defrost buffer",
-        "04": "WW Puffer",  # "Loading DHW",
-        "05": "Storage Energy",
-        "06": "Heizen",  # "Heating",
-        "07": "Kühlen",  # "Cooling",
-        "09": "Umwälzung",  # Idle
-        "0A": "Standby",
-        "0C": "Frostschutz",  # "Frost Protection",
-        "40": "Ready",
+        "00": "unknown",  # "Blocked",
+        "01": "fault",
+        "02": "defrosting",  # "Defrosting",
+        "03": "defrost_buffer",  # "Loading defrost buffer",
+        "04": "dhw_buffer",  # "Loading DHW",
+        "05": "energy_storage",
+        "06": "heating",  # "Heating",
+        "07": "cooling",  # "Cooling",
+        "09": "circulation",  # Idle
+        "0A": "standby",
+        "0C": "frost_protection",  # "Frost Protection",
+        "40": "ready",
     },
-    5151: {"00": "Aus", "01": "Ein"},
+    5151: {"00": "off", "01": "on"},
 }
 
 # "heating_circ_mode": 1972,  # switch

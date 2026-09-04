@@ -96,13 +96,35 @@
         "name": "Laufzeit"
       },
       "operating_status": {
-        "name": "Aktuelle Betriebsart"
+        "name": "Aktuelle Betriebsart",
+        "state":{
+          "unknown": "Unbekannt / Aus",
+          "fault": "Störung",
+          "defrosting": "Abtauen",
+          "defrost_buffer": "Abtaupuffer",
+          "dhw_buffer": "WW Puffer",
+          "energy_storage": "Energiespeicher",
+          "heating": "Heizen",
+          "cooling": "Kühlen",
+          "circulation": "Umwälzung",
+          "standby": "Standby",
+          "frost_protection": "Frostschutz",
+          "ready": "Bereit"
+        }
       },
       "hot_water_req_state": {
-        "name": "Warmwasseranforderung"
+        "name": "Warmwasseranforderung",
+        "state": {
+          "active": "Aktiv",
+          "standby": "Standby"
+        }
       },
       "circulation_pump_state": {
-        "name": "Zirkulationspumpe"
+        "name": "Zirkulationspumpe",
+        "state":{
+          "off": "Aus",
+          "on": "An"
+        }
       },
       "room_climate_mode": {
         "name": "Raumklima-Modus"
@@ -124,9 +146,9 @@
         "name": "Raumklima-Modus",
         "state": {
           "auto": "Auto",
-          "heizen": "Heizen",
+          "heating": "Heizen",
           "standby": "Standby",
-          "kühlen": "Kühlen"
+          "cooling": "Kühlen"
         }
       }
     }

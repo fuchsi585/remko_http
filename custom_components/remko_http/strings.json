@@ -96,13 +96,35 @@
         "name": "Runtime"
       },
       "operating_status": {
-        "name": "Current operating mode"
+        "name": "Current operating mode",
+        "state": {
+          "unknown": "Unknown / Off",
+          "fault": "Fault",
+          "defrosting": "Defrosting",
+          "defrost_buffer": "Loading defrost buffer",
+          "dhw_buffer": "Loading DHW",
+          "energy_storage": "Storage Energy",
+          "heating": "Heating",
+          "cooling": "Cooling",
+          "circulation": "Circulation",
+          "standby": "Standby",
+          "frost_protection": "Frost Protection",
+          "ready": "Ready"
+        }
       },
       "hot_water_req_state": {
-        "name": "Hot water request"
+        "name": "Hot water request",
+        "state": {
+          "active": "Active",
+          "standby": "Standby"
+        }
       },
       "circulation_pump_state": {
-        "name": "Circulation pump"
+        "name": "Circulation pump",
+        "state":{
+          "off": "Off",
+          "on": "On"
+        }
       },
       "room_climate_mode": {
         "name": "Room climate mode"
@@ -124,9 +146,9 @@
         "name": "Room climate mode",
         "state": {
           "auto": "Auto",
-          "heizen": "Heating",
+          "heating": "Heating",
           "standby": "Standby",
-          "kühlen": "Cooling"
+          "cooling": "Cooling"
         }
       }
     }
