@@ -223,14 +223,14 @@ SENSORS: list[RemkoSensorDef] = [
         http_req=5105,
     ),
     RemkoSensorDef(
-        compressor_starts",
+        "compressor_starts",
         None,
         None,
         "measurement",
         "mdi:counter",
         # entity_category="diagnostic",
         display_precision=0,
-        http_req=5822
+        http_req=5822,
     ),
     RemkoSensorDef(
         "runtime_hours",
