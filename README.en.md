@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://www.hacs.xyz/)
-[![Validate](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml/badge.svg)](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml)
+[![Validate](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml)
 [![License](https://img.shields.io/github/license/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/blob/main/LICENSE)
 
 **[🇩🇪 Deutsche Version](README.md)**
