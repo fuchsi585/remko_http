@@ -127,7 +127,13 @@
         }
       },
       "room_climate_mode": {
-        "name": "Room climate mode"
+        "name": "Room climate mode",
+        "state": {
+          "auto": "Auto",
+          "heating": "Heating",
+          "standby": "Standby",
+          "cooling": "Cooling"
+        }
       },
       "energy_calc": {
         "name": "Calculated energy"

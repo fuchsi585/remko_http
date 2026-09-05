@@ -63,7 +63,7 @@ class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(f"{host}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=f"Remko Heatpump ({host})",
+                    title=f"Remko ({host})",
                     data=user_input,
                 )
 
