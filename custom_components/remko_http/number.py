@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-import logging
 import asyncio
+import logging
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     DOMAIN,
@@ -19,9 +17,8 @@ from .const import (
     Factor,
     RemkoNumberDef,
 )
+from .coordinator import DeviceValue, RemkoCoordinator
 from .entity import RemkoBaseEntity
-from .coordinator import RemkoCoordinator, DeviceValue
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,20 +44,22 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
     _attr_mode = NumberMode.BOX
 
     def __init__(
-        self, coordinator: RemkoCoordinator, definition: RemkoNumberDef, entry
+        self,
+        coordinator: RemkoCoordinator,
+        definition: RemkoNumberDef,
+        entry: ConfigEntry,
     ) -> None:
         """Initialize the number entity."""
         super().__init__(coordinator, entry, definition)
-        self._attr_native_min_value = definition.min_value
-        self._attr_native_max_value = definition.max_value
-        self._attr_native_step = definition.step
+        self._attr_native_min_value = self._definition.min_value
+        self._attr_native_max_value = self._definition.max_value
+        self._attr_native_step = self._definition.step
         self._attr_native_value: float | None = None
-
         self._last_value: float | None = None
 
     @property
     def response_size(self):
-        return len(self.coordinator.data.get(self._definition.state_key).raw_value)
+        return len(self.coordinator.data.get(self._definition.read_key).raw_value)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -73,7 +72,7 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the current value."""
-        value: DeviceValue = self.coordinator.data.get(self._definition.state_key, None)
+        value: DeviceValue = self.coordinator.data.get(self._definition.read_key, None)
         if value is None:
             return None
 
@@ -99,6 +98,6 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
         _LOGGER.debug(
             f"Set value for {self._definition.http_req} with '{value}'. HEX-Value: {hex_value}"
         )
-        await self.coordinator.async_set_value(self._definition.http_req, hex_value)
+        await self.coordinator.async_set_value(self._definition, hex_value)
         await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
         await self.coordinator.async_refresh()

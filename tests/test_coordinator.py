@@ -2,8 +2,8 @@
 
 import pytest
 
-from custom_components.remko_http.coordinator import RemkoCoordinator
 from custom_components.remko_http.const import Factor
+from custom_components.remko_http.coordinator import RemkoCoordinator
 
 
 @pytest.mark.parametrize(
@@ -45,7 +45,7 @@ def test_hex2number_negative(
 
 def test_hex2number_signed_boundary() -> None:
     """Test signed 16-bit boundaries."""
-    assert round(RemkoCoordinator._hex2number("7FFF", Factor.TEMP),1) == 3276.7
+    assert round(RemkoCoordinator._hex2number("7FFF", Factor.TEMP), 1) == 3276.7
     assert RemkoCoordinator._hex2number("8000", Factor.TEMP) == -3276.8
 
 
@@ -61,7 +61,8 @@ def test_hex2number_invalid_value(hex_value: str) -> None:
     """Test invalid hexadecimal input."""
     with pytest.raises(ValueError):
         RemkoCoordinator._hex2number(hex_value, Factor.TEMP)
-        
+
+
 @pytest.mark.parametrize(
     ("hex_value", "factor", "expected"),
     [

@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
 
 from homeassistant.components.sensor import (
-    EntityCategory,
     RestoreSensor,
     SensorDeviceClass,
     SensorEntity,
-    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -20,24 +17,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, SENSORS, RemkoSensorDef
+from .coordinator import DeviceValue, RemkoCoordinator
 from .entity import RemkoBaseEntity
-from .coordinator import RemkoCoordinator, DeviceValue
-
-
-@dataclass(frozen=False)
-class RemkoSensorDescription(SensorEntityDescription):
-    pass
-
-
-_STATE_CLASS_MAP = {
-    "measurement": SensorStateClass.MEASUREMENT,
-    "total_increasing": SensorStateClass.TOTAL_INCREASING,
-}
-
-_ENTITY_CATEGORY_MAP = {
-    "diagnostic": EntityCategory.DIAGNOSTIC,
-    "config": EntityCategory.CONFIG,
-}
 
 
 async def async_setup_entry(
@@ -61,22 +42,9 @@ class RemkoSensor(RemkoBaseEntity, RestoreSensor):
         self, coordinator: RemkoCoordinator, definition: RemkoSensorDef, entry
     ) -> None:
         super().__init__(coordinator, entry, definition)
-        # self._attr_translation_key = definition.name
+
         self._restored_value: float | int | str | None = None
         self._last_value: float | int | str | None = None
-
-        if definition.device_class:
-            self._attr_device_class = SensorDeviceClass(definition.device_class)
-        if definition.state_class:
-            self._attr_state_class = _STATE_CLASS_MAP.get(definition.state_class)
-        if definition.entity_category:
-            self._attr_entity_category = _ENTITY_CATEGORY_MAP.get(
-                definition.entity_category
-            )
-        if definition.disabled_by_default:
-            self._attr_entity_registry_enabled_default = False
-        if definition.display_precision is not None:
-            self._attr_suggested_display_precision = definition.display_precision
 
     @callback
     def _handle_coordinator_update(self) -> None:

@@ -27,7 +27,23 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
-          
+
+  prek:
+    name: Prek
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run prek
+        uses: j178/prek-action@v3.0.0
+
   tests:
     name: Tests
     runs-on: ubuntu-latest

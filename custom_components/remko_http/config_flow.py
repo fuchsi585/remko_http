@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-import logging
 import ipaddress
+import logging
 from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, CONF_HOST, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import CONF_HOST, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,21 +24,11 @@ USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def _validate_connection(host: str) -> None:
+async def _validate_host(host: str) -> None:
     try:
         ipaddress.ip_address(host)
     except ValueError as err:
         raise ConnectionError(f"Wrong IP-Adress: {err}") from err
-
-    # try:
-    #     response = httpx.get(f"http://{host}/cgi-bin/webapi.cgi", timeout=0.3)
-    # except httpx.TimeoutException as err:
-    #     raise ConnectionError(f"Timeut: {host} not reachable!") from err
-
-    # if response.status_code != 200:
-    #     raise ConnectionError(
-    #         f"Negative Response: {host} with status-code {response.status_code}"
-    #     )
 
 
 class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -55,7 +45,7 @@ class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             host = user_input["host"]
 
             try:
-                await _validate_connection(host)
+                await _validate_host(host)
             except ConnectionError as err:
                 errors["base"] = str(err)
 

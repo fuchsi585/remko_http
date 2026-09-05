@@ -5,7 +5,6 @@ from __future__ import annotations
 import sys
 import types
 
-
 # ---------------------------------------------------------------------------
 # Home Assistant stubs
 # ---------------------------------------------------------------------------
@@ -27,6 +26,34 @@ class Platform:
 homeassistant_const.Platform = Platform
 
 
+class UnitOfEnergy:
+    KILO_WATT_HOUR = "kWh"
+
+
+class UnitOfPower:
+    WATT = "W"
+
+
+class UnitOfRatio:
+    PERCENTAGE = "%"
+
+
+class UnitOfTemperature:
+    CELSIUS = "°C"
+    KELVIN = "K"
+
+
+class UnitOfTime:
+    HOURS = "h"
+    MINUTES = "min"
+
+
+homeassistant_const.UnitOfEnergy = UnitOfEnergy
+homeassistant_const.UnitOfPower = UnitOfPower
+homeassistant_const.UnitOfRatio = UnitOfRatio
+homeassistant_const.UnitOfTemperature = UnitOfTemperature
+homeassistant_const.UnitOfTime = UnitOfTime
+
 homeassistant_core = types.ModuleType("homeassistant.core")
 
 
@@ -35,8 +62,6 @@ class HomeAssistant:
 
 
 homeassistant_core.HomeAssistant = HomeAssistant
-
-
 homeassistant_config_entries = types.ModuleType("homeassistant.config_entries")
 
 
@@ -49,6 +74,44 @@ class ConfigEntry:
 
 homeassistant_config_entries.ConfigEntry = ConfigEntry
 
+# ---------------------------------------------------------------------------
+# Home Assistant sensor component stub
+# ---------------------------------------------------------------------------
+
+homeassistant_components = types.ModuleType("homeassistant.components")
+homeassistant_components.__path__ = []
+
+homeassistant_sensor = types.ModuleType("homeassistant.components.sensor")
+
+
+class EntityCategory:
+    """Minimal Home Assistant EntityCategory stub."""
+
+    CONFIG = "config"
+    DIAGNOSTIC = "diagnostic"
+
+
+class SensorDeviceClass:
+    """Minimal Home Assistant SensorDeviceClass stub."""
+
+    TEMPERATURE = "temperature"
+    HUMIDITY = "humidity"
+    POWER = "power"
+    ENERGY = "energy"
+    DURATION = "duration"
+    ENUM = "enum"
+
+
+class SensorStateClass:
+    """Minimal Home Assistant SensorStateClass stub."""
+
+    MEASUREMENT = "measurement"
+    TOTAL_INCREASING = "total_increasing"
+
+
+homeassistant_sensor.EntityCategory = EntityCategory
+homeassistant_sensor.SensorDeviceClass = SensorDeviceClass
+homeassistant_sensor.SensorStateClass = SensorStateClass
 
 # ---------------------------------------------------------------------------
 # Home Assistant update coordinator stub
@@ -94,9 +157,7 @@ homeassistant_update_coordinator.UpdateFailed = UpdateFailed
 # Home Assistant httpx client stub
 # ---------------------------------------------------------------------------
 
-homeassistant_httpx_client = types.ModuleType(
-    "homeassistant.helpers.httpx_client"
-)
+homeassistant_httpx_client = types.ModuleType("homeassistant.helpers.httpx_client")
 
 
 def get_async_client(*args, **kwargs):
@@ -138,6 +199,8 @@ httpx.InvalidURL = InvalidURL
 sys.modules["homeassistant"] = homeassistant
 sys.modules["homeassistant.const"] = homeassistant_const
 sys.modules["homeassistant.core"] = homeassistant_core
+sys.modules["homeassistant.components"] = homeassistant_components
+sys.modules["homeassistant.components.sensor"] = homeassistant_sensor
 sys.modules["homeassistant.config_entries"] = homeassistant_config_entries
 sys.modules["homeassistant.helpers"] = homeassistant_helpers
 sys.modules["homeassistant.helpers.update_coordinator"] = (

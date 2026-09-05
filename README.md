@@ -117,4 +117,3 @@ Dieses Projekt steht unter der **MIT-Lizenz**. Siehe [LICENSE](LICENSE) für wei
 ---
 
 > **Hinweis:** Dieses Projekt ist nicht offiziell mit Remko verbunden. Die Nutzung erfolgt auf eigene Gefahr.
-
