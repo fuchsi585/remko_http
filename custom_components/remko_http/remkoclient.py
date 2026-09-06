@@ -11,6 +11,8 @@ from .const import HTTP_REQ_SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
+PAYLOAD = {"SMT_ID": "0000000000000000"}
+
 
 class RemkoHttpClient:
     def __init__(self, host: str) -> None:
@@ -18,7 +20,6 @@ class RemkoHttpClient:
         self._last_error = None
         self._last_query = None
         self._last_response = None
-        self._payload = {"SMT_ID": "0000000000000000"}
         self._timeout = 15.0
         self._url = f"http://{host}/cgi-bin/webapi.cgi"
 
@@ -33,13 +34,16 @@ class RemkoHttpClient:
         response = await self.async_get_pump_data([HTTP_REQ_SERIAL_NUMBER])
         return response.get(HTTP_REQ_SERIAL_NUMBER, "unknown")
 
-    async def async_get_pump_data(self, queries: list[int] = None) -> dict | None:
+    async def async_get_pump_data(
+        self, queries: list[int] = None
+    ) -> dict[str, str] | None:
+
         if not queries or not self._session:
             _LOGGER.warning("HttpClient not initialized or queries is empty!")
             return None
 
-        result = {}
-        payload = self._payload
+        result: dict[str, str] = {}
+        payload = PAYLOAD
         payload.update({"query_list": queries})
         self._last_query = queries
 
@@ -60,12 +64,14 @@ class RemkoHttpClient:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             self._last_error = err
             self._last_response = None
-            return {}
+            return None
 
         return dict(result)
 
-    async def async_set_pump_data(self, remko_id: int, values: dict) -> dict | Any:
-        payload = self._payload
+    async def async_set_pump_data(
+        self, remko_id: int, values: dict
+    ) -> dict[str, str] | Any:
+        payload = PAYLOAD
         payload.update({"query_list": remko_id})
         payload.update({"values": values})
         self._last_query = remko_id
@@ -82,6 +88,6 @@ class RemkoHttpClient:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             self._last_error = err
             self._last_response = None
-            return {}
+            return None
 
         return self._last_response

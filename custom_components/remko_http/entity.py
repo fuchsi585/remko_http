@@ -8,6 +8,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     DOMAIN,
+    RemkoEnergySensorDef,
     RemkoNumberDef,
     RemkoSelectDef,
     RemkoSensorDef,
@@ -22,7 +23,10 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
         self,
         coordinator: RemkoCoordinator,
         entry: ConfigEntry,
-        definition: RemkoSensorDef | RemkoSelectDef | RemkoNumberDef,
+        definition: RemkoSensorDef
+        | RemkoSelectDef
+        | RemkoNumberDef
+        | RemkoEnergySensorDef,
     ) -> None:
         super().__init__(coordinator)
         self._entry_id = entry.entry_id

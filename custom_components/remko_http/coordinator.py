@@ -8,9 +8,6 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -22,7 +19,7 @@ from .const import (
     DOMAIN,
     HTTP_REQS,
     SENSORS,
-    Factor,
+    ConvData,
     RemkoNumberDef,
     RemkoSelectDef,
     RemkoSensorDef,
@@ -79,9 +76,9 @@ class RemkoCoordinator(DataUpdateCoordinator):
         self._firmware = await self._client.async_get_firmware()
 
     @staticmethod
-    def _hex2number(hex_value: str, factor: Factor) -> float:
+    def _hex2number(hex_value: str) -> float:
         raw = int(hex_value, 16)
-        return (raw - 0x10000 if raw > 0x7FFF else raw) * factor
+        return raw - 0x10000 if raw > 0x7FFF else raw
 
     async def async_get_raw_data(self) -> dict[str, Any]:
         data: dict = {}
@@ -96,14 +93,27 @@ class RemkoCoordinator(DataUpdateCoordinator):
                     entity_value.phys_value = sensor_definition.option.from_hex(
                         hex_value
                     )
-                elif sensor_definition.device_class == SensorDeviceClass.TEMPERATURE:
-                    entity_value.phys_value = round(
-                        self._hex2number(hex_value, Factor.TEMP), 1
-                    )
-                elif sensor_definition.device_class == SensorDeviceClass.POWER:
-                    entity_value.phys_value = int(hex_value, 16) * Factor.POWER
+                    data[entity_value.key] = entity_value
+                    continue
+
+                if sensor_definition.device_class in tuple(ConvData):
+                    scale = ConvData(sensor_definition.device_class).scale
+                    type = ConvData(sensor_definition.device_class).data_type
+                    entity_value.phys_value = self._hex2number(hex_value) * scale
+
+                    if type is float:
+                        entity_value.phys_value = round(entity_value.phys_value, 1)
                 else:
                     entity_value.phys_value = int(hex_value, 16)
+
+                # elif sensor_definition.device_class == SensorDeviceClass.TEMPERATURE:
+                #     entity_value.phys_value = round(
+                #         self._hex2number(hex_value, Factor.TEMP), 1
+                #     )
+                # elif sensor_definition.device_class == SensorDeviceClass.POWER:
+                #     entity_value.phys_value = int(hex_value, 16) * Factor.POWER
+                # else:
+                #     entity_value.phys_value = int(hex_value, 16)
 
                 data[entity_value.key] = entity_value
 

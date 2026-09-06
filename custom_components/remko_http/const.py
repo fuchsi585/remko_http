@@ -1,7 +1,7 @@
 """Constants for Remko Heatpump integration."""
 
 from dataclasses import dataclass
-from enum import Enum, StrEnum
+from enum import StrEnum
 from typing import Final
 
 from homeassistant.components.sensor import (
@@ -27,10 +27,21 @@ SLEEP_TIME_AFTER_SET_REQ: Final = 0.4
 HTTP_REQ_SERIAL_NUMBER: Final = 5700
 
 
-class Factor(float, Enum):
-    TEMP = 0.1
-    POWER = 100
-    POWER_KWH = 0.001
+class ConvData(StrEnum):
+    TEMPERATURE = SensorDeviceClass.TEMPERATURE
+    POWER = SensorDeviceClass.POWER
+
+    @property
+    def scale(self) -> float | int:
+        return {SensorDeviceClass.TEMPERATURE: 0.001, SensorDeviceClass.POWER: 100}[
+            self
+        ]
+
+    @property
+    def data_type(self) -> int:
+        return {SensorDeviceClass.TEMPERATURE: float, SensorDeviceClass.POWER: int}[
+            self
+        ]
 
 
 class RoomClimateMode(StrEnum):
@@ -53,12 +64,11 @@ class RoomClimateMode(StrEnum):
 
     @classmethod
     def from_hex(cls, value: str) -> "RoomClimateMode | str":
-        return {
-            "01": cls.AUTO,
-            "02": cls.HEATING,
-            "03": cls.STANDBY,
-            "04": cls.COOLING,
-        }.get(value, f"Status N/A: {value}")
+        for state in cls:
+            if state.hex_value == value:
+                return state
+
+        return f"Status N/A: {value}"
 
 
 class HotWaterReqState(StrEnum):
@@ -77,10 +87,11 @@ class HotWaterReqState(StrEnum):
 
     @classmethod
     def from_hex(cls, value: str) -> "HotWaterReqState | str":
-        return {
-            "00": cls.STANDBY,
-            "01": cls.ACTIVE,
-        }.get(value, f"Status N/A: {value}")
+        for state in cls:
+            if state.hex_value == value:
+                return state
+
+        return f"Status N/A: {value}"
 
 
 class PumpState(StrEnum):
@@ -99,10 +110,11 @@ class PumpState(StrEnum):
 
     @classmethod
     def from_hex(cls, value: str) -> "PumpState | str":
-        return {
-            "00": cls.OFF,
-            "01": cls.ON,
-        }.get(value, f"Status N/A: {value}")
+        for state in cls:
+            if state.hex_value == value:
+                return state
+
+        return f"Status N/A: {value}"
 
 
 class OperatingState(StrEnum):
@@ -140,21 +152,12 @@ class OperatingState(StrEnum):
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "RoomClimateMode | None":
-        return {
-            "00": cls.UNKNOWN,
-            "01": cls.FAULT,
-            "02": cls.DEFROST,
-            "03": cls.DEFROSTBUFFER,
-            "04": cls.DHWBUFFER,
-            "05": cls.ENERGYSTORAGE,
-            "06": cls.HEATING,
-            "07": cls.COOLING,
-            "09": cls.CIRCULATION,
-            "0A": cls.STANDBY,
-            "0C": cls.FROSTPROTECT,
-            "40": cls.READY,
-        }.get(value, f"Status N/A: {value}")
+    def from_hex(cls, value: str) -> "OperatingState | str":
+        for state in cls:
+            if state.hex_value == value:
+                return state
+
+        return f"Status N/A: {value}"
 
 
 # @dataclass(frozen=True)
@@ -180,9 +183,10 @@ class RemkoSelectDef:
     http_req: int | None = None
     option: tuple[str, ...] | None = None
     disabled_by_default: bool = False
+    scale: float | None = None
 
 
-SELECTORS: list[RemkoSelectDef] = [
+SELECTORS: tuple[RemkoSelectDef, ...] = (
     RemkoSelectDef(
         key="set_room_climate_mode",
         read_key="room_climate_mode",
@@ -190,7 +194,7 @@ SELECTORS: list[RemkoSelectDef] = [
         http_req=1088,
         option=RoomClimateMode,
     ),
-]
+)
 
 
 @dataclass(frozen=True)
@@ -206,9 +210,10 @@ class RemkoNumberDef:
     http_req: int | None = None
     option: StrEnum | None = None
     disabled_by_default: bool = False
+    scale: float | None = None
 
 
-NUMBERS: list[RemkoNumberDef] = [
+NUMBERS: tuple[RemkoNumberDef, ...] = (
     RemkoNumberDef(
         key="set_cold_hotter",
         read_key="cold_hotter_state",
@@ -231,7 +236,7 @@ NUMBERS: list[RemkoNumberDef] = [
         step=0.5,
         http_req=1082,
     ),
-]
+)
 
 
 @dataclass(frozen=True)
@@ -246,9 +251,10 @@ class RemkoSensorDef:
     http_req: int | None = None
     disabled_by_default: bool = False
     option: tuple[str, ...] | None = None
+    scale: float | None = None
 
 
-SENSORS: list[RemkoSensorDef] = [
+SENSORS: tuple[RemkoSensorDef, ...] = (
     RemkoSensorDef(
         key="cold_hotter_state",
         unit=UnitOfTemperature.KELVIN,
@@ -340,7 +346,7 @@ SENSORS: list[RemkoSensorDef] = [
         http_req=5066,
         display_precision=0,
     ),
-    # --- Power and Energy
+    # --- Power
     RemkoSensorDef(
         key="power",
         unit=UnitOfPower.WATT,
@@ -358,15 +364,6 @@ SENSORS: list[RemkoSensorDef] = [
         icon="mdi:flash",
         display_precision=0,
         http_req=5321,
-    ),
-    RemkoSensorDef(
-        key="energy_electical",
-        unit=UnitOfEnergy.KILO_WATT_HOUR,
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        icon="mdi:transmission-tower",
-        display_precision=0,
-        http_req=5105,
     ),
     RemkoSensorDef(
         key="compressor_starts",
@@ -429,62 +426,72 @@ SENSORS: list[RemkoSensorDef] = [
     #     disabled_by_default=True,
     #     entity_category="diagnostic",
     # ),
-]
+)
+
+
+@dataclass(frozen=True)
+class RemkoEnergySensorDef:
+    key: str
+    unit: str | None = None
+    device_class: str | None = None
+    state_class: str | None = None
+    icon: str | None = None
+    entity_category: str | None = None
+    display_precision: int | None = 1
+    http_req: int | None = None
+    disabled_by_default: bool = False
+    option: tuple[str, ...] | None = None
+    is_calculated: bool = False
+    scale: float | None = None
+
+
+ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
+    RemkoEnergySensorDef(
+        key="energy_electrical",
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        icon="mdi:transmission-tower",
+        display_precision=0,
+        http_req=5105,
+        is_calculated=True,
+    ),
+)
+
+ENERGY_SENSORS_DEVICE_RAW: tuple[RemkoEnergySensorDef, ...] = (
+    RemkoEnergySensorDef(
+        key=f"{energy_sensor.key}_raw",
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        icon="mdi:transmission-tower",
+        display_precision=0,
+        http_req=5105,
+    )
+    for energy_sensor in ENERGY_SENSORS
+    if energy_sensor.is_calculated
+)
 
 HTTP_REQS: Final = list(
     {
         definition.http_req
-        for definition in (*SELECTORS, *SENSORS, *NUMBERS)
+        for definition in (
+            *SELECTORS,
+            *SENSORS,
+            *NUMBERS,
+            *ENERGY_SENSORS,
+            *ENERGY_SENSORS_DEVICE_RAW,
+        )
         if definition.http_req is not None
     }
 )
 
-# AVAILABLE_SENSOR_QUERIES = [definition.http_req for definition in SENSORS]
-# # AVAILABLE_SWITCH_QUERIES = [definition.http_req for definition in SWITCHES]
-# AVAILABLE_NUMBER_QUERIES = [definition.http_req for definition in NUMBERS]
-# AVAILABLE_SELECT_QUERIES = [definition.http_req for definition in SELECTORS]
 
-
-# def _get_all_queries():
-#     queries = set(AVAILABLE_NUMBER_QUERIES)
-#     queries.update(AVAILABLE_SENSOR_QUERIES)
-#     # queries.update(AVAILABLE_SWITCH_QUERIES)
-#     queries.update(AVAILABLE_SELECT_QUERIES)
-
-#     return list(queries)
-
-
-# ALL_QUERIES = _get_all_queries()
-
-# STATE_MAPPING = {
-#     # 1079: {  # hot_water_op_mode
-#     #     "00": "Automatik Komfort",
-#     #     "01": "Automatik Eco",
-#     #     "02": "Solar/PV",
-#     #     "03": "Aus",
-#     # },
-#     5064: {"00": "standby", "01": "active"},
-#     1088: {
-#         "01": "auto",
-#         "02": "heating",
-#         "03": "standby",
-#         "04": "cooling",
-#     },
-#     5001: {  # operating_status
-#         "00": "unknown",  # "Blocked",
-#         "01": "fault",
-#         "02": "defrosting",  # "Defrosting",
-#         "03": "defrost_buffer",  # "Loading defrost buffer",
-#         "04": "dhw_buffer",  # "Loading DHW",
-#         "05": "energy_storage",
-#         "06": "heating",  # "Heating",
-#         "07": "cooling",  # "Cooling",
-#         "09": "circulation",  # Idle
-#         "0A": "standby",
-#         "0C": "frost_protection",  # "Frost Protection",
-#         "40": "ready",
-#     },
-#     5151: {"00": "off", "01": "on"},
-# }
+# 1079: {  # hot_water_op_mode
+#     "00": "Automatik Komfort",
+#     "01": "Automatik Eco",
+#     "02": "Solar/PV",
+#     "03": "Aus",
+# },
 
 # "heating_circ_mode": 1972,  # switch

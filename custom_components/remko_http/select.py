@@ -41,7 +41,10 @@ class RemkoSelectEntity(RemkoBaseEntity, SelectEntity):
     """An Renko number entity."""
 
     def __init__(
-        self, coordinator: RemkoCoordinator, definition: RemkoSelectDef, entry
+        self,
+        coordinator: RemkoCoordinator,
+        definition: RemkoSelectDef,
+        entry: ConfigEntry,
     ) -> None:
         """Initialize the select entity."""
         super().__init__(coordinator, entry, definition)

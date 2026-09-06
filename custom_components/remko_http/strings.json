@@ -86,7 +86,7 @@
       "power_thermal": {
         "name": "Thermal power"
       },
-      "energy_electical": {
+      "energy_electrical": {
         "name": "Electrical energy"
       },
       "compressor_starts": {

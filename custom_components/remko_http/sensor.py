@@ -16,7 +16,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, SENSORS, RemkoSensorDef
+from .const import DOMAIN, SENSORS, RemkoEnergySensorDef, RemkoSensorDef
 from .coordinator import DeviceValue, RemkoCoordinator
 from .entity import RemkoBaseEntity
 
@@ -39,7 +39,10 @@ async def async_setup_entry(
 
 class RemkoSensor(RemkoBaseEntity, RestoreSensor):
     def __init__(
-        self, coordinator: RemkoCoordinator, definition: RemkoSensorDef, entry
+        self,
+        coordinator: RemkoCoordinator,
+        definition: RemkoSensorDef | RemkoEnergySensorDef,
+        entry: ConfigEntry,
     ) -> None:
         super().__init__(coordinator, entry, definition)
 
@@ -111,11 +114,11 @@ class RemkoEnergySensor(CoordinatorEntity[RemkoCoordinator], RestoreSensor):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Wird aufgerufen, wenn der Coordinator neue Daten hat."""
-        # Hol dir die Watt aus den neuen Daten deines Coordinators
+
         current_power: DeviceValue = self.coordinator.data.get("power", None)
-        # now = time.monotonic()  # -> time im coordinator schreiben
         if current_power is None:
             return
+
         # Falls dies der erste Durchlauf nach Start ist: nur Zeitstempel merken
         if self._last_time is None:
             self._last_time = current_power.timestamp
