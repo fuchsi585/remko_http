@@ -354,32 +354,30 @@ class RemkoEnergySensorDef:
 ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
     RemkoEnergySensorDef(
         key="energy_electrical",
-        read_key="energy_electrical_raw",
         unit=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         icon="mdi:transmission-tower",
         display_precision=0,
         is_calculated=True,
+        http_req=5105,
         data_type=RemkoDataType.UINT32,
-        scale_type=ScaleType.ENERGY,
     ),
 )
 
 ENERGY_SENSORS_DEVICE_RAW: tuple[RemkoEnergySensorDef, ...] = (
     RemkoEnergySensorDef(
-        key=f"{energy_sensor.key}_raw",
+        key="energy_electrical_raw",
         unit=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         icon="mdi:transmission-tower",
+        entity_category=EntityCategory.DIAGNOSTIC,
         display_precision=0,
         http_req=5105,
         data_type=RemkoDataType.UINT32,
-        scale_type=ScaleType.ENERGY,
-    )
-    for energy_sensor in ENERGY_SENSORS
-    if energy_sensor.is_calculated
+        disabled_by_default=True,
+    ),
 )
 
 HTTP_REQS: Final = list(

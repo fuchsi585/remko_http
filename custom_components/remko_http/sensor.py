@@ -16,7 +16,13 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, SENSORS, RemkoEnergySensorDef, RemkoSensorDef
+from .const import (
+    DOMAIN,
+    ENERGY_SENSORS_DEVICE_RAW,
+    SENSORS,
+    RemkoEnergySensorDef,
+    RemkoSensorDef,
+)
 from .coordinator import DeviceValue, RemkoCoordinator
 from .entity import RemkoBaseEntity
 
@@ -29,7 +35,7 @@ async def async_setup_entry(
     coordinator: RemkoCoordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
 
-    for definition in SENSORS:
+    for definition in (*SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
         entities.append(RemkoSensor(coordinator, definition, entry))
 
     # entities.append(RemkoEnergySensor(coordinator, entry))

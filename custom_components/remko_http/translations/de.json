@@ -87,10 +87,10 @@
         "name": "Thermische Leistung"
       },
       "energy_electrical_raw": {
-        "name": "Electrical energy (Device)"
+        "name": "Elektr. Energie (Gerät)"
       },
       "energy_electrical": {
-        "name": "Calculated energy"
+        "name": "Elektr. Energie"
       },
       "compressor_starts": {
         "name": "Kompressorstarts"

@@ -1,13 +1,9 @@
 """Constants for Remko Heatpump integration."""
 
-from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import Final
 
 from homeassistant.components.sensor import (
-    EntityCategory,
     SensorDeviceClass,
-    SensorStateClass,
 )
 
 
@@ -31,7 +27,6 @@ class RemkoDataType(Enum):
 class ScaleType(StrEnum):
     TEMPERATURE = SensorDeviceClass.TEMPERATURE
     POWER = SensorDeviceClass.POWER
-    ENERGY = SensorDeviceClass.ENERGY
     DEFAULT = "default"
 
     @property
@@ -39,7 +34,6 @@ class ScaleType(StrEnum):
         return {
             "default": 1,
             SensorDeviceClass.TEMPERATURE: 0.1,
-            SensorDeviceClass.ENERGY: 0.001,  # Wh in kWh
             SensorDeviceClass.POWER: 100,
         }[self]
 
