@@ -32,7 +32,7 @@ async def async_setup_entry(
     for definition in SENSORS:
         entities.append(RemkoSensor(coordinator, definition, entry))
 
-    entities.append(RemkoEnergySensor(coordinator, entry))
+    # entities.append(RemkoEnergySensor(coordinator, entry))
 
     async_add_entities(entities)
 

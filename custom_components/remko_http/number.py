@@ -14,11 +14,11 @@ from .const import (
     DOMAIN,
     NUMBERS,
     SLEEP_TIME_AFTER_SET_REQ,
-    Factor,
     RemkoNumberDef,
 )
 from .coordinator import DeviceValue, RemkoCoordinator
 from .entity import RemkoBaseEntity
+from .remko_enums import encode
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,13 +87,11 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
         value = max(
             self._attr_native_min_value, min(self._attr_native_max_value, value)
         )
-        rounded_value = (
-            int(self._round_number(value) / Factor.TEMP)
-            if self._definition.device_class == "temperature"
-            else int(self._round_number(value))
+
+        hex_value = encode(
+            int(self._round_number(value) / self._definition.scale_type.scale),
+            self._definition.data_type,
         )
-        # würde auch hex(rounded_value)[2:].zfill(self._definition.byte_len) gehen
-        hex_value = f"%0{self.response_size}X" % rounded_value
 
         _LOGGER.debug(
             f"Set value for {self._definition.http_req} with '{value}'. HEX-Value: {hex_value}"

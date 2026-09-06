@@ -86,8 +86,11 @@
       "power_thermal": {
         "name": "Thermische Leistung"
       },
+      "energy_electrical_raw": {
+        "name": "Electrical energy (Device)"
+      },
       "energy_electrical": {
-        "name": "Elektrische Energie"
+        "name": "Calculated energy"
       },
       "compressor_starts": {
         "name": "Kompressorstarts"
@@ -134,9 +137,6 @@
           "standby": "Standby",
           "cooling": "Kühlen"
         }
-      },
-      "energy_calc": {
-        "name": "Berechnete Energie"
       }
     },
     "number": {
