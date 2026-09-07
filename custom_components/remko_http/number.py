@@ -1,4 +1,4 @@
-"""Number platform for Remko."""
+"""Remko Number integration."""
 
 from __future__ import annotations
 

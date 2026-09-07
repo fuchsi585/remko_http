@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -17,6 +18,7 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    ENERGY_SENSORS,
     ENERGY_SENSORS_DEVICE_RAW,
     HTTP_REQS,
     SENSORS,
@@ -33,9 +35,8 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class DeviceValue:
     key: str
-    phys_value: Any | None = None
+    phys_value: int | float | str | None = None
     raw_value: str | None = None
-    timestamp: float | None = None
 
 
 class RemkoCoordinator(DataUpdateCoordinator):
@@ -57,6 +58,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         self._firmware: str = ""
         self._serial_number: str = ""
+        self._last_data: dict[str, DeviceValue] | None = None
+        self._last_time: float = None
 
     @property
     def firmware(self):
@@ -84,7 +87,6 @@ class RemkoCoordinator(DataUpdateCoordinator):
             if hex_value := raw_data.get(sensor_definition.http_req):
                 entity_value = DeviceValue(sensor_definition.key)
                 entity_value.raw_value = hex_value
-                entity_value.timestamp = time.monotonic()
                 if sensor_definition.option:
                     entity_value.phys_value = sensor_definition.option.from_hex(
                         hex_value
@@ -100,18 +102,62 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return dict(data)
 
-    def energy_calculation(self) -> dict[str, Any]:
-        pass
+    def energy_calculation(self, data: dict[str, DeviceValue]) -> dict[str, Any]:
+        result: dict[str, DeviceValue] = dict(data)
+
+        for sensor_definition in ENERGY_SENSORS:
+            if not sensor_definition.is_calculated:
+                continue
+
+            if (
+                self._last_data is None
+                or self._last_data.get(sensor_definition.key) is None
+            ):
+                device_value
+                if device_value := result.get(f"{sensor_definition.key}_raw"):
+                    result[sensor_definition.key] = replace(
+                        device_value, key=device_value.key.removesuffix("_raw")
+                    )
+                continue
+
+            if (last_power := self._last_data.get("power")) is None or (
+                current_power := result.get("power")
+            ) is None:
+                return dict(result)
+
+            now = time.monotonic()
+            # Zeitdifferenz in Stunden berechnen
+            timediff_hours = (now - self._last_time) / 3_600
+
+            # Berechnung: (Watt * Stunden) / 1000 = kWh
+            # Trapezregel
+            if current_power.phys_value is not None and timediff_hours > 0:
+                additional_energy = (
+                    (last_power.phys_value + current_power.phys_value)
+                    / 2
+                    * timediff_hours
+                    / 1_000
+                )
+                new_energy = self._last_data.get(sensor_definition.key)
+                # new_energy.raw_value =
+                new_energy.phys_value += round(additional_energy, 2)
+                result[sensor_definition.key] = new_energy
+
+        return dict(result)
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
             result = await self.async_get_data()
+            result = self.energy_calculation(result)
+
+            self._last_time = time.monotonic()
+            self._last_data = dict(result)
 
             return dict(result)
-        except Exception:
+        except Exception as err:
             raise UpdateFailed(
                 "Remko update failed! Retry in 120 seconds.", retry_after=120
-            )
+            ) from err
 
     async def async_set_value(
         self,
