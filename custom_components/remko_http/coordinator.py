@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import logging
 import time
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.util import dt
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
     CONF_HOST,
@@ -39,6 +39,12 @@ class DeviceValue:
     raw_value: str | None = None
 
 
+@dataclass
+class CoordinatorSnapshot:
+    data: dict[str, DeviceValue]
+    timestamp: float
+
+
 class RemkoCoordinator(DataUpdateCoordinator):
     """Fetches data from Remko via HTTP request."""
 
@@ -58,8 +64,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         self._firmware: str = ""
         self._serial_number: str = ""
-        self._last_data: dict[str, DeviceValue] | None = None
-        self._last_time: float = None
+        self._last_snapshot: CoordinatorSnapshot | None = None
 
     @property
     def firmware(self):
@@ -100,36 +105,40 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 )
                 data[entity_value.key] = entity_value
 
-        return dict(data)
+        return data
 
-    def energy_calculation(self, data: dict[str, DeviceValue]) -> dict[str, Any]:
-        result: dict[str, DeviceValue] = dict(data)
+    def energy_calculation(
+        self, data: dict[str, DeviceValue], now: float
+    ) -> dict[str, Any]:
+        # REMKO provides the current accumulated electrical energy via 5105.
+        # Use it as the initial value and continue integrating power (5320)
+        # because the device counter is not reliable for our use case.
+        result: dict[str, DeviceValue] = deepcopy(data)
 
         for sensor_definition in ENERGY_SENSORS:
             if not sensor_definition.is_calculated:
                 continue
 
             if (
-                self._last_data is None
-                or self._last_data.get(sensor_definition.key) is None
+                self._last_snapshot is None
+                or self._last_snapshot.data.get(sensor_definition.key) is None
             ):
-                device_value
                 if device_value := result.get(f"{sensor_definition.key}_raw"):
                     result[sensor_definition.key] = replace(
-                        device_value, key=device_value.key.removesuffix("_raw")
+                        device_value,
+                        key=device_value.key.removesuffix("_raw"),
+                        raw_value=None,
                     )
                 continue
 
-            if (last_power := self._last_data.get("power")) is None or (
+            if (last_power := self._last_snapshot.data.get("power")) is None or (
                 current_power := result.get("power")
             ) is None:
-                return dict(result)
+                return result
 
-            now = time.monotonic()
             # Zeitdifferenz in Stunden berechnen
-            timediff_hours = (now - self._last_time) / 3_600
+            timediff_hours = (now - self._last_snapshot.timestamp) / 3_600
 
-            # Berechnung: (Watt * Stunden) / 1000 = kWh
             # Trapezregel
             if current_power.phys_value is not None and timediff_hours > 0:
                 additional_energy = (
@@ -138,26 +147,33 @@ class RemkoCoordinator(DataUpdateCoordinator):
                     * timediff_hours
                     / 1_000
                 )
-                new_energy = self._last_data.get(sensor_definition.key)
-                # new_energy.raw_value =
-                new_energy.phys_value += round(additional_energy, 2)
+                new_energy = replace(
+                    self._last_snapshot.data.get(sensor_definition.key)
+                )
+                new_energy.phys_value += additional_energy
                 result[sensor_definition.key] = new_energy
 
-        return dict(result)
+        return result
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            result = await self.async_get_data()
-            result = self.energy_calculation(result)
+            raw_result = await self.async_get_data()
+            now = time.monotonic()
+            result = self.energy_calculation(raw_result, now)
 
-            self._last_time = time.monotonic()
-            self._last_data = dict(result)
+            if self._last_snapshot is None:
+                self._last_snapshot = CoordinatorSnapshot(result, now)
+                return deepcopy(result)
 
-            return dict(result)
+            self._last_snapshot.data = deepcopy(result)
+            self._last_snapshot.timestamp = now
+
+            _LOGGER.debug("%s", _format_decoded_data(result))
+
+            return deepcopy(result)
         except Exception as err:
-            raise UpdateFailed(
-                "Remko update failed! Retry in 120 seconds.", retry_after=120
-            ) from err
+            _LOGGER.error(f"Unexpected error: {repr(err)}.")
+            return dict()
 
     async def async_set_value(
         self,
@@ -179,8 +195,25 @@ class RemkoCoordinator(DataUpdateCoordinator):
             )
         except Exception:
             _LOGGER.error(
-                f"Request for {self._url} of ID {sensor_definition.http_req} with {values}"
+                f"Request for {sensor_definition.key} of ID {sensor_definition.http_req} with {values}"
             )
             return None
 
         return response.get(str(sensor_definition.http_req))
+
+
+def _format_decoded_data(data: dict[str, DeviceValue]) -> str:
+    lines = ["Decoded data:"]
+
+    for key, value in sorted(data.items()):
+        lines.append(
+            f"  {key:<25} = {_format_log_value(value.phys_value):<12} (raw: {value.raw_value})"
+        )
+
+    return "\n".join(lines)
+
+
+def _format_log_value(value: Any) -> str:
+    if isinstance(value, float):
+        return f"{value:g}"
+    return str(value)

@@ -11,8 +11,6 @@ from .const import HTTP_REQ_SERIAL_NUMBER
 
 _LOGGER = logging.getLogger(__name__)
 
-PAYLOAD = {"SMT_ID": "0000000000000000"}
-
 
 class RemkoHttpClient:
     def __init__(self, host: str) -> None:
@@ -43,8 +41,10 @@ class RemkoHttpClient:
             return None
 
         result: dict[str, str] = {}
-        payload = PAYLOAD
-        payload.update({"query_list": queries})
+        payload = {
+            "SMT_ID": "0000000000000000",
+            "query_list": list(queries),
+        }
         self._last_query = queries
 
         try:
@@ -59,7 +59,6 @@ class RemkoHttpClient:
                     result[query_id] = data.get(str(query_id), None)
 
                 self._last_response = data
-                _LOGGER.debug(f"Last response: {self._last_response}")
         except (HTTPStatusError, InvalidURL, RequestError) as err:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             self._last_error = err
@@ -71,9 +70,11 @@ class RemkoHttpClient:
     async def async_set_pump_data(
         self, remko_id: int, values: dict
     ) -> dict[str, str] | Any:
-        payload = PAYLOAD
-        payload.update({"query_list": remko_id})
-        payload.update({"values": values})
+        payload = {
+            "SMT_ID": "0000000000000000",
+            "query_list": [remko_id],
+            "values": values,
+        }
         self._last_query = remko_id
 
         try:

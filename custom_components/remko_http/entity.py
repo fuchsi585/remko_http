@@ -63,6 +63,7 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
             "manufacturer": "Remko",
             "model": "WKF120",
             "sw_version": self.coordinator.firmware,
+            "serial_number": self.coordinator.serial_number,
         }
 
         return DeviceInfo(**info)
