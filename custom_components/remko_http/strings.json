@@ -62,6 +62,9 @@
       "heating_actual_temp": {
         "name": "Heating water temperature"
       },
+      "heating_return_temp": {
+        "name": "Heating return temperature"
+      },
       "circulation_temp": {
         "name": "Circulation temperature"
       },
@@ -83,6 +86,9 @@
       "power": {
         "name": "Power"
       },
+      "power_own_use": {
+        "name": "Power own use"
+      },
       "power_thermal": {
         "name": "Thermal power"
       },
@@ -97,6 +103,12 @@
       },
       "runtime_hours": {
         "name": "Runtime"
+      },
+      "fan_speed": {
+        "name": "Fan speed"
+      },
+      "input_voltage": {
+        "name": "Input Voltage"
       },
       "operating_status": {
         "name": "Current operating mode",

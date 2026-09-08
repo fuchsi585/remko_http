@@ -191,6 +191,16 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         scale_type=ScaleType.TEMPERATURE,
     ),
     RemkoSensorDef(
+        key="heating_return_temp",
+        unit=UnitOfTemperature.CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:thermometer-water",
+        http_req=5476,
+        data_type=RemkoDataType.INT16,
+        scale_type=ScaleType.TEMPERATURE,
+    ),
+    RemkoSensorDef(
         key="circulation_temp",
         unit=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
@@ -249,6 +259,24 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         http_req=5066,
         display_precision=0,
     ),
+    RemkoSensorDef(
+        key="fan_speed",
+        unit=UnitOfRatio.PERCENTAGE,
+        device_class=None,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:fan",
+        http_req=5497,  # 5518, 5548, 5616, 5754 - u8array64status_t - Lüfterstatus (außen)
+        display_precision=0,
+    ),
+    # RemkoSensorDef(
+    #     key="input_voltage",
+    #     unit=UnitOfElectricPotential.VOLT,
+    #     device_class=SensorDeviceClass.VOLTAGE,
+    #     state_class=SensorStateClass.MEASUREMENT,
+    #     icon="mdi:transmission-tower",
+    #     http_req=5877,
+    #     display_precision=0,
+    # ),
     # --- Power 5320
     RemkoSensorDef(
         key="power",
@@ -257,7 +285,17 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:transmission-tower",
         display_precision=0,
-        http_req=5320,  # 5060 - max. theoretische Leistung
+        http_req=5320,
+        scale_type=ScaleType.POWER,
+    ),
+    RemkoSensorDef(
+        key="power_own_use",
+        unit=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:transmission-tower",
+        display_precision=0,
+        http_req=5231,
         scale_type=ScaleType.POWER,
     ),
     RemkoSensorDef(
@@ -337,6 +375,9 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
     # ),
 )
 
+# binary_sensor:
+#   5051 - "heat_gen_status": ["Heat generator status", "Wärmeerzeuger Status"]
+
 
 @dataclass(frozen=True)
 class RemkoEnergySensorDef:
@@ -350,9 +391,9 @@ class RemkoEnergySensorDef:
     http_req: int | None = None
     disabled_by_default: bool = False
     option: type[Enum] | None = None
-    is_calculated: bool = False
     data_type: RemkoDataType = RemkoDataType.UINT32
     scale_type: ScaleType = ScaleType.DEFAULT
+    intergrated_power: str | None = None
 
 
 ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
@@ -363,9 +404,9 @@ ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         icon="mdi:transmission-tower",
         display_precision=2,
-        is_calculated=True,
         http_req=5105,
         data_type=RemkoDataType.UINT32,
+        intergrated_power="power",
     ),
 )
 

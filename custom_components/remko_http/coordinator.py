@@ -233,38 +233,40 @@ class RemkoCoordinator(DataUpdateCoordinator):
         result: dict[str, DeviceValue] = deepcopy(data)
         max_diff_time = timedelta(seconds=self._polling * MAX_DIFF_TIME_ENERGY_FACTOR)
 
-        for sensor_definition in ENERGY_SENSORS:
-            if not sensor_definition.is_calculated:
+        for energy_definition in ENERGY_SENSORS:
+            if not energy_definition.intergrated_power:
                 continue
 
             if (
                 self._last_snapshot is None
-                or self._last_snapshot.data.get(sensor_definition.key) is None
+                or self._last_snapshot.data.get(energy_definition.key) is None
             ):
-                if self._last_stored_energies.data.get(sensor_definition.key) is None:
-                    if device_value := result.get(f"{sensor_definition.key}_raw"):
-                        result[sensor_definition.key] = replace(
+                if self._last_stored_energies.data.get(energy_definition.key) is None:
+                    if device_value := result.get(f"{energy_definition.key}_raw"):
+                        result[energy_definition.key] = replace(
                             device_value,
                             key=device_value.key.removesuffix("_raw"),
                             raw_value=None,
                         )
                     continue
 
-                result[sensor_definition.key] = replace(
-                    self._last_stored_energies.data.get(sensor_definition.key)
+                result[energy_definition.key] = replace(
+                    self._last_stored_energies.data.get(energy_definition.key)
                 )
                 continue
 
-            last_energy = self._last_snapshot.data.get(sensor_definition.key)
-            last_power = self._last_snapshot.data.get("power")
-            current_power = result.get("power")
+            last_energy = self._last_snapshot.data.get(energy_definition.key)
+            last_power = self._last_snapshot.data.get(
+                energy_definition.intergrated_power
+            )
+            current_power = result.get(energy_definition.intergrated_power)
 
             if last_power is None or current_power is None:
                 continue
 
             timediff = now - self._last_snapshot.timestamp
             if timediff <= timedelta(0):
-                result[sensor_definition.key] = replace(last_energy)
+                result[energy_definition.key] = replace(last_energy)
                 continue
 
             if timediff > max_diff_time:
@@ -272,7 +274,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 _LOGGER.warning(
                     f"Skipping energy integration because time delta is too large: {timediff}",
                 )
-                result[sensor_definition.key] = replace(last_energy)
+                result[energy_definition.key] = replace(last_energy)
                 continue
 
             # Zeitdifferenz in Stunden berechnen
@@ -282,7 +284,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 _LOGGER.warning(
                     "Skipping energy integration because current power is not available"
                 )
-                result[sensor_definition.key] = replace(last_energy)
+                result[energy_definition.key] = replace(last_energy)
                 continue
 
             # Trapezregel
@@ -294,7 +296,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
             )
             new_energy = replace(last_energy)
             new_energy.phys_value += additional_energy
-            result[sensor_definition.key] = new_energy
+            result[energy_definition.key] = new_energy
 
         return result
 
