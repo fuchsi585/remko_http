@@ -35,7 +35,7 @@ SLEEP_TIME_AFTER_SET_REQ: Final = 0.4
 
 HTTP_REQ_SERIAL_NUMBER: Final = 5700
 HTTP_TIMEOUT: Final = 15
-MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4
+MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * factor
 STORAGE_VERSION: Final = 1
 STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
@@ -249,7 +249,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         http_req=5066,
         display_precision=0,
     ),
-    # --- Power
+    # --- Power 5320
     RemkoSensorDef(
         key="power",
         unit=UnitOfPower.WATT,
@@ -257,7 +257,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:transmission-tower",
         display_precision=0,
-        http_req=5320,
+        http_req=5320,  # 5060 - max. theoretische Leistung
         scale_type=ScaleType.POWER,
     ),
     RemkoSensorDef(
@@ -398,12 +398,5 @@ HTTP_REQS: Final = list(
     }
 )
 
-
-# 1079: {  # hot_water_op_mode
-#     "00": "Automatik Komfort",
-#     "01": "Automatik Eco",
-#     "02": "Solar/PV",
-#     "03": "Aus",
-# },
 
 # "heating_circ_mode": 1972,  # switch

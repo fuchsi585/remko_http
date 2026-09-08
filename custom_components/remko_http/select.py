@@ -75,5 +75,5 @@ class RemkoSelectEntity(RemkoBaseEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Select a new option and write it to the device via HTTP."""
-        _LOGGER.debug(f"Set value for {self._definition.http_req} with '{option}'.")
-        await self.coordinator.async_set_value(self._definition, option)
+        _LOGGER.debug(f"Write value for {self._definition.read_key} with '{option}'.")
+        await self.coordinator.async_write_to_pump(self._definition, option)

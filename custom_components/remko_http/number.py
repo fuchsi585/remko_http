@@ -78,9 +78,7 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Send a new value and write it to the device via HTTP."""
-        value = max(
-            self._attr_native_min_value, min(self._attr_native_max_value, value)
-        )
+        value = max(self._definition.min_value, min(self._definition.max_value, value))
 
-        _LOGGER.debug(f"Set value for {self._definition.http_req} with '{value}'.")
-        await self.coordinator.async_set_value(self._definition, value)
+        _LOGGER.debug(f"Write value for {self._definition.read_key} with '{value}'.")
+        await self.coordinator.async_write_to_pump(self._definition, value)

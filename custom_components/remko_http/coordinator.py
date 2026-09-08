@@ -95,7 +95,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
             },
             timestamp=timestamp,
         )
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Load last snapshot of energies at {self._last_stored_energies.timestamp}"
         )
 
@@ -128,7 +128,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         )
 
         self._storage_dirty = False
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Save last snapshot of energies at {snapshot.timestamp.isoformat()}"
         )
 
@@ -146,10 +146,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
         if self._session is None:
             self._session = get_async_client(self.hass, verify_ssl=False)
 
-        response = await self._async_get_raw_pump_data([HTTP_REQ_SERIAL_NUMBER])
+        response = await self._async_read_raw_pump_data([HTTP_REQ_SERIAL_NUMBER])
         self._serial_number = response.get(HTTP_REQ_SERIAL_NUMBER, "unknown")
 
-    async def _async_get_raw_pump_data(
+    async def _async_read_raw_pump_data(
         self, queries: list[int]
     ) -> dict[str, str] | None:
         if not queries or not self._session:
@@ -181,7 +181,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return dict(result)
 
-    async def _async_set_raw_pump_data(
+    async def _async_write_raw_pump_data(
         self, remko_id: int, values: dict
     ) -> dict[str, str] | None:
         payload = {
@@ -203,7 +203,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return response
 
-    def _sanitize_data(self, raw_data: dict[str, str]) -> dict[str, DeviceValue]:
+    def _decode_device_values(self, raw_data: dict[str, str]) -> dict[str, DeviceValue]:
         data: dict = {}
         for sensor_definition in (*SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
             if hex_value := raw_data.get(sensor_definition.http_req):
@@ -299,13 +299,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            raw_data = await self._async_get_raw_pump_data(HTTP_REQS)
+            raw_data = await self._async_read_raw_pump_data(HTTP_REQS)
             if raw_data is None:
                 raise UpdateFailed("Unable to retrieve data from Remko")
 
-            sanitize_data = self._sanitize_data(raw_data)
+            decoded_values = self._decode_device_values(raw_data)
             now = dt.now()
-            result = self._energy_calculation(sanitize_data, now)
+            result = self._energy_calculation(decoded_values, now)
 
             self._last_snapshot = CoordinatorSnapshot(
                 data=deepcopy(result), timestamp=now
@@ -329,7 +329,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Unexpected error: %s", err, exc_info=True)
             raise UpdateFailed("Unexpected error communicating with Remko") from err
 
-    async def async_set_value(
+    async def async_write_to_pump(
         self,
         sensor_definition: RemkoSelectDef | RemkoNumberDef | RemkoSensorDef,
         phys_value: str,
@@ -345,10 +345,12 @@ class RemkoCoordinator(DataUpdateCoordinator):
         values = {str(sensor_definition.http_req): raw_value}
 
         try:
-            await self._async_set_raw_pump_data(sensor_definition.http_req, values)
+            await self._async_write_raw_pump_data(sensor_definition.http_req, values)
             await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
 
-            response = await self._async_get_raw_pump_data([sensor_definition.http_req])
+            response = await self._async_read_raw_pump_data(
+                [sensor_definition.http_req]
+            )
             response_data = response.get(sensor_definition.http_req)
 
             if sensor_definition.option:
