@@ -15,8 +15,9 @@ from .const import (
     RemkoEnergySensorDef,
     RemkoSensorDef,
 )
-from .coordinator import DeviceValue, RemkoCoordinator
+from .coordinator import RemkoCoordinator
 from .entity import RemkoBaseEntity
+from .remko_enums import DeviceValue
 
 
 async def async_setup_entry(

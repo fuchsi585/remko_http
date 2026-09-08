@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 
 from homeassistant.components.select import SelectEntity
@@ -13,11 +12,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     DOMAIN,
     SELECTORS,
-    SLEEP_TIME_AFTER_SET_REQ,
     RemkoSelectDef,
 )
-from .coordinator import DeviceValue, RemkoCoordinator
+from .coordinator import RemkoCoordinator
 from .entity import RemkoBaseEntity
+from .remko_enums import DeviceValue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,8 +75,5 @@ class RemkoSelectEntity(RemkoBaseEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Select a new option and write it to the device via HTTP."""
-
         _LOGGER.debug(f"Set value for {self._definition.http_req} with '{option}'.")
         await self.coordinator.async_set_value(self._definition, option)
-        await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
-        await self.coordinator.async_refresh()

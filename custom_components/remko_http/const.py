@@ -34,6 +34,10 @@ DEFAULT_SCAN_INTERVAL: Final = 20  # seconds
 SLEEP_TIME_AFTER_SET_REQ: Final = 0.4
 
 HTTP_REQ_SERIAL_NUMBER: Final = 5700
+HTTP_TIMEOUT: Final = 15
+MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4
+STORAGE_VERSION: Final = 1
+STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
 # @dataclass(frozen=True)
 # class RemkoSwitchDef:

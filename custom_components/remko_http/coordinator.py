@@ -2,20 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from copy import deepcopy
-from dataclasses import dataclass, replace, asdict
-from datetime import timedelta, datetime
+from dataclasses import asdict, replace
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.util import dt
+from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.helpers.httpx_client import get_async_client
-from httpx import HTTPStatusError, InvalidURL, RequestError, AsyncClient
+from homeassistant.util import dt
+from httpx import AsyncClient, HTTPStatusError, InvalidURL, RequestError
 
 from .const import (
     CONF_HOST,
@@ -24,33 +26,22 @@ from .const import (
     DOMAIN,
     ENERGY_SENSORS,
     ENERGY_SENSORS_DEVICE_RAW,
-    HTTP_REQS,
     HTTP_REQ_SERIAL_NUMBER,
+    HTTP_REQS,
+    HTTP_TIMEOUT,
+    MAX_DIFF_TIME_ENERGY_FACTOR,
     SENSORS,
+    SLEEP_TIME_AFTER_SET_REQ,
+    STORAGE_KEYS,
+    STORAGE_VERSION,
     RemkoNumberDef,
     RemkoSelectDef,
     RemkoSensorDef,
 )
-from .remko_enums import decode
+from .remko_enums import CoordinatorSnapshot, DeviceValue
+from .utils import decode, encode, format_decoded_data, parse_datetime, round_number
 
 _LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class DeviceValue:
-    key: str
-    phys_value: int | float | str | None = None
-    raw_value: str | None = None
-
-
-@dataclass
-class CoordinatorSnapshot:
-    data: dict[str, DeviceValue]
-    timestamp: datetime | None
-
-
-HTTP_TIMEOUT = 15
-STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
 
 class RemkoCoordinator(DataUpdateCoordinator):
@@ -63,13 +54,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
     ) -> None:
 
         self._polling = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-        self._firmware: str = ""
-        self._serial_number: str = ""
+        self._firmware: str | None = None
+        self._serial_number: str | None = None
         self._last_snapshot: CoordinatorSnapshot | None = None
         self._url: str = f"http://{entry.data.get(CONF_HOST)}/cgi-bin/webapi.cgi"
         self._session: AsyncClient | None = None
         self._store: Store[dict[str, Any]] = Store(
-            hass, 1, f"{DOMAIN}.{entry.entry_id}.energy_values"
+            hass, STORAGE_VERSION, f"{DOMAIN}.energy_values"
         )
         self._last_stored_energies: CoordinatorSnapshot = CoordinatorSnapshot({}, None)
         # Merker, ob seit dem letzten Save etwas geändert wurde.
@@ -105,7 +96,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
             timestamp=timestamp,
         )
         _LOGGER.info(
-            f"Load last_snapshot of energies at {self._last_stored_energies.timestamp}"
+            f"Load last snapshot of energies at {self._last_stored_energies.timestamp}"
         )
 
     async def _async_storage_flush(self, _now: datetime) -> None:
@@ -138,7 +129,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         self._storage_dirty = False
         _LOGGER.info(
-            f"Save last_snapshot of energies at {snapshot.timestamp.isoformat()}"
+            f"Save last snapshot of energies at {snapshot.timestamp.isoformat()}"
         )
 
     async def async_client_shutdown(self) -> None:
@@ -157,7 +148,6 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         response = await self._async_get_raw_pump_data([HTTP_REQ_SERIAL_NUMBER])
         self._serial_number = response.get(HTTP_REQ_SERIAL_NUMBER, "unknown")
-        self._firmware = response.get("SMT_VERSION", "unknown")
 
     async def _async_get_raw_pump_data(
         self, queries: list[int]
@@ -182,6 +172,9 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 for query_id in queries:
                     result[query_id] = data.get(str(query_id))
 
+            if self._firmware is None:
+                self._firmware = data.get("SMT_VERSION", "unknown")
+
         except (HTTPStatusError, InvalidURL, RequestError) as err:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             return None
@@ -201,11 +194,14 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 self._url, json=payload, timeout=HTTP_TIMEOUT
             )
             response.raise_for_status()
+            response = response.json()
+            if "values" in response:
+                response.update(response.pop("values"))
         except (HTTPStatusError, InvalidURL, RequestError) as err:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             return None
 
-        return response.json()
+        return response
 
     def _sanitize_data(self, raw_data: dict[str, str]) -> dict[str, DeviceValue]:
         data: dict = {}
@@ -228,13 +224,14 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return data
 
-    async def async_energy_calculation(
+    def _energy_calculation(
         self, data: dict[str, DeviceValue], now: datetime
     ) -> dict[str, DeviceValue]:
         # REMKO provides the current accumulated electrical energy via 5105.
         # Use it as the initial value and continue integrating power (5320)
         # because the device counter is not reliable for our use case.
         result: dict[str, DeviceValue] = deepcopy(data)
+        max_diff_time = timedelta(seconds=self._polling * MAX_DIFF_TIME_ENERGY_FACTOR)
 
         for sensor_definition in ENERGY_SENSORS:
             if not sensor_definition.is_calculated:
@@ -258,29 +255,45 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 )
                 continue
 
-            if (last_power := self._last_snapshot.data.get("power")) is None or (
-                current_power := result.get("power")
-            ) is None:
-                return result
+            last_energy = self._last_snapshot.data.get(sensor_definition.key)
+            last_power = self._last_snapshot.data.get("power")
+            current_power = result.get("power")
+
+            if last_power is None or current_power is None:
+                continue
+
+            timediff = now - self._last_snapshot.timestamp
+            if timediff <= timedelta(0):
+                continue
+
+            if timediff > max_diff_time:
+                # Hier vielleicht auf den Gerätesensor wechseln, falls das gap zu groß wird?
+                _LOGGER.warning(
+                    f"Skipping energy integration because time delta is too large: {timediff}",
+                )
+                result[sensor_definition.key] = replace(last_energy)
+                continue
 
             # Zeitdifferenz in Stunden berechnen
-            timediff_hours = (
-                now - self._last_snapshot.timestamp
-            ).total_seconds() / 3_600
+            timediff_hours = timediff.total_seconds() / 3_600
+
+            if current_power.phys_value is None:
+                _LOGGER.warning(
+                    "Skipping energy integration because current power is not available"
+                )
+                result[sensor_definition.key] = replace(last_energy)
+                continue
 
             # Trapezregel
-            if current_power.phys_value is not None and timediff_hours > 0:
-                additional_energy = (
-                    (last_power.phys_value + current_power.phys_value)
-                    / 2
-                    * timediff_hours
-                    / 1_000
-                )
-                new_energy = replace(
-                    self._last_snapshot.data.get(sensor_definition.key)
-                )
-                new_energy.phys_value += additional_energy
-                result[sensor_definition.key] = new_energy
+            additional_energy = (
+                (last_power.phys_value + current_power.phys_value)
+                / 2
+                * timediff_hours
+                / 1_000
+            )
+            new_energy = replace(last_energy)
+            new_energy.phys_value += additional_energy
+            result[sensor_definition.key] = new_energy
 
         return result
 
@@ -292,13 +305,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
             sanitize_data = self._sanitize_data(raw_data)
             now = dt.now()
-            result = await self.async_energy_calculation(sanitize_data, now)
+            result = self._energy_calculation(sanitize_data, now)
 
             self._last_snapshot = CoordinatorSnapshot(
                 data=deepcopy(result), timestamp=now
             )
 
-            _LOGGER.debug("%s", _format_decoded_data(result))
+            _LOGGER.debug("%s", format_decoded_data(result))
 
             self._storage_dirty = True
             # Timer erst nach dem ersten erfolgreichen Update starten.
@@ -319,52 +332,51 @@ class RemkoCoordinator(DataUpdateCoordinator):
     async def async_set_value(
         self,
         sensor_definition: RemkoSelectDef | RemkoNumberDef | RemkoSensorDef,
-        value: str,
-    ) -> str:
+        phys_value: str,
+    ) -> None:
+
         if sensor_definition.option:
-            values = {
-                str(sensor_definition.http_req): sensor_definition.option(
-                    value
-                ).hex_value
-            }
+            raw_value = sensor_definition.option(phys_value).hex_value
         else:
-            values = {str(sensor_definition.http_req): value}
+            raw_value = encode(
+                int(round_number(phys_value) / sensor_definition.scale_type.scale),
+                sensor_definition.data_type,
+            )
+        values = {str(sensor_definition.http_req): raw_value}
 
         try:
-            response = await self._async_set_raw_pump_data(
-                sensor_definition.http_req, values
-            )
-        except Exception:
+            await self._async_set_raw_pump_data(sensor_definition.http_req, values)
+            await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
+
+            response = await self._async_get_raw_pump_data([sensor_definition.http_req])
+            response_data = response.get(sensor_definition.http_req)
+
+            if sensor_definition.option:
+                response_value = DeviceValue(
+                    key=sensor_definition.read_key,
+                    phys_value=sensor_definition.option.from_hex(response_data),
+                    raw_value=response_data,
+                )
+            else:
+                response_value = DeviceValue(
+                    key=sensor_definition.read_key,
+                    phys_value=decode(response_data, sensor_definition.data_type)
+                    * sensor_definition.scale_type.scale,
+                    raw_value=response_data,
+                )
+
+            if raw_value != response_value.raw_value:
+                raise HomeAssistantError(
+                    f"Request for {sensor_definition.key} of ID {sensor_definition.http_req} acknowledged value '{phys_value}' "
+                    f"but read back '{response_value.phys_value}'"
+                )
+            updated_data = {
+                **(self.data or {}),
+                sensor_definition.read_key: response_value,
+            }
+            self.async_set_updated_data(updated_data)
+        except Exception as err:
             _LOGGER.error(
-                f"Request for {sensor_definition.key} of ID {sensor_definition.http_req} with {values}"
+                f"Failed to write for {sensor_definition.key} of ID {sensor_definition.http_req} with {values}: {err}"
             )
-            return None
-
-        return response.get(str(sensor_definition.http_req))
-
-
-def _format_decoded_data(data: dict[str, DeviceValue]) -> str:
-    lines = ["Decoded data:"]
-
-    for key, value in sorted(data.items()):
-        lines.append(
-            f"  {key:<25} = {_format_log_value(value.phys_value):<12} (raw: {value.raw_value})"
-        )
-
-    return "\n".join(lines)
-
-
-def _format_log_value(value: Any) -> str:
-    if isinstance(value, float):
-        return f"{value:g}"
-    return str(value)
-
-
-def parse_datetime(raw: Any) -> datetime | None:
-    """Parse an ISO format datetime string into a datetime object."""
-    if not raw:
-        return None
-    try:
-        return datetime.fromisoformat(raw)
-    except TypeError, ValueError:
-        return None
+            raise HomeAssistantError(f"Error writing data to heat pump: {err}")

@@ -1,10 +1,25 @@
 """Constants for Remko Heatpump integration."""
 
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum, StrEnum
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
 )
+
+
+@dataclass
+class DeviceValue:
+    key: str
+    phys_value: int | float | str | None = None
+    raw_value: str | None = None
+
+
+@dataclass
+class CoordinatorSnapshot:
+    data: dict[str, DeviceValue]
+    timestamp: datetime | None
 
 
 class RemkoDataType(Enum):
@@ -152,31 +167,3 @@ class OperatingState(StrEnum):
                 return state
 
         return f"Status N/A: {value}"
-
-
-def decode(value: str, data_type: RemkoDataType) -> int:
-    raw = bytes.fromhex(value)
-
-    if len(raw) != data_type.response_size:
-        raise ValueError(
-            f"{data_type.name} expects {data_type.response_size} bytes, got {len(raw)}"
-        )
-
-    return int.from_bytes(
-        raw,
-        byteorder="big",
-        signed=data_type.signed,
-    )
-
-
-def encode(value: int, data_type: RemkoDataType) -> str:
-    try:
-        raw = value.to_bytes(
-            length=data_type.response_size,
-            byteorder="big",
-            signed=data_type.signed,
-        )
-    except OverflowError as err:
-        raise ValueError(f"{value} does not fit into {data_type.name}") from err
-
-    return raw.hex().upper()
