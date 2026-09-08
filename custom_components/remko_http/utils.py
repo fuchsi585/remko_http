@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from .remko_enums import RemkoDataType, DeviceValue
+from .remko_enums import DeviceValue, RemkoDataType
 
 
 def decode(value: str, data_type: RemkoDataType) -> int:

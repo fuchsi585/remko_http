@@ -264,6 +264,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
             timediff = now - self._last_snapshot.timestamp
             if timediff <= timedelta(0):
+                result[sensor_definition.key] = replace(last_energy)
                 continue
 
             if timediff > max_diff_time:
