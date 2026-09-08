@@ -2,10 +2,8 @@
 
 import pytest
 
-from custom_components.remko_http.remko_enums import (
-    RemkoDataType,
-    ScaleType
-)
+from custom_components.remko_http.remko_enums import RemkoDataType, ScaleType
+
 
 @pytest.mark.parametrize(
     ("hex_value", "data_type", "expected"),
@@ -37,6 +35,7 @@ def test_decode_device_value_scaling(hex_value, scale, expected) -> None:
 
     assert decode(hex_value, RemkoDataType.UINT16) * scale.scale == expected
 
+
 @pytest.mark.parametrize(
     ("value", "data_type", "expected"),
     [
@@ -59,12 +58,14 @@ def test_encode_numeric_value(value, data_type, expected) -> None:
     [
         (1.0, ScaleType.TEMPERATURE, "000A"),
         (1.2, ScaleType.TEMPERATURE, "000A"),
-        (1.7, ScaleType.TEMPERATURE, "000F"), # auf 1.5
+        (1.7, ScaleType.TEMPERATURE, "000F"),  # auf 1.5
         (200, ScaleType.POWER, "0002"),
     ],
 )
-def test_decode_device_value_scaling(value, scale, expected) -> None:
+def test_encode_device_value_scaling(value, scale, expected) -> None:
     """Test sensor values are decoded and scaled."""
     from custom_components.remko_http.utils import encode, round_number
 
-    assert encode(int(round_number(value) / scale.scale), RemkoDataType.UINT16) == expected
+    assert (
+        encode(int(round_number(value) / scale.scale), RemkoDataType.UINT16) == expected
+    )
