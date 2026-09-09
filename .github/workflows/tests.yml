@@ -6,14 +6,13 @@ on:
   pull_request:
     branches: [main]
 
-
-permissions:
-    contents: read
-
 jobs:
   prek:
     name: Prek
     runs-on: ubuntu-latest
+
+    permissions:
+        contents: read
 
     steps:
       - name: Check out repository
@@ -35,7 +34,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install pytest
         run: |
