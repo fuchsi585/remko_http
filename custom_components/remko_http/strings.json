@@ -46,6 +46,11 @@
     }
   },
   "entity": {
+    "button": {
+      "action_heat_warm_water": {
+        "name": "1 x DHW heating"
+      }
+    },
     "sensor": {
       "cold_hotter_state": {
         "name": "Warmer / cooler"

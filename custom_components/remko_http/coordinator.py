@@ -20,6 +20,7 @@ from homeassistant.util import dt
 from httpx import AsyncClient, HTTPStatusError, InvalidURL, RequestError
 
 from .const import (
+    BUTTONS,
     CONF_HOST,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
@@ -34,6 +35,7 @@ from .const import (
     SLEEP_TIME_AFTER_SET_REQ,
     STORAGE_KEYS,
     STORAGE_VERSION,
+    RemkoButtonDef,
     RemkoNumberDef,
     RemkoSelectDef,
     RemkoSensorDef,
@@ -205,7 +207,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     def _decode_device_values(self, raw_data: dict[str, str]) -> dict[str, DeviceValue]:
         data: dict = {}
-        for sensor_definition in (*SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
+        for sensor_definition in (*BUTTONS, *SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
             if hex_value := raw_data.get(sensor_definition.http_req):
                 entity_value = DeviceValue(sensor_definition.key)
                 entity_value.raw_value = hex_value
@@ -216,10 +218,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
                     data[entity_value.key] = entity_value
                     continue
 
-                entity_value.phys_value = (
-                    decode(hex_value, sensor_definition.data_type)
-                    * sensor_definition.scale_type.scale
-                )
+                if sensor_definition.data_type:
+                    entity_value.phys_value = (
+                        decode(hex_value, sensor_definition.data_type)
+                        * sensor_definition.scale_type.scale
+                    )
+                    data[entity_value.key] = entity_value
+                    continue
                 data[entity_value.key] = entity_value
 
         return data
@@ -367,7 +372,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def async_write_to_pump(
         self,
-        sensor_definition: RemkoSelectDef | RemkoNumberDef | RemkoSensorDef,
+        sensor_definition: RemkoButtonDef
+        | RemkoSelectDef
+        | RemkoNumberDef
+        | RemkoSensorDef,
         phys_value: str,
     ) -> None:
 

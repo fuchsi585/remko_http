@@ -18,6 +18,7 @@ homeassistant_const = types.ModuleType("homeassistant.const")
 class Platform:
     """Minimal Home Assistant Platform stub."""
 
+    BUTTON = "button"
     NUMBER = "number"
     SELECT = "select"
     SENSOR = "sensor"
