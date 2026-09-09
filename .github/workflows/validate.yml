@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@28802689a136bfcdb721715abd713740beecbe07 # v7.0.1 predecessor
+        uses: actions/checkout@v7
       - name: Run Hassfest
-        uses: home-assistant/actions/hassfest@a7c616ce81ccda50150bf1595786c71b1883fabb # master
+        uses: home-assistant/actions/hassfest@master
 
   hacs:
     name: HACS Validation
