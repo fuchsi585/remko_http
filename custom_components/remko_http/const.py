@@ -45,6 +45,37 @@ STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
 
 @dataclass(frozen=True)
+class RemkoButtonDef:
+    key: str
+    read_key: str
+    unit: str | None = None
+    icon: str | None = None
+    http_req: int | None = None
+    option: type[Enum] | None = None
+    disabled_by_default: bool = False
+    data_type: RemkoDataType | None = None
+    scale_type: ScaleType | None = None
+    reset_delay: int | None = None
+    enable_key: str | None = None
+    enable_value: type[Enum] | None = None
+
+
+BUTTONS: list[RemkoButtonDef] = [
+    RemkoButtonDef(
+        key="action_heat_warm_water",
+        read_key="action_heat_warm_water",
+        icon="mdi:heat-wave",
+        http_req=5693,
+        option=SwitchState,
+        data_type=RemkoDataType.UINT8,
+        reset_delay=1,
+        enable_key="hot_water_req_state",
+        enable_value=HotWaterReqState.STANDBY,
+    ),
+]
+
+
+@dataclass(frozen=True)
 class RemkoSelectDef:
     key: str
     read_key: str
@@ -432,6 +463,7 @@ HTTP_REQS: Final = list(
     {
         definition.http_req
         for definition in (
+            *BUTTONS,
             *SELECTORS,
             *SENSORS,
             *NUMBERS,

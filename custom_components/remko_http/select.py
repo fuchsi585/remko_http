@@ -50,10 +50,6 @@ class RemkoSelectEntity(RemkoBaseEntity, SelectEntity):
         self._last_value: str | None = None
         self._attr_current_option = self.native_value
 
-    @property
-    def byte_size(self):
-        return len(self.coordinator.data.get(self._definition.read_key).raw_value)
-
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
