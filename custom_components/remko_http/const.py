@@ -39,15 +39,6 @@ MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * factor
 STORAGE_VERSION: Final = 1
 STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
-# @dataclass(frozen=True)
-# class RemkoSwitchDef:
-#     key: str
-#     state_key: str
-#     unit: str | None = None
-#     icon: str | None = None
-#     http_req: int | None = None
-
-
 # # SWITCHES: list[RemkoSwitchDef] = [
 # #     RemkoSwitchDef("set_action_heat_warm_water", "", "", http_req=5693)
 # # ]
@@ -129,7 +120,7 @@ class RemkoSensorDef:
     state_class: str | None = None
     icon: str | None = None
     entity_category: str | None = None
-    display_precision: int | None = 1
+    display_precision: int = 1
     http_req: int | None = None
     disabled_by_default: bool = False
     option: type[Enum] | None = None
@@ -396,7 +387,7 @@ class RemkoEnergySensorDef:
     state_class: str | None = None
     icon: str | None = None
     entity_category: str | None = None
-    display_precision: int | None = 1
+    display_precision: int = 2
     http_req: int | None = None
     disabled_by_default: bool = False
     option: type[Enum] | None = None
@@ -404,6 +395,7 @@ class RemkoEnergySensorDef:
     scale_type: ScaleType = ScaleType.DEFAULT
     intergrated_power: str | None = None
     source_key: str | None = None
+    max_energy_stored_diff: int | None = None
 
 
 ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
@@ -413,11 +405,11 @@ ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         icon="mdi:transmission-tower",
-        display_precision=2,
         http_req=5105,
         data_type=RemkoDataType.UINT32,
         intergrated_power="power",
         source_key="energy_electrical_raw",
+        max_energy_stored_diff=2,
     ),
 )
 

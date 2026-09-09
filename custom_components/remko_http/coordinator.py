@@ -265,10 +265,9 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 # und Zeitstempel > polling * 4  (z.B. 80s),
                 # dann wird mit dem aktuellen Gerätewert initialisiert
                 # sonst wird der gespeicherte Wert genommen
-                MAX_ENERGY_STORED_DIFF = 2
                 if (
                     stored_timediff > max_diff_time
-                    and stored_diff_energy > MAX_ENERGY_STORED_DIFF
+                    and stored_diff_energy > energy_definition.max_energy_stored_diff
                 ):
                     seconds = int(stored_timediff.total_seconds())
                     _LOGGER.warning(
@@ -278,7 +277,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                             seconds // 3600, (seconds % 3600) // 60, seconds % 60
                         ),
                         round(stored_diff_energy, 2),
-                        MAX_ENERGY_STORED_DIFF,
+                        energy_definition.max_energy_stored_diff,
                         round(act_stored_energy.phys_value, 2),
                         round(act_device_energy.phys_value, 2),
                     )
