@@ -171,7 +171,7 @@ def test_energy_calculation_initializes_from_raw_energy() -> None:
     assert result["energy_electrical"].raw_value is None
 
 
-def test_energy_calculation_uses_stored_energy_when_available() -> None:
+def test_energy_calculation_uses_available_stored_energy_negative_energy_diff() -> None:
     """Test a stored energy value is preferred over the raw device counter."""
     coordinator = _coordinator()
     coordinator._last_stored_energies = CoordinatorSnapshot(
@@ -198,10 +198,86 @@ def test_energy_calculation_uses_stored_energy_when_available() -> None:
     assert result["energy_electrical"].phys_value == 42.0
 
 
+def test_energy_calculation_uses_device_value_large_positiv_energy_diff() -> None:
+    """Test a stored energy value is preferred over the raw device counter."""
+    coordinator = _coordinator()
+    coordinator._last_stored_energies = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=42.0,
+            )
+        },
+        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=timezone.utc),
+    )
+
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    coordinator._last_snapshot = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=50.0,
+            ),
+            "power": DeviceValue("power", phys_value=100),
+        },
+        timestamp=timestamp,
+    )
+
+    result = coordinator._energy_calculation(
+        {
+            "energy_electrical_raw": DeviceValue(
+                "energy_electrical_raw",
+                phys_value=50.0,
+            ),
+            "power": DeviceValue("power", phys_value=200),
+        },
+        timestamp + timedelta(seconds=81),
+    )
+
+    assert result["energy_electrical"].phys_value == 50.0
+
+
+def test_energy_calculation_uses_stored_value_with_lower_device_value() -> None:
+    """Test a stored energy value is preferred over the raw device counter."""
+    coordinator = _coordinator()
+    coordinator._last_stored_energies = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=42.0,
+            )
+        },
+        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=timezone.utc),
+    )
+
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    result = coordinator._energy_calculation(
+        {
+            "energy_electrical_raw": DeviceValue(
+                "energy_electrical_raw",
+                phys_value=20.0,
+            ),
+            "power": DeviceValue("power", phys_value=200),
+        },
+        timestamp + timedelta(seconds=81),
+    )
+
+    assert result["energy_electrical"].phys_value == 42.0
+
+
 def test_energy_calculation_integrates_power_with_trapezoid() -> None:
     """Test power is integrated with the trapezoidal rule."""
     coordinator = _coordinator()
     timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    coordinator._last_stored_energies = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=10.0,
+            )
+        },
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+    )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue(
@@ -214,11 +290,11 @@ def test_energy_calculation_integrates_power_with_trapezoid() -> None:
     )
 
     result = coordinator._energy_calculation(
-        {"power": DeviceValue("power", phys_value=200)},
+        {"power": DeviceValue("power", phys_value=10000)},
         timestamp + timedelta(seconds=20),
     )
 
-    expected = 10.0 + ((100 + 200) / 2) * (20 / 3600) / 1000
+    expected = 10.0 + ((100 + 10000) / 2) * (20 / 3600) / 1000
     assert result["energy_electrical"].phys_value == pytest.approx(expected)
 
 
@@ -226,6 +302,15 @@ def test_energy_calculation_skips_large_time_gap() -> None:
     """Test a large polling gap does not create a false energy spike."""
     coordinator = _coordinator()
     timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    coordinator._last_stored_energies = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=10.0,
+            )
+        },
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+    )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue("energy_electrical", phys_value=10.0),
@@ -246,6 +331,15 @@ def test_energy_calculation_skips_non_positive_time_delta() -> None:
     """Test zero and negative time deltas do not change energy."""
     coordinator = _coordinator()
     timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    coordinator._last_stored_energies = CoordinatorSnapshot(
+        data={
+            "energy_electrical": DeviceValue(
+                "energy_electrical",
+                phys_value=10.0,
+            )
+        },
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+    )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue("energy_electrical", phys_value=10.0),
