@@ -237,22 +237,56 @@ class RemkoCoordinator(DataUpdateCoordinator):
             if not energy_definition.intergrated_power:
                 continue
 
-            if (
-                self._last_snapshot is None
-                or self._last_snapshot.data.get(energy_definition.key) is None
-            ):
-                if self._last_stored_energies.data.get(energy_definition.key) is None:
-                    if device_value := result.get(f"{energy_definition.key}_raw"):
-                        result[energy_definition.key] = replace(
-                            device_value,
-                            key=device_value.key.removesuffix("_raw"),
-                            raw_value=None,
-                        )
+            # keine Storage-Wert vorhanden,
+            # dann wird mit Gerätewert initialisieren
+            if self._last_stored_energies.data.get(energy_definition.key) is None:
+                if (device_value := result.get(energy_definition.source_key)) is None:
                     continue
 
                 result[energy_definition.key] = replace(
-                    self._last_stored_energies.data.get(energy_definition.key)
+                    device_value,
+                    key=energy_definition.key,
+                    raw_value=None,
                 )
+                continue
+
+            # kein letzten Snapshot-Wert vorhanden,
+            # dann wird mit dem letzten gespeicherten Wert initialisiert
+            if self._last_snapshot is None:
+                act_device_energy = result.get(energy_definition.source_key)
+                act_stored_energy = self._last_stored_energies.data.get(
+                    energy_definition.key
+                )
+                stored_timediff = now - self._last_stored_energies.timestamp
+                stored_diff_energy = (
+                    act_device_energy.phys_value - act_stored_energy.phys_value
+                )
+                # Wenn Differenz > 2kWh zwischen Gerät und Berechnung
+                # und Zeitstempel > polling * 4  (z.B. 80s),
+                # dann wird mit dem aktuellen Gerätewert initialisiert
+                # sonst wird der gespeicherte Wert genommen
+                MAX_ENERGY_STORED_DIFF = 2
+                if (
+                    stored_timediff > max_diff_time
+                    and stored_diff_energy > MAX_ENERGY_STORED_DIFF
+                ):
+                    seconds = int(stored_timediff.total_seconds())
+                    _LOGGER.warning(
+                        "New initial value '%s': time delta (%s) and energy difference (%s kWh > %s kWh) too large: %s kWh → %s kWh",
+                        energy_definition.key,
+                        "{:02d}:{:02d}:{:02d}".format(
+                            seconds // 3600, (seconds % 3600) // 60, seconds % 60
+                        ),
+                        round(stored_diff_energy, 2),
+                        MAX_ENERGY_STORED_DIFF,
+                        round(act_stored_energy.phys_value, 2),
+                        round(act_device_energy.phys_value, 2),
+                    )
+                    result[energy_definition.key] = replace(act_device_energy)
+                else:
+                    result[energy_definition.key] = replace(
+                        self._last_stored_energies.data.get(energy_definition.key)
+                    )
                 continue
 
             last_energy = self._last_snapshot.data.get(energy_definition.key)

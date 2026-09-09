@@ -403,6 +403,7 @@ class RemkoEnergySensorDef:
     data_type: RemkoDataType = RemkoDataType.UINT32
     scale_type: ScaleType = ScaleType.DEFAULT
     intergrated_power: str | None = None
+    source_key: str | None = None
 
 
 ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
@@ -416,6 +417,7 @@ ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
         http_req=5105,
         data_type=RemkoDataType.UINT32,
         intergrated_power="power",
+        source_key="energy_electrical_raw",
     ),
 )
 
