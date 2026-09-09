@@ -1,6 +1,7 @@
 """Tests for Remko Heatpump constants."""
 
 from custom_components.remko_http.const import (
+    BUTTONS,
     CONF_HOST,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
@@ -126,6 +127,7 @@ def test_http_requests_contain_all_definitions() -> None:
     expected = {
         definition.http_req
         for definition in (
+            *BUTTONS,
             *SELECTORS,
             *SENSORS,
             *NUMBERS,
