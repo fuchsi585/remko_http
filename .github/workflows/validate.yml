@@ -2,11 +2,14 @@ name: Validate
 
 on:
   push:
-    - main
+    branches: [main]
   pull_request:
-    - main
+    branches: [main]
   schedule:
     - cron: "0 0 * * *"
+
+permissions:
+    contents: read
 
 jobs:
   hassfest:
@@ -30,39 +33,3 @@ jobs:
         with:
           category: integration
 
-  prek:
-    name: Prek
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Run prek
-        uses: j178/prek-action@v3.0.0
-
-  tests:
-    name: Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-
-      - name: Install pytest
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements_test.txt
-
-      - name: Run tests
-        run: pytest

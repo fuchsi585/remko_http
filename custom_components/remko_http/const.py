@@ -20,10 +20,10 @@ from homeassistant.const import (
 from .remko_enums import (
     HotWaterReqState,
     OperatingState,
-    PumpState,
     RemkoDataType,
     RoomClimateMode,
     ScaleType,
+    SwitchState,
 )
 
 CONF_HOST: Final = "host"
@@ -191,12 +191,22 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         scale_type=ScaleType.TEMPERATURE,
     ),
     RemkoSensorDef(
-        key="heating_return_temp",
+        key="mixed_return_temp",
         unit=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:thermometer-water",
         http_req=5476,
+        data_type=RemkoDataType.INT16,
+        scale_type=ScaleType.TEMPERATURE,
+    ),
+    RemkoSensorDef(
+        key="mixed_flow_temp",
+        unit=UnitOfTemperature.CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:thermometer-water",
+        http_req=5741,
         data_type=RemkoDataType.INT16,
         scale_type=ScaleType.TEMPERATURE,
     ),
@@ -260,33 +270,12 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         display_precision=0,
     ),
     RemkoSensorDef(
-        key="fan_speed",
+        key="pump_speed",
         unit=UnitOfRatio.PERCENTAGE,
-        device_class=None,
         state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:fan",
-        http_req=5497,  # 5518, 5548, 5616, 5754 - u8array64status_t - Lüfterstatus (außen)
+        icon="mdi:pump",
+        http_req=5576,  # 5043 - abs in rpm?
         display_precision=0,
-    ),
-    # RemkoSensorDef(
-    #     key="input_voltage",
-    #     unit=UnitOfElectricPotential.VOLT,
-    #     device_class=SensorDeviceClass.VOLTAGE,
-    #     state_class=SensorStateClass.MEASUREMENT,
-    #     icon="mdi:transmission-tower",
-    #     http_req=5877,
-    #     display_precision=0,
-    # ),
-    # --- Power 5320
-    RemkoSensorDef(
-        key="power",
-        unit=UnitOfPower.WATT,
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:transmission-tower",
-        display_precision=0,
-        http_req=5320,
-        scale_type=ScaleType.POWER,
     ),
     RemkoSensorDef(
         key="power_own_use",
@@ -296,6 +285,17 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         icon="mdi:transmission-tower",
         display_precision=0,
         http_req=5231,
+        scale_type=ScaleType.POWER,
+        disabled_by_default=True,
+    ),
+    RemkoSensorDef(
+        key="power",
+        unit=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:transmission-tower",
+        display_precision=0,
+        http_req=5320,
         scale_type=ScaleType.POWER,
     ),
     RemkoSensorDef(
@@ -324,12 +324,11 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         display_precision=0,
         http_req=5824,
     ),
-    # -- Diagnostics
     RemkoSensorDef(
         key="operating_status",
         device_class=SensorDeviceClass.ENUM,
         icon="mdi:cog",
-        entity_category=EntityCategory.DIAGNOSTIC,
+        # entity_category=EntityCategory.DIAGNOSTIC,
         http_req=5001,
         option=OperatingState,
         data_type=RemkoDataType.UINT8,
@@ -338,7 +337,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         key="hot_water_req_state",
         device_class=SensorDeviceClass.ENUM,
         icon="mdi:water-boiler",
-        entity_category=EntityCategory.DIAGNOSTIC,
+        # entity_category=EntityCategory.DIAGNOSTIC,
         http_req=5064,
         option=HotWaterReqState,
         data_type=RemkoDataType.UINT8,
@@ -347,9 +346,9 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         key="circulation_pump_state",
         device_class=SensorDeviceClass.ENUM,
         icon="mdi:water",
-        entity_category=EntityCategory.DIAGNOSTIC,
+        # entity_category=EntityCategory.DIAGNOSTIC,
         http_req=5151,
-        option=PumpState,
+        option=SwitchState,
         data_type=RemkoDataType.UINT8,
     ),
     RemkoSensorDef(
@@ -358,10 +357,20 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         icon="mdi:cog",
         http_req=1088,
         disabled_by_default=True,
-        entity_category=EntityCategory.DIAGNOSTIC,
+        # entity_category=EntityCategory.DIAGNOSTIC,
         option=RoomClimateMode,
         data_type=RemkoDataType.UINT8,
     ),
+    RemkoSensorDef(
+        key="fan_state",
+        device_class=SensorDeviceClass.ENUM,
+        # entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:fan",
+        http_req=5135,
+        option=SwitchState,
+        data_type=RemkoDataType.UINT8,
+    ),
+    # -- Diagnostics
     # RemkoSensorDef(
     #     "action_state_heat_warm_water",
     #     "1 x WW aufheizen",

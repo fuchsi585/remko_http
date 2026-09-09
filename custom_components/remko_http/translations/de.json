@@ -62,8 +62,11 @@
       "heating_actual_temp": {
         "name": "Heizwasser Isttemperatur"
       },
-      "heating_return_temp": {
-        "name": "Heizwasser Rücklauftemperatur"
+      "mixed_return_temp": {
+        "name": "Rücklauftemperatur"
+      },
+      "mixed_flow_temp": {
+        "name": "Vorlauftemperatur"
       },
       "circulation_temp": {
         "name": "Zirkulationstemperatur"
@@ -104,11 +107,18 @@
       "runtime_hours": {
         "name": "Laufzeit"
       },
-      "fan_speed": {
-        "name": "Lüfterdrehzahl"
+      "fan_state": {
+        "name": "Lüfterstatus (außen)",
+        "state":{
+          "off": "Aus",
+          "on": "An"
+        }
       },
       "input_voltage": {
         "name": "Eingangsspannung"
+      },
+      "pump_speed": {
+        "name": "Pumpendrehzahl (Heizkreis)"
       },
       "operating_status": {
         "name": "Aktuelle Betriebsart",

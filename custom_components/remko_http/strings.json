@@ -59,6 +59,12 @@
       "heating_req_temp": {
         "name": "Heating water target temperature"
       },
+      "mixed_return_temp": {
+        "name": "Mixed return temperature"
+      },
+      "mixed_flow_temp": {
+        "name": "Mixed flow temperature"
+      },
       "heating_actual_temp": {
         "name": "Heating water temperature"
       },
@@ -104,11 +110,18 @@
       "runtime_hours": {
         "name": "Runtime"
       },
-      "fan_speed": {
-        "name": "Fan speed"
+      "fan_state": {
+        "name": "Fan state (outdoor)",
+        "state":{
+          "off": "Off",
+          "on": "On"
+        }
       },
       "input_voltage": {
-        "name": "Input Voltage"
+        "name": "Input voltage"
+      },
+      "pump_speed": {
+        "name": "Pump speed (heating circuit)"
       },
       "operating_status": {
         "name": "Current operating mode",

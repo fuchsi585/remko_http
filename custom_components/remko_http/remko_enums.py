@@ -103,7 +103,7 @@ class HotWaterReqState(StrEnum):
         return f"Status N/A: {value}"
 
 
-class PumpState(StrEnum):
+class SwitchState(StrEnum):
     OFF = "off"
     ON = "on"
 
@@ -111,14 +111,14 @@ class PumpState(StrEnum):
     def hex_value(self) -> str | None:
         try:
             return {
-                PumpState.OFF: "00",
-                PumpState.ON: "01",
+                SwitchState.OFF: "00",
+                SwitchState.ON: "01",
             }[self]
         except KeyError:
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "PumpState | str":
+    def from_hex(cls, value: str) -> "SwitchState | str":
         for state in cls:
             if state.hex_value == value:
                 return state

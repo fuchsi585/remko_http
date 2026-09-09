@@ -109,7 +109,7 @@ def test_energy_sensor_definitions() -> None:
 
     assert calculated.key == "energy_electrical"
     assert calculated.http_req == 5105
-    assert calculated.is_calculated is True
+    assert calculated.intergrated_power == "power"
 
     assert raw.key == "energy_electrical_raw"
     assert raw.http_req == 5105
