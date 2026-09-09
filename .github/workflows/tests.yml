@@ -10,13 +10,11 @@ jobs:
   prek:
     name: Prek
     runs-on: ubuntu-latest
-
     permissions:
         contents: read
-
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -26,16 +24,15 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.14"
-
+          cache: 'pip'
+          cache-dependency-path: requirements_test.txt
       - name: Install pytest
         run: |
           python -m pip install --upgrade pip
