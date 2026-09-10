@@ -57,7 +57,6 @@ class RemkoButtonEntity(RemkoBaseEntity, ButtonEntity):
         if (value := self.coordinator.data.get(self._definition.enable_key)) is None:
             return False
 
-        value.phys_value == self._definition.enable_value
         return super().available and value.phys_value == self._definition.enable_value
 
     async def async_press(self) -> None:
