@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ipaddress
-import logging
 from typing import Any
 
 import voluptuous as vol
@@ -11,8 +10,6 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import CONF_HOST, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 USER_DATA_SCHEMA = vol.Schema(
     {
@@ -79,9 +76,6 @@ class RemkoHeatPumpOptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         if user_input is not None:
             host = user_input[CONF_HOST]
-
-            # current_host = self._config_entry.data.get("host")
-
             # Update entry data for host, store rest in options
             self.hass.config_entries.async_update_entry(
                 self._config_entry,

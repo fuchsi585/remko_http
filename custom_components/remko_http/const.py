@@ -39,10 +39,6 @@ MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * factor
 STORAGE_VERSION: Final = 1
 STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
-# # SWITCHES: list[RemkoSwitchDef] = [
-# #     RemkoSwitchDef("set_action_heat_warm_water", "", "", http_req=5693)
-# # ]
-
 
 @dataclass(frozen=True)
 class RemkoButtonDef:
@@ -392,18 +388,6 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         option=SwitchState,
         data_type=RemkoDataType.UINT8,
     ),
-    # -- Diagnostics
-    # RemkoSensorDef(
-    #     "action_state_heat_warm_water",
-    #     "1 x WW aufheizen",
-    #     None,
-    #     "enum",
-    #     None,
-    #     "mdi:cog",
-    #     http_req=5693,
-    #     disabled_by_default=True,
-    #     entity_category="diagnostic",
-    # ),
 )
 
 # binary_sensor:
@@ -473,6 +457,5 @@ HTTP_REQS: Final = list(
         if definition.http_req is not None
     }
 )
-
 
 # "heating_circ_mode": 1972,  # switch
