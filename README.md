@@ -62,6 +62,7 @@ Die Unterstützung hängt von der Firmware der REMKO-Steuerung ab.
 Insbesondere bei Firmware-Versionen ab **4.26** kann sich das Kommunikationsverhalten unterscheiden. Bitte prüfe daher vor der Installation die Firmware deiner Wärmepumpe.
 
 > Wenn du eine andere Firmware verwendest und die Integration nicht funktioniert, kannst du gerne ein Issue mit Modell und Firmware-Version eröffnen.
+
 ---
 
 ## 🚀 Installation
@@ -86,6 +87,7 @@ Die Installation über [HACS](https://hacs.xyz/) ist die einfachste Variante.
 Nach dem Neustart steht die Integration unter:
 **Einstellungen → Geräte & Dienste → Integration hinzufügen**
 zur Verfügung.
+
 ---
 
 ### Option 2 – Manuelle Installation
@@ -104,6 +106,7 @@ Die Verzeichnisstruktur sollte anschließend so aussehen:
     └── remko_http
 ```
 Anschließend Home Assistant neu starten.
+
 ---
 
 ### Installation über SSH
@@ -114,6 +117,7 @@ cd /config/custom_components
 git clone https://github.com/fuchsi585/remko_http.git
 ```
 Danach Home Assistant neu starten.
+
 ---
 
 ## ⚙️ Einrichtung
@@ -134,6 +138,7 @@ Beispiel:
 ### Empfohlen: feste IP-Adresse
 
 Damit Home Assistant die Wärmepumpe zuverlässig erreicht, solltest du für die REMKO Wärmepumpe eine **feste IP-Adresse oder DHCP-Reservierung** verwenden.
+
 ---
 
 ## 🌐 Wie funktioniert die Kommunikation?
@@ -163,6 +168,7 @@ Das bedeutet:
 - kein MQTT-Broker
 - keine REMKO-Cloud
 - keine zusätzliche Gateway-Software
+
 ---
 
 ## 📊 Verfügbare Daten
@@ -178,6 +184,7 @@ Je nach Modell und Firmware können unter anderem folgende Informationen verfüg
 - 📈 weitere von der Steuerung bereitgestellte Werte
 
 Die tatsächlich verfügbaren Entitäten können abhängig von **Wärmepumpenmodell, Firmware und Gerätekonfiguration** variieren.
+
 ---
 
 ## 🏠 Verwendung in Home Assistant
@@ -203,6 +210,7 @@ REMKO Wärmepumpe
 └── weitere Messwerte
 ```
 Die genaue Liste hängt vom jeweiligen REMKO-System ab.
+
 ---
 
 ## 🔧 Fehlerbehebung
@@ -222,6 +230,7 @@ Beispiel:
 ```text
 http://192.168.1.50/
 ```
+
 ---
 
 ### Es werden keine Werte angezeigt
@@ -233,6 +242,7 @@ http://192.168.1.50/
 - Erreichbarkeit der lokalen HTTP-Schnittstelle
 - Home-Assistant-Logs
 Diese Integration benötigt eine REMKO Steuerung, die die erwartete **HTTP-/CGI-Schnittstelle** bereitstellt.
+
 ---
 
 ### Meine Firmware ist neuer als 4.25
@@ -241,6 +251,7 @@ Neuere REMKO-Firmware kann eine andere Kommunikationsschnittstelle verwenden.
 Wenn deine Wärmepumpe beispielsweise Firmware **4.26, 4.27 oder neuer** verwendet, kann diese Integration möglicherweise nicht funktionieren.
 In der Home-Assistant-Community gibt es für neuere REMKO-Systeme auch Ansätze auf Basis von MQTT bzw. SmartWeb.
 Wenn du eine andere Firmware erfolgreich mit dieser Integration verwendest, freuen wir uns über einen Erfahrungsbericht.
+
 ---
 
 ## 🐛 Fehler melden
@@ -256,6 +267,7 @@ Fehlermeldung:
 ```
 
 Bitte **keine Passwörter, Tokens oder andere persönliche Zugangsdaten** in Issues veröffentlichen.
+
 ---
 
 ## 💡 Feature Requests
@@ -269,6 +281,7 @@ Besonders hilfreich sind:
 - gewünschter Wert / Register
 - Screenshot der REMKO Oberfläche
 - Beschreibung des gewünschten Verhaltens
+
 ---
 
 ## 🔒 Datenschutz
