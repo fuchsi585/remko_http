@@ -265,15 +265,6 @@ If you have successfully tested `remko_http` with a newer firmware version, plea
 ## 🐛 Reporting a problem
 
 If the integration does not work correctly, please create a [GitHub Issue](https://github.com/fuchsi585/remko_http/issues).
-The following information is especially useful:
-
-```text
-REMKO model:
-Firmware version:
-Home Assistant version:
-Installation method:
-Error message:
-```
 
 Please **do not post passwords, tokens or other sensitive information** in GitHub issues.
 
@@ -283,12 +274,6 @@ Please **do not post passwords, tokens or other sensitive information** in GitHu
 
 Have an idea for a new feature or would you like additional REMKO data to be available in Home Assistant?
 Feel free to open a feature request.
-Useful information includes:
-- REMKO model
-- firmware version
-- requested value or parameter
-- screenshot of the REMKO interface
-- description of the desired behavior
 
 ---
 

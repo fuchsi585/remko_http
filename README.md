@@ -257,14 +257,6 @@ Wenn du eine andere Firmware erfolgreich mit dieser Integration verwendest, freu
 ## 🐛 Fehler melden
 
 Wenn die Integration bei dir nicht funktioniert, erstelle bitte ein [GitHub Issue](https://github.com/fuchsi585/remko_http/issues).
-Hilfreich sind insbesondere:
-```text
-REMKO Modell:
-Firmware-Version:
-Home Assistant Version:
-Installationsart:
-Fehlermeldung:
-```
 
 Bitte **keine Passwörter, Tokens oder andere persönliche Zugangsdaten** in Issues veröffentlichen.
 
@@ -274,13 +266,6 @@ Bitte **keine Passwörter, Tokens oder andere persönliche Zugangsdaten** in Iss
 
 Du hast eine Idee für eine zusätzliche Funktion oder möchtest weitere Daten deiner REMKO Wärmepumpe in Home Assistant verfügbar machen?
 Dann kannst du gerne ein Feature Request als GitHub Issue erstellen.
-Besonders hilfreich sind:
-
-- REMKO Modell
-- Firmware-Version
-- gewünschter Wert / Register
-- Screenshot der REMKO Oberfläche
-- Beschreibung des gewünschten Verhaltens
 
 ---
 
