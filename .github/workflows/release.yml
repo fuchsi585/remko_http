@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.version.outputs.prerelease }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements_test.txt
+
+      - name: Verify release version
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          tag = os.environ["RELEASE_TAG"]
+          version = tag.removeprefix("v")
+          version_pattern = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?"
+          if re.fullmatch(version_pattern, version) is None:
+              raise SystemExit(f"Unsupported release tag: {tag}")
+
+          manifest = json.loads(
+              Path("custom_components/remko_http/manifest.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          manifest_version = manifest["version"]
+          if version != manifest_version:
+              raise SystemExit(
+                  f"Release tag {tag} does not match manifest version {manifest_version}"
+              )
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"prerelease={'true' if '-' in version else 'false'}\n")
+          PY
+
+      - name: Install test dependencies
+        run: python -m pip install --requirement requirements_test.txt
+
+      - name: Run repository checks
+        run: prek run --all-files
+
+      - name: Run tests
+        run: pytest
+
+      - name: Run Hassfest validation
+        uses: home-assistant/actions/hassfest@26d56ed1a1cbfeabf59feb7b26e368e13f47ef52 # master
+
+      - name: Run HACS validation
+        uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa # main
+        with:
+          category: integration
+
+  publish:
+    name: Publish GitHub release
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build integration archive
+        working-directory: custom_components/remko_http
+        run: zip --recurse-paths ../../remko_http.zip . --exclude "*__pycache__*" "*.pyc"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IS_PRERELEASE: ${{ needs.validate.outputs.prerelease }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          release_args=(
+            "$RELEASE_TAG"
+            remko_http.zip
+            --generate-notes
+            --title "$RELEASE_TAG"
+            --verify-tag
+          )
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            release_args+=(--prerelease)
+          fi
+          gh release create "${release_args[@]}"
