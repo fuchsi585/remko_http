@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
+from datetime import UTC
 
 # ---------------------------------------------------------------------------
 # Home Assistant stubs
@@ -283,9 +284,9 @@ homeassistant_dt = types.ModuleType("homeassistant.util.dt")
 
 def now():
     """Return the current datetime."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 homeassistant_dt.now = now

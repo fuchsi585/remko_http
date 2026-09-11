@@ -72,7 +72,7 @@ class RoomClimateMode(StrEnum):
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "RoomClimateMode | str":
+    def from_hex(cls, value: str) -> RoomClimateMode | str:
         for state in cls:
             if state.hex_value == value:
                 return state
@@ -95,7 +95,7 @@ class HotWaterReqState(StrEnum):
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "HotWaterReqState | str":
+    def from_hex(cls, value: str) -> HotWaterReqState | str:
         for state in cls:
             if state.hex_value == value:
                 return state
@@ -118,7 +118,7 @@ class SwitchState(StrEnum):
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "SwitchState | str":
+    def from_hex(cls, value: str) -> SwitchState | str:
         for state in cls:
             if state.hex_value == value:
                 return state
@@ -161,7 +161,7 @@ class OperatingState(StrEnum):
             return None
 
     @classmethod
-    def from_hex(cls, value: str) -> "OperatingState | str":
+    def from_hex(cls, value: str) -> OperatingState | str:
         for state in cls:
             if state.hex_value == value:
                 return state

@@ -1,7 +1,7 @@
 """Tests for the Remko coordinator."""
 
 from copy import deepcopy
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
@@ -213,7 +213,7 @@ async def test_async_write_raw_pump_data() -> None:
 def test_energy_calculation_initializes_from_raw_energy() -> None:
     """Test the calculated energy sensor is seeded from the device value."""
     coordinator = _coordinator()
-    now = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
 
     result = coordinator._energy_calculation(
         {
@@ -242,7 +242,7 @@ def test_energy_calculation_uses_available_stored_energy_negative_energy_diff() 
                 phys_value=42.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 11, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 11, 0, tzinfo=UTC),
     )
 
     result = coordinator._energy_calculation(
@@ -253,7 +253,7 @@ def test_energy_calculation_uses_available_stored_energy_negative_energy_diff() 
             ),
             "power": DeviceValue("power", phys_value=200),
         },
-        datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+        datetime(2026, 9, 8, 12, 0, tzinfo=UTC),
     )
 
     assert result["energy_electrical"].phys_value == 42.0
@@ -269,10 +269,10 @@ def test_energy_calculation_uses_device_value_large_positive_energy_diff() -> No
                 phys_value=42.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=UTC),
     )
 
-    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
     assert coordinator._last_snapshot is None
 
     result = coordinator._energy_calculation(
@@ -301,10 +301,10 @@ def test_energy_calculation_uses_stored_value_with_lower_device_value() -> None:
                 phys_value=42.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 11, 0, 0, tzinfo=UTC),
     )
 
-    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
     result = coordinator._energy_calculation(
         {
             "energy_electrical_raw": DeviceValue(
@@ -322,7 +322,7 @@ def test_energy_calculation_uses_stored_value_with_lower_device_value() -> None:
 def test_energy_calculation_integrates_power_with_trapezoid() -> None:
     """Test power is integrated with the trapezoidal rule."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
     coordinator._last_stored_energies = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue(
@@ -330,7 +330,7 @@ def test_energy_calculation_integrates_power_with_trapezoid() -> None:
                 phys_value=10.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=UTC),
     )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
@@ -355,7 +355,7 @@ def test_energy_calculation_integrates_power_with_trapezoid() -> None:
 def test_energy_calculation_skips_large_time_gap() -> None:
     """Test a large polling gap does not create a false energy spike."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
     coordinator._last_stored_energies = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue(
@@ -363,7 +363,7 @@ def test_energy_calculation_skips_large_time_gap() -> None:
                 phys_value=10.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=UTC),
     )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
@@ -384,7 +384,7 @@ def test_energy_calculation_skips_large_time_gap() -> None:
 def test_energy_calculation_skips_non_positive_time_delta(time_diff: int) -> None:
     """Test zero and negative time deltas do not change energy."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
     coordinator._last_stored_energies = CoordinatorSnapshot(
         data={
             "energy_electrical": DeviceValue(
@@ -392,7 +392,7 @@ def test_energy_calculation_skips_non_positive_time_delta(time_diff: int) -> Non
                 phys_value=10.0,
             )
         },
-        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 9, 8, 12, 0, tzinfo=UTC),
     )
     coordinator._last_snapshot = CoordinatorSnapshot(
         data={
@@ -413,7 +413,7 @@ def test_energy_calculation_skips_non_positive_time_delta(time_diff: int) -> Non
 def test_energy_calculation_continues_before_first_storage_flush() -> None:
     """Accumulate consecutive power samples even with no persisted energy."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     data = {
         "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
         "power": DeviceValue("power", 3600),
@@ -449,7 +449,7 @@ async def test_async_update_saves_first_valid_energy_immediately(
     coordinator._async_read_raw_pump_data = AsyncMock(
         return_value={5105: "00000064", 5320: "0024"}
     )
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     now = MagicMock(return_value=timestamp)
     monkeypatch.setattr("custom_components.remko_http.coordinator.dt.now", now)
 
@@ -487,7 +487,7 @@ async def test_async_update_preserves_zero_stored_energy(
 ) -> None:
     """Zero is a valid stored counter, not a reason to reseed or save immediately."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     coordinator.hass = MagicMock()
     coordinator._store = MagicMock()
     coordinator._store.async_save = AsyncMock()
@@ -518,7 +518,7 @@ def test_energy_calculation_initializes_when_device_energy_arrives(
 ) -> None:
     """Wait for a usable initial counter, then resume normal accumulation."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     data = {"power": DeviceValue("power", 3600)}
     if device_is_null:
         data["energy_electrical_raw"] = DeviceValue("energy_electrical_raw", None)
@@ -541,7 +541,7 @@ def test_energy_calculation_preserves_energy_through_power_gap(
 ) -> None:
     """Keep energy through a gap and integrate only consecutive valid samples."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     complete = {
         "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
         "power": DeviceValue("power", 3600),
@@ -569,7 +569,7 @@ def test_energy_calculation_restores_without_device_counter(
 ) -> None:
     """A stored counter remains usable when the device provides only power."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     coordinator._last_stored_energies = CoordinatorSnapshot(
         {"energy_electrical": DeviceValue("energy_electrical", 42.0)},
         timestamp - timedelta(hours=1),
@@ -589,7 +589,7 @@ def test_energy_calculation_restores_without_device_counter(
 def test_energy_calculation_does_not_mutate_inputs(source: str) -> None:
     """Results must not modify or share mutable values with their inputs."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     data = {
         "energy_electrical_raw": DeviceValue(
             "energy_electrical_raw", 100.0, "00000064"
@@ -636,7 +636,7 @@ async def test_storage_flush_persists_snapshot_and_clears_dirty_flag() -> None:
     coordinator._store = MagicMock()
     coordinator._store.async_save = AsyncMock()
     coordinator._storage_dirty = True
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     coordinator._last_snapshot = CoordinatorSnapshot(
         {
             "energy_electrical": DeviceValue("energy_electrical", 42.5),
@@ -670,9 +670,9 @@ async def test_storage_flush_does_nothing_when_clean_or_without_snapshot() -> No
     coordinator._store.async_save = AsyncMock()
     coordinator._storage_dirty = False
 
-    await coordinator._async_storage_flush(datetime.now(timezone.utc))
+    await coordinator._async_storage_flush(datetime.now(UTC))
     coordinator._storage_dirty = True
-    await coordinator._async_storage_flush(datetime.now(timezone.utc))
+    await coordinator._async_storage_flush(datetime.now(UTC))
 
     coordinator._store.async_save.assert_not_awaited()
     assert coordinator._storage_dirty is True
@@ -685,7 +685,7 @@ async def test_storage_flush_keeps_dirty_flag_when_save_fails() -> None:
     coordinator._store = MagicMock()
     coordinator._store.async_save = AsyncMock(side_effect=OSError("disk full"))
     coordinator._storage_dirty = True
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     coordinator._last_snapshot = CoordinatorSnapshot(
         {"energy_electrical": DeviceValue("energy_electrical", 42.5)}, timestamp
     )
@@ -700,7 +700,7 @@ async def test_storage_flush_keeps_dirty_flag_when_save_fails() -> None:
 async def test_load_storage_restores_energy_and_timestamp() -> None:
     """Stored JSON data is reconstructed as a coordinator snapshot."""
     coordinator = _coordinator()
-    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc)
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
     coordinator._store = MagicMock()
     coordinator._store.async_load = AsyncMock(
         return_value={
@@ -733,7 +733,7 @@ async def test_update_registers_storage_timer_only_once(
     coordinator._unsub_storage = None
     coordinator._last_stored_energies = CoordinatorSnapshot(
         {"energy_electrical": DeviceValue("energy_electrical", 10.0)},
-        datetime(2026, 9, 11, 12, 0, tzinfo=timezone.utc),
+        datetime(2026, 9, 11, 12, 0, tzinfo=UTC),
     )
     coordinator._async_read_raw_pump_data = AsyncMock(
         return_value={5105: "0000000A", 5320: "0001"}

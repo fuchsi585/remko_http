@@ -119,9 +119,6 @@
           "on": "An"
         }
       },
-      "input_voltage": {
-        "name": "Eingangsspannung"
-      },
       "pump_speed": {
         "name": "Pumpendrehzahl (Heizkreis)"
       },
