@@ -3,6 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://www.hacs.xyz/)
 [![Validate](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml)
+[![Tests](https://github.com/fuchsi585/remko_http/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/tests.yml)
 [![License](https://img.shields.io/github/license/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/blob/main/LICENSE)
 
 Home Assistant custom integration for REMKO heat pumps using the local HTTP/CGI interface.
@@ -19,23 +20,26 @@ The integration communicates directly with the REMKO controller over the local n
 - Configuration through the Home Assistant UI
 - Home Assistant Config Flow
 - Operating and measurement data as Home Assistant entities
+- Control of the domestic hot water target temperature and room climate mode
+- Electrical energy calculation based on current power consumption
 - HACS installation supported
 - No username or password required on supported devices
+- One heat pump per Home Assistant instance
 
 ## Supported Devices
 
 | Device / Firmware | Status |
 |---|---|
-| REMKO heat pump with firmware 4.25 | ✅ Tested |
+| REMKO WKF120 with firmware 4.25 | ✅ Tested |
 | Other firmware versions | ❓ Untested |
 
-The integration was developed and tested with REMKO systems using firmware 4.25.
+The integration was developed and tested with a REMKO WKF120 using firmware 4.25.
 Other firmware versions may use a different HTTP/CGI interface and are therefore not automatically compatible.
 Feedback for additional models and firmware versions is welcome.
 
 ## Requirements
 
-- Home Assistant
+- Home Assistant 2026.7.0 or newer
 - REMKO heat pump with supported firmware
 - Network connectivity between Home Assistant and the heat pump
 - Accessible local HTTP/CGI interface
@@ -79,7 +83,7 @@ After installation:
 2. Select **Add Integration**.
 3. Search for **REMKO HTTP**.
 4. Enter the local IP address of the REMKO heat pump.
-5. Complete the configuration.
+5. Select the polling interval and complete the configuration.
 
 Example:
 
@@ -88,6 +92,13 @@ Example:
 ```
 
 Home Assistant will then communicate directly with the REMKO controller.
+
+The polling interval can be set between 10 and 60 seconds. Its default value is
+20 seconds. The IP address and polling interval can be changed later through the
+integration options.
+
+The integration currently supports exactly one heat pump per Home Assistant
+instance.
 
 ## Communication
 
@@ -102,14 +113,25 @@ REMKO Heat Pump
 The integration uses the local web/CGI interface provided by the REMKO controller.
 No external server is required for communication.
 
+> [!IMPORTANT]
+> The CGI interface does not require authentication on supported devices. It
+> should therefore only be reachable from a trusted local network and must not
+> be exposed directly to the internet.
+
 ## Entities
 
-- Temperatures
-- Operating states
-- Domestic hot water values
-- Power values
-- Operating parameters
-- Additional values exposed by the controller
+| Type | Entities |
+|---|---|
+| Temperature | Domestic hot water target and current temperature, heating water target and current temperature, flow, return, circulation, outdoor, mixed outdoor and room temperature |
+| State | Operating mode, domestic hot water request, circulation pump, fan and room climate mode |
+| Power and energy | Electrical power, own consumption, thermal power, calculated electrical energy and device energy counter |
+| Operation | Room humidity, pump speed, compressor starts and runtime |
+| Control | Warmer/cooler offset, domestic hot water target temperature, room climate mode and one-time domestic hot water heating |
+
+Diagnostic and helper entities such as device energy, own consumption and some
+target values are disabled by default. They can be enabled through Home
+Assistant's entity management when needed. The “Calculated energy” value is
+maintained locally using the measured electrical power.
 
 ## Troubleshooting
 
@@ -153,7 +175,9 @@ Communication takes place directly between Home Assistant and the REMKO controll
 
 ## Development
 
-Pull requests and issues are welcome.
+[Issues](https://github.com/fuchsi585/remko_http/issues),
+[discussions](https://github.com/fuchsi585/remko_http/discussions), and
+[pull requests](https://github.com/fuchsi585/remko_http/pulls) are welcome.
 
 ## Acknowledgements
 

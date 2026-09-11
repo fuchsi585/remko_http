@@ -3,6 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://www.hacs.xyz/)
 [![Validate](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml)
+[![Tests](https://github.com/fuchsi585/remko_http/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/tests.yml)
 [![License](https://img.shields.io/github/license/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/blob/main/LICENSE)
 
 Home Assistant Custom Integration für REMKO Wärmepumpen mit lokaler HTTP-/CGI-Schnittstelle.
@@ -11,7 +12,7 @@ Die Integration kommuniziert direkt mit der REMKO Steuerung über das lokale Net
 
 > 🇬🇧 English: [README.en.md](README.en.md)
 
-## Features
+## Funktionen
 
 - Lokale Kommunikation über HTTP/CGI
 - Keine Cloud-Verbindung erforderlich
@@ -19,23 +20,26 @@ Die Integration kommuniziert direkt mit der REMKO Steuerung über das lokale Net
 - Einrichtung über die Home-Assistant-Oberfläche
 - Unterstützung von Home Assistant Config Flow
 - Betriebs- und Messwerte als Home-Assistant-Entitäten
+- Steuerung von Warmwasser-Solltemperatur und Raumklimamodus
+- Berechnung des elektrischen Energieverbrauchs aus der aktuellen Leistung
 - HACS-Installation möglich
 - Kommunikation ohne Benutzername und Passwort bei unterstützten Geräten
+- Eine Wärmepumpe pro Home-Assistant-Instanz
 
-## Supported Devices
+## Unterstützte Geräte
 
-| Device / Firmware | Status |
+| Gerät / Firmware | Status |
 |---|---|
-| REMKO Wärmepumpe mit Firmware 4.25 | ✅ Getestet |
+| REMKO WKF120 mit Firmware 4.25 | ✅ Getestet |
 | Andere Firmware-Versionen | ❓ Ungetestet |
 
-Die Integration wurde mit REMKO Systemen auf Basis von Firmware 4.25 entwickelt und getestet.
+Die Integration wurde mit einer REMKO WKF120 auf Basis von Firmware 4.25 entwickelt und getestet.
 Andere Firmware-Versionen können eine abweichende HTTP-/CGI-Schnittstelle verwenden und sind daher nicht automatisch kompatibel.
 Feedback zu weiteren Modellen und Firmware-Versionen ist willkommen.
 
 ## Voraussetzungen
 
-- Home Assistant
+- Home Assistant 2026.7.0 oder neuer
 - REMKO Wärmepumpe mit unterstützter Firmware
 - Netzwerkverbindung zwischen Home Assistant und Wärmepumpe
 - Erreichbare lokale HTTP-/CGI-Schnittstelle
@@ -79,7 +83,7 @@ Nach der Installation:
 2. **Integration hinzufügen** auswählen.
 3. Nach **REMKO HTTP** suchen.
 4. Die lokale IP-Adresse der REMKO Wärmepumpe eingeben.
-5. Konfiguration abschließen.
+5. Das Abfrageintervall festlegen und die Konfiguration abschließen.
 
 Beispiel:
 
@@ -88,6 +92,13 @@ Beispiel:
 ```
 
 Die Verbindung erfolgt anschließend direkt von Home Assistant zur REMKO Steuerung.
+
+Das Abfrageintervall kann zwischen 10 und 60 Sekunden eingestellt werden. Der
+Standardwert beträgt 20 Sekunden. IP-Adresse und Abfrageintervall lassen sich
+später über die Optionen der Integration ändern.
+
+Die Integration unterstützt derzeit genau eine Wärmepumpe pro
+Home-Assistant-Instanz.
 
 ## Kommunikation
 
@@ -102,14 +113,25 @@ REMKO Wärmepumpe
 Die Integration verwendet die lokale Web-/CGI-Schnittstelle der REMKO Steuerung.
 Es werden keine externen Server für die Kommunikation benötigt.
 
+> [!IMPORTANT]
+> Die CGI-Schnittstelle benötigt bei unterstützten Geräten keine Anmeldung. Sie
+> sollte daher nur aus einem vertrauenswürdigen lokalen Netzwerk erreichbar sein
+> und nicht direkt ins Internet freigegeben werden.
+
 ## Entitäten
 
-- Temperaturen
-- Betriebszustände
-- Warmwasserwerte
-- Leistungswerte
-- Betriebsparameter
-- weitere von der Steuerung bereitgestellte Messwerte
+| Typ | Entitäten |
+|---|---|
+| Temperatur | Warmwasser-Soll- und Isttemperatur, Heizwasser-Soll- und Isttemperatur, Vorlauf, Rücklauf, Zirkulation, Außen-, gemischte Außen- und Raumtemperatur |
+| Zustand | Betriebsart, Warmwasseranforderung, Zirkulationspumpe, Lüfter und Raumklimamodus |
+| Leistung und Energie | Elektrische Leistung, Eigenverbrauch, thermische Leistung, berechnete elektrische Energie und Geräte-Energiezähler |
+| Betrieb | Raumfeuchtigkeit, Pumpendrehzahl, Kompressorstarts und Laufzeit |
+| Steuerung | Wärmer/kälter, Warmwasser-Solltemperatur, Raumklimamodus und einmalige Warmwasserbereitung |
+
+Diagnose- und Hilfsentitäten wie die Geräte-Energie, der Eigenverbrauch sowie
+einige Sollwerte sind standardmäßig deaktiviert. Sie können bei Bedarf in der
+Entitätsverwaltung aktiviert werden. Der Wert „Berechnete elektrische Energie“
+wird lokal aus der gemessenen elektrischen Leistung fortgeschrieben.
 
 ## Fehlerbehebung
 
@@ -153,13 +175,15 @@ Die Kommunikation erfolgt direkt zwischen Home Assistant und der REMKO Steuerung
 
 ## Entwicklung
 
-Pull Requests und Issues sind willkommen.
+[Issues](https://github.com/fuchsi585/remko_http/issues),
+[Diskussionen](https://github.com/fuchsi585/remko_http/discussions) und
+[Pull Requests](https://github.com/fuchsi585/remko_http/pulls) sind willkommen.
 
 ## Danksagung
 
 Vielen Dank an **Altrec** für die Inspiration und die Vorarbeit rund um die Integration von REMKO Wärmepumpen in Home Assistant. Ebenso vielen Dank an die Home-Assistant-Community für den Austausch und die zahlreichen Erkenntnisse.
 
-## Disclaimer
+## Haftungsausschluss
 
 Dieses Projekt ist nicht offiziell mit REMKO verbunden und wird nicht von REMKO unterstützt.
 
