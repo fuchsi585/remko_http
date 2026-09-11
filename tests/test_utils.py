@@ -69,3 +69,53 @@ def test_encode_device_value_scaling(value, scale, expected) -> None:
     assert (
         encode(int(round_number(value) / scale.scale), RemkoDataType.UINT16) == expected
     )
+
+
+@pytest.mark.parametrize("value", ["not-hex", "0"])
+def test_decode_rejects_invalid_hex(value: str) -> None:
+    """Malformed hexadecimal device values must not be decoded silently."""
+    from custom_components.remko_http.utils import decode
+
+    with pytest.raises(ValueError):
+        decode(value, RemkoDataType.UINT16)
+
+
+@pytest.mark.parametrize(
+    ("value", "data_type"),
+    [("00", RemkoDataType.UINT16), ("000000", RemkoDataType.UINT16)],
+)
+def test_decode_rejects_wrong_response_size(
+    value: str, data_type: RemkoDataType
+) -> None:
+    """A valid hex string still needs the exact protocol-defined byte length."""
+    from custom_components.remko_http.utils import decode
+
+    with pytest.raises(ValueError, match="expects 2 bytes"):
+        decode(value, data_type)
+
+
+@pytest.mark.parametrize(
+    ("value", "data_type"),
+    [
+        (-1, RemkoDataType.UINT8),
+        (256, RemkoDataType.UINT8),
+        (-32769, RemkoDataType.INT16),
+        (32768, RemkoDataType.INT16),
+    ],
+)
+def test_encode_rejects_values_outside_data_type(
+    value: int, data_type: RemkoDataType
+) -> None:
+    """Values outside a protocol type's range produce a clear ValueError."""
+    from custom_components.remko_http.utils import encode
+
+    with pytest.raises(ValueError, match="does not fit"):
+        encode(value, data_type)
+
+
+@pytest.mark.parametrize("value", [None, "", "invalid", 123])
+def test_parse_datetime_returns_none_for_invalid_values(value) -> None:
+    """Missing or malformed storage timestamps are handled safely."""
+    from custom_components.remko_http.utils import parse_datetime
+
+    assert parse_datetime(value) is None

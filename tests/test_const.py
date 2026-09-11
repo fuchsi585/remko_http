@@ -1,4 +1,6 @@
-"""Tests for Remko Heatpump constants."""
+"""Consistency tests for Remko Heatpump constants."""
+
+from collections import defaultdict
 
 from custom_components.remko_http.const import (
     BUTTONS,
@@ -14,14 +16,20 @@ from custom_components.remko_http.const import (
     SELECTORS,
     SENSORS,
     SLEEP_TIME_AFTER_SET_REQ,
-    RemkoNumberDef,
-    RemkoSelectDef,
-    RemkoSensorDef,
+    STORAGE_KEYS,
 )
-from custom_components.remko_http.remko_enums import (
-    RemkoDataType,
-    ScaleType,
+from custom_components.remko_http.remko_enums import RemkoDataType, ScaleType
+from custom_components.remko_http.utils import decode, encode
+
+ALL_DEFINITIONS = (
+    *BUTTONS,
+    *SELECTORS,
+    *SENSORS,
+    *NUMBERS,
+    *ENERGY_SENSORS,
+    *ENERGY_SENSORS_DEVICE_RAW,
 )
+READ_DEFINITIONS = (*BUTTONS, *SENSORS, *ENERGY_SENSORS_DEVICE_RAW)
 
 
 def test_constants() -> None:
@@ -34,106 +42,149 @@ def test_constants() -> None:
     assert HTTP_REQ_SERIAL_NUMBER == 5700
 
 
-def test_data_types() -> None:
-    """Test protocol data types."""
-    assert RemkoDataType.UINT8.response_size == 1
-    assert RemkoDataType.INT16.response_size == 2
-    assert RemkoDataType.INT16.signed is True
-    assert RemkoDataType.UINT32.response_size == 4
-    assert RemkoDataType.UINT32.signed is False
+def test_all_protocol_data_types() -> None:
+    """Test the size and signedness of every supported protocol type."""
+    assert {
+        data_type: (data_type.response_size, data_type.signed)
+        for data_type in RemkoDataType
+    } == {
+        RemkoDataType.UINT8: (1, False),
+        RemkoDataType.INT8: (1, True),
+        RemkoDataType.UINT16: (2, False),
+        RemkoDataType.INT16: (2, True),
+        RemkoDataType.UINT32: (4, False),
+        RemkoDataType.INT32: (4, True),
+    }
 
 
-def test_scale_types() -> None:
-    """Test protocol scaling factors."""
-    assert ScaleType.DEFAULT.scale == 1
-    assert ScaleType.TEMPERATURE.scale == 0.1
-    assert ScaleType.POWER.scale == 100
+def test_all_protocol_data_types_round_trip() -> None:
+    """Test that the numeric decoder handles every supported protocol type."""
+    for data_type in RemkoDataType:
+        bits = data_type.response_size * 8
+        minimum = -(2 ** (bits - 1)) if data_type.signed else 0
+        maximum = 2 ** (bits - int(data_type.signed)) - 1
+        for value in (minimum, 0, maximum):
+            assert decode(encode(value, data_type), data_type) == value
 
 
-def test_selectors() -> None:
-    """Test select definitions."""
-    assert len(SELECTORS) == 1
-    definition = SELECTORS[0]
-    assert isinstance(definition, RemkoSelectDef)
-    assert definition.key == "set_room_climate_mode"
-    assert definition.read_key == "room_climate_mode"
-    assert definition.http_req == 1088
+def test_all_scaling_factors() -> None:
+    """Test every supported physical-value scaling factor."""
+    assert {scale_type: scale_type.scale for scale_type in ScaleType} == {
+        ScaleType.DEFAULT: 1,
+        ScaleType.TEMPERATURE: 0.1,
+        ScaleType.POWER: 100,
+    }
 
 
-def test_numbers() -> None:
-    """Test number definitions."""
-    assert len(NUMBERS) == 2
-    cold_hotter = NUMBERS[0]
-    assert isinstance(cold_hotter, RemkoNumberDef)
-    assert cold_hotter.key == "set_cold_hotter"
-    assert cold_hotter.read_key == "cold_hotter_state"
-    assert cold_hotter.http_req == 1946
-
-    water_temp = NUMBERS[1]
-    assert isinstance(water_temp, RemkoNumberDef)
-    assert water_temp.key == "set_water_temp_req"
-    assert water_temp.read_key == "water_temp_req"
-    assert water_temp.http_req == 1082
-
-
-def test_sensors_are_unique_by_key() -> None:
-    """Test that sensor keys are unique."""
-    keys = [sensor.key for sensor in SENSORS]
+def test_entity_keys_are_unique() -> None:
+    """Entity keys must be globally unique across all platforms."""
+    keys = [definition.key for definition in ALL_DEFINITIONS]
     assert len(keys) == len(set(keys))
 
 
-def test_sensors_have_http_request() -> None:
-    """Test that all sensors have an HTTP request."""
-    assert all(sensor.http_req is not None for sensor in SENSORS)
+def test_http_request_ids_are_valid_and_complete() -> None:
+    """Every entity has a valid request ID and is included in the poll list."""
+    definition_ids = {definition.http_req for definition in ALL_DEFINITIONS}
 
-
-def test_sensor_definitions() -> None:
-    """Test sensor definitions."""
-    assert all(isinstance(sensor, RemkoSensorDef) for sensor in SENSORS)
-
-    power = next(sensor for sensor in SENSORS if sensor.key == "power")
-    assert power.http_req == 5320
-
-    operating_status = next(
-        sensor for sensor in SENSORS if sensor.key == "operating_status"
+    assert None not in definition_ids
+    assert all(
+        type(http_req) is int and 0 < http_req <= 0xFFFF for http_req in HTTP_REQS
     )
-    assert operating_status.http_req == 5001
+    assert set(HTTP_REQS) == definition_ids
 
 
-def test_energy_sensor_definitions() -> None:
-    """Test calculated and raw energy sensor definitions."""
-    assert len(ENERGY_SENSORS) == 1
-    assert len(ENERGY_SENSORS_DEVICE_RAW) == 1
+def test_shared_http_ids_have_consistent_decoders() -> None:
+    """Definitions sharing an ID must agree on its wire representation."""
+    definitions_by_id = defaultdict(list)
+    for definition in ALL_DEFINITIONS:
+        definitions_by_id[definition.http_req].append(definition)
 
-    calculated = ENERGY_SENSORS[0]
-    raw = ENERGY_SENSORS_DEVICE_RAW[0]
-
-    assert calculated.key == "energy_electrical"
-    assert calculated.http_req == 5105
-    assert calculated.intergrated_power == "power"
-
-    assert raw.key == "energy_electrical_raw"
-    assert raw.http_req == 5105
-    assert raw.disabled_by_default is True
-
-
-def test_http_requests_are_unique() -> None:
-    """Test that all HTTP request IDs are unique."""
-    assert len(HTTP_REQS) == len(set(HTTP_REQS))
+    for definitions in definitions_by_id.values():
+        options = {definition.option for definition in definitions if definition.option}
+        response_sizes = {
+            definition.data_type.response_size
+            for definition in definitions
+            if hasattr(definition, "data_type") and definition.data_type
+        }
+        scales = {definition.scale_type for definition in definitions}
+        assert len(options) <= 1
+        assert len(response_sizes) <= 1
+        assert len(scales) <= 1
 
 
-def test_http_requests_contain_all_definitions() -> None:
-    """Test that all configured HTTP requests are collected."""
-    expected = {
-        definition.http_req
-        for definition in (
-            *BUTTONS,
-            *SELECTORS,
-            *SENSORS,
-            *NUMBERS,
-            *ENERGY_SENSORS,
-            *ENERGY_SENSORS_DEVICE_RAW,
-        )
-        if definition.http_req is not None
+def test_read_and_enable_keys_reference_decoded_entities() -> None:
+    """Write and enable references must point to values decoded by the coordinator."""
+    readable_by_key = {definition.key: definition for definition in READ_DEFINITIONS}
+
+    for definition in (*BUTTONS, *SELECTORS, *NUMBERS):
+        assert definition.read_key in readable_by_key
+        assert definition.http_req == readable_by_key[definition.read_key].http_req
+
+    for definition in BUTTONS:
+        if definition.enable_key is None:
+            assert definition.enable_value is None
+            continue
+        enabled_by = readable_by_key[definition.enable_key]
+        assert enabled_by.option is not None
+        assert isinstance(definition.enable_value, enabled_by.option)
+
+
+def test_number_ranges_are_valid_and_encodable() -> None:
+    """Number bounds and increments must be usable with their wire format."""
+    for definition in NUMBERS:
+        assert definition.min_value < definition.max_value
+        assert definition.step > 0
+        assert (definition.max_value - definition.min_value) % definition.step == 0
+        for value in (definition.min_value, definition.max_value):
+            raw_value = int(value / definition.scale_type.scale)
+            assert (
+                decode(encode(raw_value, definition.data_type), definition.data_type)
+                == raw_value
+            )
+
+
+def test_read_definitions_have_a_decoder() -> None:
+    """Every polled entity must define either enum or numeric decoding."""
+    for definition in READ_DEFINITIONS:
+        if definition.option is not None:
+            assert callable(getattr(definition.option, "from_hex", None))
+            assert definition.data_type is not None
+        else:
+            assert definition.data_type is not None
+            assert definition.scale_type is not None
+
+
+def test_enum_decoders_round_trip() -> None:
+    """Every configured enum value must round-trip through its protocol hex value."""
+    enum_types = {
+        definition.option for definition in ALL_DEFINITIONS if definition.option
     }
-    assert set(HTTP_REQS) == expected
+
+    for enum_type in enum_types:
+        for member in enum_type:
+            assert member.hex_value is not None
+            assert enum_type.from_hex(member.hex_value) is member
+
+
+def test_energy_sensor_dependencies_are_consistent() -> None:
+    """Calculated energy sensors must reference valid power and raw sensors."""
+    sensors_by_key = {definition.key: definition for definition in SENSORS}
+    raw_by_key = {
+        definition.key: definition for definition in ENERGY_SENSORS_DEVICE_RAW
+    }
+
+    for definition in ENERGY_SENSORS:
+        assert definition.intergrated_power in sensors_by_key
+        assert definition.source_key in raw_by_key
+        assert definition.http_req == raw_by_key[definition.source_key].http_req
+        assert definition.max_energy_stored_diff is not None
+        assert definition.max_energy_stored_diff > 0
+
+
+def test_storage_keys_reference_calculated_energy_sensors() -> None:
+    """Only calculated energy values may be persisted."""
+    energy_keys = {definition.key for definition in ENERGY_SENSORS}
+
+    assert STORAGE_KEYS
+    assert len(STORAGE_KEYS) == len(set(STORAGE_KEYS))
+    assert set(STORAGE_KEYS) <= energy_keys

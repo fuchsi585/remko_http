@@ -275,12 +275,17 @@ class RemkoCoordinator(DataUpdateCoordinator):
                         > energy_definition.max_energy_stored_diff
                     ):
                         seconds = int((now - stored_at).total_seconds())
+                        duration = (
+                            f"{seconds // 3600:02d}:"
+                            f"{(seconds % 3600) // 60:02d}:"
+                            f"{seconds % 60:02d}"
+                        )
                         _LOGGER.info(
-                            "New initial value '%s': time delta (%s) and energy difference (%s kWh > %s kWh) too large: %s kWh → %s kWh",
+                            "New initial value '%s': time delta (%s) and energy "
+                            "difference (%s kWh > %s kWh) too large: "
+                            "%s kWh → %s kWh",
                             energy_definition.key,
-                            "{:02d}:{:02d}:{:02d}".format(
-                                seconds // 3600, (seconds % 3600) // 60, seconds % 60
-                            ),
+                            duration,
                             round(device_energy.phys_value - initial.phys_value, 2),
                             energy_definition.max_energy_stored_diff,
                             round(initial.phys_value, 2),
@@ -315,9 +320,11 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 continue
 
             if timediff > max_diff_time:
-                # Hier vielleicht auf den Gerätesensor wechseln, falls das gap zu groß wird?
+                # Hier vielleicht auf den Gerätesensor wechseln,
+                # falls das gap zu groß wird?
                 _LOGGER.warning(
-                    f"Skipping energy integration because time delta is too large: {timediff}",
+                    "Skipping energy integration because time delta is too large: %s",
+                    timediff,
                 )
                 continue
 
@@ -425,7 +432,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
             if raw_value != response_value.raw_value:
                 raise HomeAssistantError(
-                    f"Request for {sensor_definition.key} of ID {sensor_definition.http_req} acknowledged value '{phys_value}' "
+                    f"Request for {sensor_definition.key} of ID "
+                    f"{sensor_definition.http_req} acknowledged value '{phys_value}' "
                     f"but read back '{response_value.phys_value}'"
                 )
             updated_data = {
@@ -435,6 +443,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
             self.async_set_updated_data(updated_data)
         except Exception as err:
             _LOGGER.error(
-                f"Failed to write for {sensor_definition.key} of ID {sensor_definition.http_req} with {values}: {err}"
+                "Failed to write for %s of ID %s with %s: %s",
+                sensor_definition.key,
+                sensor_definition.http_req,
+                values,
+                err,
             )
-            raise HomeAssistantError(f"Error writing data to heat pump: {err}")
+            raise HomeAssistantError(f"Error writing data to heat pump: {err}") from err

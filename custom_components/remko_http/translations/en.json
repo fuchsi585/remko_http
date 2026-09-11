@@ -119,9 +119,6 @@
           "on": "On"
         }
       },
-      "input_voltage": {
-        "name": "Input voltage"
-      },
       "pump_speed": {
         "name": "Pump speed (heating circuit)"
       },

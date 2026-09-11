@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
+from datetime import UTC
 
 # ---------------------------------------------------------------------------
 # Home Assistant stubs
@@ -61,6 +62,7 @@ class HomeAssistant:
 
 
 homeassistant_core.HomeAssistant = HomeAssistant
+homeassistant_core.callback = lambda func: func
 
 homeassistant_config_entries = types.ModuleType("homeassistant.config_entries")
 
@@ -73,6 +75,21 @@ class ConfigEntry:
 
 
 homeassistant_config_entries.ConfigEntry = ConfigEntry
+
+
+class ConfigFlow:
+    """Minimal config-flow base class."""
+
+    def __init_subclass__(cls, **kwargs):
+        return super().__init_subclass__()
+
+
+class OptionsFlow:
+    """Minimal options-flow base class."""
+
+
+homeassistant_config_entries.ConfigFlow = ConfigFlow
+homeassistant_config_entries.OptionsFlow = OptionsFlow
 
 homeassistant_exceptions = types.ModuleType("homeassistant.exceptions")
 
@@ -155,6 +172,7 @@ class DataUpdateCoordinator:
         self.name = name
         self.update_interval = update_interval
         self.data = None
+        self.last_update_success = True
 
     async def async_shutdown(self) -> None:
         """Shut down the coordinator."""
@@ -170,6 +188,24 @@ class UpdateFailed(Exception):
 
 homeassistant_update_coordinator.DataUpdateCoordinator = DataUpdateCoordinator
 homeassistant_update_coordinator.UpdateFailed = UpdateFailed
+
+
+class CoordinatorEntity:
+    """Minimal coordinator-backed entity."""
+
+    @classmethod
+    def __class_getitem__(cls, item):
+        return cls
+
+    def __init__(self, coordinator) -> None:
+        self.coordinator = coordinator
+
+    @property
+    def available(self) -> bool:
+        return self.coordinator.last_update_success
+
+
+homeassistant_update_coordinator.CoordinatorEntity = CoordinatorEntity
 
 homeassistant_httpx_client = types.ModuleType("homeassistant.helpers.httpx_client")
 
@@ -211,15 +247,46 @@ class Store:
 
 homeassistant_storage.Store = Store
 
+homeassistant_device_registry = types.ModuleType(
+    "homeassistant.helpers.device_registry"
+)
+homeassistant_device_registry.DeviceInfo = dict
+
+homeassistant_entity_platform = types.ModuleType(
+    "homeassistant.helpers.entity_platform"
+)
+homeassistant_entity_platform.AddEntitiesCallback = object
+
+homeassistant_number = types.ModuleType("homeassistant.components.number")
+homeassistant_number.NumberEntity = type("NumberEntity", (), {})
+homeassistant_number.NumberMode = types.SimpleNamespace(BOX="box")
+
+homeassistant_select = types.ModuleType("homeassistant.components.select")
+homeassistant_select.SelectEntity = type("SelectEntity", (), {})
+
+homeassistant_button = types.ModuleType("homeassistant.components.button")
+homeassistant_button.ButtonEntity = type("ButtonEntity", (), {})
+
+homeassistant_sensor.SensorEntity = type("SensorEntity", (), {})
+
+homeassistant_data_entry_flow = types.ModuleType("homeassistant.data_entry_flow")
+homeassistant_data_entry_flow.FlowResult = dict
+
+voluptuous = types.ModuleType("voluptuous")
+voluptuous.Required = lambda key, default=None: key
+voluptuous.All = lambda *validators: validators
+voluptuous.Range = lambda **kwargs: kwargs
+voluptuous.Schema = lambda schema: schema
+
 homeassistant_util = types.ModuleType("homeassistant.util")
 homeassistant_dt = types.ModuleType("homeassistant.util.dt")
 
 
 def now():
     """Return the current datetime."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 homeassistant_dt.now = now
@@ -259,7 +326,11 @@ sys.modules["homeassistant.const"] = homeassistant_const
 sys.modules["homeassistant.core"] = homeassistant_core
 sys.modules["homeassistant.components"] = homeassistant_components
 sys.modules["homeassistant.components.sensor"] = homeassistant_sensor
+sys.modules["homeassistant.components.number"] = homeassistant_number
+sys.modules["homeassistant.components.select"] = homeassistant_select
+sys.modules["homeassistant.components.button"] = homeassistant_button
 sys.modules["homeassistant.config_entries"] = homeassistant_config_entries
+sys.modules["homeassistant.data_entry_flow"] = homeassistant_data_entry_flow
 sys.modules["homeassistant.exceptions"] = homeassistant_exceptions
 sys.modules["homeassistant.helpers"] = homeassistant_helpers
 sys.modules["homeassistant.helpers.update_coordinator"] = (
@@ -268,6 +339,9 @@ sys.modules["homeassistant.helpers.update_coordinator"] = (
 sys.modules["homeassistant.helpers.httpx_client"] = homeassistant_httpx_client
 sys.modules["homeassistant.helpers.event"] = homeassistant_event
 sys.modules["homeassistant.helpers.storage"] = homeassistant_storage
+sys.modules["homeassistant.helpers.device_registry"] = homeassistant_device_registry
+sys.modules["homeassistant.helpers.entity_platform"] = homeassistant_entity_platform
 sys.modules["homeassistant.util"] = homeassistant_util
 sys.modules["homeassistant.util.dt"] = homeassistant_dt
 sys.modules["httpx"] = httpx
+sys.modules["voluptuous"] = voluptuous

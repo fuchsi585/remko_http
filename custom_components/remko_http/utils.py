@@ -36,9 +36,8 @@ def format_decoded_data(data: dict[str, DeviceValue]) -> str:
     lines = ["Decoded data:"]
 
     for key, value in sorted(data.items()):
-        lines.append(
-            f"  {key:<25} = {format_log_value(value.phys_value):<12} (raw: {value.raw_value})"
-        )
+        physical_value = format_log_value(value.phys_value)
+        lines.append(f"  {key:<25} = {physical_value:<12} (raw: {value.raw_value})")
 
     return "\n".join(lines)
 
