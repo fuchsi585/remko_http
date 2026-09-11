@@ -81,7 +81,12 @@ class HomeAssistantError(Exception):
     """Minimal HomeAssistantError stub."""
 
 
+class ConfigEntryNotReady(Exception):
+    """Minimal ConfigEntryNotReady stub."""
+
+
 homeassistant_exceptions.HomeAssistantError = HomeAssistantError
+homeassistant_exceptions.ConfigEntryNotReady = ConfigEntryNotReady
 
 # ---------------------------------------------------------------------------
 # Home Assistant sensor component stub

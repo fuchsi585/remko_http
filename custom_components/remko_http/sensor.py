@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -47,26 +47,16 @@ class RemkoSensor(RemkoBaseEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator, entry, definition)
 
-        self._last_value: float | int | str | None = None
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        new_value = self.native_value
-        if new_value != self._last_value:
-            self._last_value = new_value
-            self.async_write_ha_state()
-
     @property
     def native_value(self):
         if self.coordinator.data is None:
-            return self._last_value
+            return None
 
         value: DeviceValue | None = self.coordinator.data.get(
             self._definition.key, None
         )
         if value is None or value.phys_value is None:
-            return self._last_value
+            return None
 
         return self._round_value(value.phys_value)
 

@@ -18,7 +18,7 @@
       "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen."
     },
     "abort": {
-      "already_configured": "Dieses Gerät ist bereits eingerichtet."
+      "single_instance_allowed": "Es kann nur eine REMKO-Wärmepumpe eingerichtet werden."
     }
   },
   "options": {
