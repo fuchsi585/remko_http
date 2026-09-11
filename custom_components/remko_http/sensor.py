@@ -71,7 +71,7 @@ class RemkoSensor(RemkoBaseEntity, SensorEntity):
         return self._round_value(value.phys_value)
 
     def _round_value(self, value: float | int | str) -> float | int | str:
-        """Round numeric values based on suggested_display_precision."""
+        """Round numeric values based on display_precision."""
         precision = self._definition.display_precision
         if precision is None or not isinstance(value, (int, float)):
             return value
