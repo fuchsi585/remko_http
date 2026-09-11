@@ -351,6 +351,22 @@ class RemkoCoordinator(DataUpdateCoordinator):
             _LOGGER.debug("%s", format_decoded_data(result))
 
             self._storage_dirty = True
+
+            # Den ersten gültigen Energiewert sofort speichern.
+            # Weitere Änderungen werden wie bisher alle zehn Minuten gespeichert.
+            # Sofort speichern, wenn der gespeicherte Energiewert fehlt oder None ist
+            # und inzwischen ein gültiger berechneter Wert vorliegt.
+            if any(
+                (
+                    (stored := self._last_stored_energies.data.get(key)) is None
+                    or stored.phys_value is None
+                )
+                and (value := result.get(key)) is not None
+                and value.phys_value is not None
+                for key in STORAGE_KEYS
+            ):
+                await self._async_storage_flush(now)
+
             # Timer erst nach dem ersten erfolgreichen Update starten.
             if self._unsub_storage is None:
                 self._unsub_storage = async_track_time_interval(
