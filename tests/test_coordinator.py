@@ -321,7 +321,8 @@ def test_energy_calculation_skips_large_time_gap() -> None:
     assert result["energy_electrical"].phys_value == 10.0
 
 
-def test_energy_calculation_skips_non_positive_time_delta() -> None:
+@pytest.mark.parametrize("time_diff", [-20, 0], ids=["negative_time_delta", "null"])
+def test_energy_calculation_skips_non_positive_time_delta(time_diff) -> None:
     """Test zero and negative time deltas do not change energy."""
     coordinator = _coordinator()
     timestamp = datetime(2026, 9, 8, 12, 0, tzinfo=timezone.utc)
@@ -344,7 +345,7 @@ def test_energy_calculation_skips_non_positive_time_delta() -> None:
 
     result = coordinator._energy_calculation(
         {"power": DeviceValue("power", phys_value=200)},
-        timestamp,
+        timestamp - timedelta(time_diff),
     )
 
     assert result["energy_electrical"].phys_value == 10.0
