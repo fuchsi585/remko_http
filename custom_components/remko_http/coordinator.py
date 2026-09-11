@@ -11,7 +11,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.storage import Store
@@ -55,7 +55,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
 
-        self._polling = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        self._polling = entry.options.get(
+            CONF_SCAN_INTERVAL,
+            entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+        )
         self._firmware: str | None = None
         self._serial_number: str | None = None
         self._last_snapshot: CoordinatorSnapshot | None = None
@@ -149,6 +152,11 @@ class RemkoCoordinator(DataUpdateCoordinator):
             self._session = get_async_client(self.hass, verify_ssl=False)
 
         response = await self._async_read_raw_pump_data([HTTP_REQ_SERIAL_NUMBER])
+
+        # Home Assistant erhält einen definierten Einrichtungsfehler.
+        if response is None:
+            raise ConfigEntryNotReady("Unable to connect to REMKO")
+
         self._serial_number = response.get(HTTP_REQ_SERIAL_NUMBER, "unknown")
 
     async def _async_read_raw_pump_data(
@@ -242,69 +250,68 @@ class RemkoCoordinator(DataUpdateCoordinator):
             if not energy_definition.intergrated_power:
                 continue
 
-            # keine Storage-Wert vorhanden,
-            # dann wird mit Gerätewert initialisieren
-            if self._last_stored_energies.data.get(energy_definition.key) is None:
-                if (device_value := result.get(energy_definition.source_key)) is None:
-                    continue
+            device_energy = result.get(energy_definition.source_key)
+            previous = self._last_snapshot
+            last_energy = previous.data.get(energy_definition.key) if previous else None
 
-                result[energy_definition.key] = replace(
-                    device_value,
-                    key=energy_definition.key,
-                    raw_value=None,
-                )
-                continue
+            # Einmal initialisieren. Nachfolgende polls verwenden den Memory-Wert,
+            # unabhängig davon, wann der Snapshot auf der Festplatte gespeichert wird.
+            if last_energy is None or last_energy.phys_value is None:
+                initial = self._last_stored_energies.data.get(energy_definition.key)
 
-            # kein letzten Snapshot-Wert vorhanden,
-            # dann wird mit dem letzten gespeicherten Wert initialisiert
-            if self._last_snapshot is None:
-                act_device_energy = result.get(energy_definition.source_key)
-                act_stored_energy = self._last_stored_energies.data.get(
-                    energy_definition.key
-                )
-                stored_timediff = now - self._last_stored_energies.timestamp
-                stored_diff_energy = (
-                    act_device_energy.phys_value - act_stored_energy.phys_value
-                )
-                # Wenn Differenz > 2kWh zwischen Gerät und Berechnung
-                # und Zeitstempel > polling * 4  (z.B. 80s),
-                # dann wird mit dem aktuellen Gerätewert initialisiert
-                # sonst wird der gespeicherte Wert genommen
-                if (
-                    stored_timediff > max_diff_time
-                    and stored_diff_energy > energy_definition.max_energy_stored_diff
-                ):
-                    seconds = int(stored_timediff.total_seconds())
-                    _LOGGER.warning(
-                        "New initial value '%s': time delta (%s) and energy difference (%s kWh > %s kWh) too large: %s kWh → %s kWh",
-                        energy_definition.key,
-                        "{:02d}:{:02d}:{:02d}".format(
-                            seconds // 3600, (seconds % 3600) // 60, seconds % 60
-                        ),
-                        round(stored_diff_energy, 2),
-                        energy_definition.max_energy_stored_diff,
-                        round(act_stored_energy.phys_value, 2),
-                        round(act_device_energy.phys_value, 2),
-                    )
-                    result[energy_definition.key] = replace(act_device_energy)
-                else:
+                if initial is None or initial.phys_value is None:
+                    initial = device_energy
+                elif device_energy is not None and device_energy.phys_value is not None:
+                    stored_at = self._last_stored_energies.timestamp
+                    # Wenn Differenz > 2kWh zwischen Gerät und Berechnung
+                    # und Zeitstempel > polling * 4  (z.B. 80s),
+                    # dann wird mit dem aktuellen Gerätewert initialisiert
+                    # sonst wird der gespeicherte Wert genommen
+                    if (
+                        stored_at is not None
+                        and stored_at.tzinfo is not None
+                        and now - stored_at > max_diff_time
+                        and device_energy.phys_value - initial.phys_value
+                        > energy_definition.max_energy_stored_diff
+                    ):
+                        seconds = int((now - stored_at).total_seconds())
+                        _LOGGER.info(
+                            "New initial value '%s': time delta (%s) and energy difference (%s kWh > %s kWh) too large: %s kWh → %s kWh",
+                            energy_definition.key,
+                            "{:02d}:{:02d}:{:02d}".format(
+                                seconds // 3600, (seconds % 3600) // 60, seconds % 60
+                            ),
+                            round(device_energy.phys_value - initial.phys_value, 2),
+                            energy_definition.max_energy_stored_diff,
+                            round(initial.phys_value, 2),
+                            round(device_energy.phys_value, 2),
+                        )
+                        initial = device_energy
+
+                if initial is not None and initial.phys_value is not None:
                     result[energy_definition.key] = replace(
-                        self._last_stored_energies.data.get(energy_definition.key)
+                        initial, key=energy_definition.key, raw_value=None
                     )
                 continue
 
-            last_energy = self._last_snapshot.data.get(energy_definition.key)
-            last_power = self._last_snapshot.data.get(
-                energy_definition.intergrated_power
-            )
+            # Die Energie auch dann beibehalten, wenn ein Leistungswert fehlt.
+            # Sobald wieder zwei aufeinanderfolgende gültige Messwerte vorliegen,
+            # wird die Energieberechnung fortgesetzt.
+            result[energy_definition.key] = replace(last_energy)
+            last_power = previous.data.get(energy_definition.intergrated_power)
             current_power = result.get(energy_definition.intergrated_power)
 
-            if last_power is None or current_power is None:
+            if (
+                previous.timestamp is None
+                or last_power is None
+                or current_power is None
+                or last_power.phys_value is None
+                or current_power.phys_value is None
+            ):
                 continue
 
-            timediff = now - self._last_snapshot.timestamp
+            timediff = now - previous.timestamp
             if timediff <= timedelta(0):
-                result[energy_definition.key] = replace(last_energy)
                 continue
 
             if timediff > max_diff_time:
@@ -312,19 +319,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 _LOGGER.warning(
                     f"Skipping energy integration because time delta is too large: {timediff}",
                 )
-                result[energy_definition.key] = replace(last_energy)
                 continue
 
             # Zeitdifferenz in Stunden berechnen
             timediff_hours = timediff.total_seconds() / 3_600
-
-            if current_power.phys_value is None:
-                _LOGGER.warning(
-                    "Skipping energy integration because current power is not available"
-                )
-                result[energy_definition.key] = replace(last_energy)
-                continue
-
             # Trapezregel
             additional_energy = (
                 (last_power.phys_value + current_power.phys_value)
@@ -332,9 +330,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 * timediff_hours
                 / 1_000
             )
-            new_energy = replace(last_energy)
-            new_energy.phys_value += additional_energy
-            result[energy_definition.key] = new_energy
+            result[energy_definition.key].phys_value += additional_energy
 
         return result
 

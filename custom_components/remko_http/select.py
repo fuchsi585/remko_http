@@ -47,21 +47,18 @@ class RemkoSelectEntity(RemkoBaseEntity, SelectEntity):
     ) -> None:
         """Initialize the select entity."""
         super().__init__(coordinator, entry, definition)
-        self._last_value: str | None = None
         self._attr_current_option = self.native_value
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        new_option = self.native_value
-        if new_option != self._attr_current_option:
-            self._attr_current_option = new_option
-            self.async_write_ha_state()
+        self._attr_current_option = self.native_value
+        self.async_write_ha_state()
 
     @property
     def native_value(self) -> int | None:
         """Return the current value."""
-        mapped_name: DeviceValue = self.coordinator.data.get(
+        mapped_name: DeviceValue | None = (self.coordinator.data or {}).get(
             self._definition.read_key, None
         )
         if mapped_name is None:

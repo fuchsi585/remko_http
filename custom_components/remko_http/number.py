@@ -53,24 +53,13 @@ class RemkoNumber(RemkoBaseEntity, NumberEntity):
         self._attr_native_max_value = self._definition.max_value
         self._attr_native_step = self._definition.step
         self._attr_native_value: float | None = None
-        self._last_value: float | None = None
-
-    @property
-    def response_size(self):
-        return len(self.coordinator.data.get(self._definition.read_key).raw_value)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        new_value = self.native_value
-        if new_value != self._last_value:
-            self._last_value = new_value
-            self.async_write_ha_state()
 
     @property
     def native_value(self) -> float | None:
         """Return the current value."""
-        value: DeviceValue = self.coordinator.data.get(self._definition.read_key, None)
+        value: DeviceValue | None = (self.coordinator.data or {}).get(
+            self._definition.read_key, None
+        )
         if value is None:
             return None
 

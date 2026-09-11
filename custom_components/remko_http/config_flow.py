@@ -38,6 +38,9 @@ class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         errors: dict[str, str] = {}
 
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
         if user_input is not None:
             host = user_input["host"]
 
@@ -47,8 +50,6 @@ class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = str(err)
 
             if not errors:
-                await self.async_set_unique_id(f"{host}")
-                self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=f"Remko ({host})",
                     data=user_input,

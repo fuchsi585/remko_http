@@ -70,4 +70,12 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
 
     @property
     def available(self) -> bool:
-        return super().available
+        # Nur verfügbar, wenn die letzte Abfrage erfolgreich war
+        # und für diese Entität ein gültiger Messwert vorliegt.
+        if not super().available or self.coordinator.data is None:
+            return False
+
+        key = getattr(self._definition, "read_key", self._definition.key)
+        value = self.coordinator.data.get(key)
+
+        return value is not None and value.phys_value is not None
