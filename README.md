@@ -1,8 +1,9 @@
 # REMKO HTTP
 
-[![GitHub License](https://img.shields.io/github/license/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http)
-[![GitHub Release](https://img.shields.io/github/v/release/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http)
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
+[![GitHub Release](https://img.shields.io/github/v/release/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/releases)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange)](https://www.hacs.xyz/)
+[![Validate](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/fuchsi585/remko_http/actions/workflows/validate.yml)
+[![License](https://img.shields.io/github/license/fuchsi585/remko_http)](https://github.com/fuchsi585/remko_http/blob/main/LICENSE)
 
 Home Assistant Custom Integration für REMKO Wärmepumpen mit lokaler HTTP-/CGI-Schnittstelle.
 
@@ -166,7 +167,7 @@ Die Verwendung erfolgt auf eigene Verantwortung.
 
 ## Lizenz
 
-MIT License
+[MIT License](LICENSE)
 
 ## Autor
 
