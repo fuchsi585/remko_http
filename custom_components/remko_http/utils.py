@@ -56,7 +56,7 @@ def parse_datetime(raw: Any) -> datetime | None:
         return None
     try:
         return datetime.fromisoformat(raw)
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return None
 
 
