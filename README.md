@@ -39,7 +39,7 @@ Feedback zu weiteren Modellen und Firmware-Versionen ist willkommen.
 
 ## Voraussetzungen
 
-- Home Assistant 2026.7.0 oder neuer
+- Home Assistant 2024.1.0 oder neuer, ältere Versionen werden nicht getestet.
 - REMKO Wärmepumpe mit unterstützter Firmware
 - Netzwerkverbindung zwischen Home Assistant und Wärmepumpe
 - Erreichbare lokale HTTP-/CGI-Schnittstelle

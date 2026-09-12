@@ -13,9 +13,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  latest-stable:
-    name: Latest stable dependencies
+  home-assistant:
+    name: Home Assistant ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 2024.1.0
+            python-version: "3.11"
+            homeassistant: homeassistant==2024.1.0
+          - name: latest stable
+            python-version: "3.14"
+            homeassistant: homeassistant
 
     steps:
       - name: Check out repository
@@ -26,11 +36,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.14"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install latest stable dependencies
-        run: python -m pip install --upgrade homeassistant pytest pytest-asyncio
+      - name: Install dependencies
+        run: >-
+          python -m pip install --upgrade
+          "${{ matrix.homeassistant }}"
+          pytest
+          pytest-asyncio
 
       - name: Show tested versions
         run: python -m pip list

@@ -19,6 +19,7 @@ from homeassistant.const import (
 # Conditional import für UnitOfRatio (nur ab HA 2026.7)
 try:
     from homeassistant.const import UnitOfRatio
+
     UNIT_PERCENTAGE = UnitOfRatio.PERCENTAGE
 except ImportError:
     # Fallback für ältere HA-Versionen
