@@ -39,7 +39,7 @@ Feedback for additional models and firmware versions is welcome.
 
 ## Requirements
 
-- Home Assistant 2026.7.0 or newer
+- Home Assistant 2024.1.0 or newer
 - REMKO heat pump with supported firmware
 - Network connectivity between Home Assistant and the heat pump
 - Accessible local HTTP/CGI interface
@@ -130,7 +130,7 @@ No external server is required for communication.
 
 Diagnostic and helper entities such as device energy, own consumption and some
 target values are disabled by default. They can be enabled through Home
-Assistant's entity management when needed. The “Calculated energy” value is
+Assistant's entity management when needed. The "Calculated energy" value is
 maintained locally using the measured electrical power.
 
 ## Troubleshooting
@@ -181,7 +181,7 @@ Communication takes place directly between Home Assistant and the REMKO controll
 
 ## Acknowledgements
 
-Special thanks to **Altrec** for the inspiration and groundwork surrounding the integration of REMKO heat pumps with Home Assistant. Many thanks also to the Home Assistant community for sharing knowledge and insights.
+Special thanks to **Altrec** for the inspiration and groundwork surrounding the integration of REMKO heat pumps with Home Assistant. Many thanks also to the Home Assistant community for sharing knowledge and support.
 
 ## Disclaimer
 

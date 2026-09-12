@@ -1,5 +1,7 @@
 """Constants for Remko Heatpump integration."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Final
@@ -12,10 +14,18 @@ from homeassistant.components.sensor import (
 from homeassistant.const import (
     UnitOfEnergy,
     UnitOfPower,
-    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
 )
+
+# Conditional import für UnitOfRatio (nur ab HA 2026.7)
+try:
+    from homeassistant.const import UnitOfRatio
+
+    UNIT_PERCENTAGE = UnitOfRatio.PERCENTAGE
+except ImportError:
+    # Fallback für ältere HA-Versionen
+    UNIT_PERCENTAGE = "%"
 
 from .remko_enums import (
     HotWaterReqState,
@@ -280,7 +290,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
     ),
     RemkoSensorDef(
         key="room_humidity",
-        unit=UnitOfRatio.PERCENTAGE,
+        unit=UNIT_PERCENTAGE,
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:cloud-percent",
@@ -289,7 +299,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
     ),
     RemkoSensorDef(
         key="pump_speed",
-        unit=UnitOfRatio.PERCENTAGE,
+        unit=UNIT_PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:pump",
         http_req=5576,  # 5043 - abs in rpm?
