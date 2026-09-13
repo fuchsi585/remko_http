@@ -96,6 +96,9 @@ def test_decode_device_values() -> None:
             5320: "0002",  # power = 200 W
             5001: "06",  # operating_status = heating
             5105: "00000064",  # raw energy = 100 kWh
+            5388: "0000000C",  # hourly energy = 12 kWh
+            5293: "00000022",  # daily energy = 34 kWh
+            5389: "00003039",  # temporary hourly energy = 1.2345 kWh
         }
     )
 
@@ -104,6 +107,11 @@ def test_decode_device_values() -> None:
     assert result["power"].phys_value == 200
     assert result["operating_status"].phys_value is OperatingState.HEATING
     assert result["energy_electrical_raw"].phys_value == 100
+    assert result["energy_electrical_hour"].phys_value == 12
+    assert result["energy_electrical_day"].phys_value == 34
+    assert result["energy_electrical_hour_temporary"].phys_value == pytest.approx(
+        1.2345
+    )
 
 
 def test_decode_device_values_ignores_unknown_values() -> None:

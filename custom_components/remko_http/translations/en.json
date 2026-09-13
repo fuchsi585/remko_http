@@ -68,13 +68,13 @@
         "name": "Heating water temperature"
       },
       "mixed_return_temp": {
-        "name": "Mixed return temperature"
+        "name": "Hydraulics: Mixed return temperature"
       },
       "mixed_flow_temp": {
-        "name": "Mixed flow temperature"
+        "name": "Hydraulics: Mixed flow temperature"
       },
       "circulation_temp": {
-        "name": "Circulation temperature"
+        "name": "DHW: Circulation temperature"
       },
       "out_temp": {
         "name": "Outdoor temperature"
@@ -94,9 +94,6 @@
       "power": {
         "name": "Power"
       },
-      "power_own_use": {
-        "name": "Power own use"
-      },
       "power_thermal": {
         "name": "Thermal power"
       },
@@ -106,6 +103,14 @@
       "energy_electrical": {
         "name": "Calculated energy"
       },
+      "energy_electrical_hour": {"name": "Electrical energy (hour)"},
+      "energy_electrical_day": {"name": "Electrical energy (day)"},
+      "energy_electrical_week": {"name": "Electrical energy (week)"},
+      "energy_electrical_month": {"name": "Electrical energy (month)"},
+      "energy_electrical_year": {"name": "Electrical energy (year)"},
+      "energy_electrical_hour_temporary": {
+        "name": "Electrical energy (hour, temporary)"
+      },
       "compressor_starts": {
         "name": "Compressor starts"
       },
@@ -114,7 +119,7 @@
       },
       "fan_state": {
         "name": "Fan state (outdoor)",
-        "state":{
+        "state": {
           "off": "Off",
           "on": "On"
         }
@@ -147,8 +152,8 @@
         }
       },
       "circulation_pump_state": {
-        "name": "Circulation pump",
-        "state":{
+        "name": "DHW: Circulation pump",
+        "state": {
           "off": "Off",
           "on": "On"
         }
@@ -161,6 +166,197 @@
           "standby": "Standby",
           "cooling": "Cooling"
         }
+      },
+      "hot_water_target_temperature": {
+        "name": "DHW: Tank target temp."
+      },
+      "hot_water_diverter_valve": {
+        "name": "DHW: Switch valve",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "hot_water_energy": {
+        "name": "DHW: Heating energy"
+      },
+      "hot_water_hygiene_function": {
+        "name": "DHW: hygiene function",
+        "state": {
+          "active": "Active",
+          "standby": "Standby"
+        }
+      },
+      "hot_water_circulation_demand": {
+        "name": "DHW: Circulation demand",
+        "state": {
+          "standby": "Standby",
+          "active": "Active",
+          "blocked": "Blocked"
+        }
+      },
+      "hot_water_circulation_target_temperature": {
+        "name": "DHW: Circulation target temp."
+      },
+      "hydraulics_demand": {
+        "name": "Hydraulics: Requirement",
+        "state": {
+          "auto": "Auto",
+          "heating": "Heating",
+          "standby": "Standby",
+          "cooling": "Cooling"
+        }
+      },
+      "hydraulics_thermal_power": {
+        "name": "Hydraulics: Thermal output"
+      },
+      "hydraulics_target_flow_rate": {
+        "name": "Hydraulics: Target volume flow"
+      },
+      "hydraulics_actual_flow_rate": {
+        "name": "Hydraulics: Actual flow rate"
+      },
+      "hydraulics_actual_flow_rate_mixed": {
+        "name": "Hydraulics: Mixed actual flow rate"
+      },
+      "hydraulics_pump_speed": {
+        "name": "Hydraulics: Pump speed rel."
+      },
+      "hydraulics_cooling_diverter_valve": {
+        "name": "Hydraulics: Switch valve cooling",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_status": {
+        "name": "HP: Status",
+        "state": {
+          "ready": "Ready",
+          "lead_time": "Lead time",
+          "blocked": "Blocked",
+          "lockout_time": "Lockout time",
+          "locked": "Locked",
+          "disabled": "Disabled"
+        }
+      },
+      "heat_pump_sub_status": {
+        "name": "HP: Sub-status",
+        "state": {
+          "off": "Off",
+          "cooling": "Cooling",
+          "heating": "Heating",
+          "alarm": "Alarm",
+          "transition_to_cooling": "Transition to cooling",
+          "defrosting": "Defrosting",
+          "waiting": "Waiting",
+          "standby": "Standby"
+        }
+      },
+      "heat_pump_lockout_time": {
+        "name": "HP: Remaining blocking time"
+      },
+      "heat_pump_defrost_status": {
+        "name": "HP: Defrost status",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_compressor_status": {
+        "name": "HP: Compressor status",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_error_status": {
+        "name": "HP: Error status",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_enable_signal": {
+        "name": "HP: Release signal",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_compressor_lock": {
+        "name": "HP: Compressor cut-off",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heat_pump_mode": {
+        "name": "HP: Mode",
+        "state": {
+          "cooling": "Cooling",
+          "heating": "Heating"
+        }
+      },
+      "heat_pump_lock_signal": {
+        "name": "HP: Blocking signal",
+        "state": {
+          "blocked": "Blocked",
+          "released": "Released"
+        }
+      },
+      "heat_pump_compressor_frequency": {
+        "name": "HP: Compressor frequency"
+      },
+      "heat_pump_hot_gas_temperature": {
+        "name": "HP: Discharge pipe temp."
+      },
+      "heat_pump_runtime_minutes": {
+        "name": "HP: Runtime (minutes)"
+      },
+      "heat_pump_four_way_valve": {
+        "name": "HP: 4-way valve",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "heating_circuit_unmixed_operating_mode": {
+        "name": "Unmixed HC: Operation Mode",
+        "state": {
+          "auto": "Auto",
+          "heating": "Heating",
+          "standby": "Standby",
+          "cooling": "Cooling"
+        }
+      },
+      "heating_circuit_unmixed_target_temperature": {
+        "name": "Unmixed HC: Target temperature"
+      },
+      "heating_circuit_unmixed_actual_temperature": {
+        "name": "Unmixed HC: Actual temperature"
+      },
+      "heating_circuit_unmixed_dew_point": {
+        "name": "Unmixed HC: Dewpoint"
+      },
+      "heating_circuit_unmixed_status": {
+        "name": "Unmixed HC: Status",
+        "state": {
+          "auto": "Auto",
+          "comfort": "Comfort",
+          "standby": "Standby",
+          "eco": "Eco",
+          "protection": "Protection"
+        }
+      },
+      "heating_circuit_unmixed_setpoint_adjustment": {
+        "name": "Unmixed HC: Setpoint Adjustment"
+      },
+      "hydraulics_heating_energy": {
+        "name": "Hydraulics: Heating energy"
+      },
+      "hydraulics_cooling_energy": {
+        "name": "Hydraulics: Cooling energy"
       }
     },
     "number": {

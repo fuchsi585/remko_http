@@ -24,6 +24,45 @@ class CoordinatorSnapshot:
     timestamp: datetime | None
 
 
+class ModelType(StrEnum):
+    CODING_ERROR = "error"
+    WKF_70_F = "WKF 70 (F)"
+    WKF_85_A = "WKF 85 (A)"
+    WKF_180_C = "WKF 180 (C)"
+    WKF_120_C = "WKF 120 (C)"
+    WKF_180_F = "WKF 180 (F)"
+    WKF_120_F = "WKF 120 (F)"
+    WKF_120_DUO = "WKF 120 Duo"
+    WKF_180_DUO = "WKF 180 Duo"
+    NO_NAME = "Unknown Model"
+
+    @property
+    def hex_value(self) -> str | None:
+        try:
+            return {
+                ModelType.CODING_ERROR: "00",
+                ModelType.WKF_70_F: "06",
+                ModelType.WKF_85_A: "07",
+                ModelType.WKF_180_C: "08",
+                ModelType.WKF_120_C: "09",
+                ModelType.WKF_180_F: "0A",
+                ModelType.WKF_120_F: "0B",
+                ModelType.WKF_120_DUO: "FD",
+                ModelType.WKF_180_DUO: "FE",
+                ModelType.NO_NAME: "FF",
+            }[self]
+        except KeyError:
+            return None
+
+    @classmethod
+    def from_hex(cls, value: str) -> ModelType | str:
+        for state in cls:
+            if state.hex_value == value:
+                return state
+
+        return f"Status N/A: {value}"
+
+
 class RemkoDataType(Enum):
     UINT8 = (1, False)
     INT8 = (1, True)
@@ -44,12 +83,18 @@ class RemkoDataType(Enum):
 class ScaleType(StrEnum):
     TEMPERATURE = SensorDeviceClass.TEMPERATURE
     POWER = SensorDeviceClass.POWER
+    TENTH = "tenth"
+    HUNDREDTH = "hundredth"
+    TEN_THOUSANDTH = "ten_thousandth"
     DEFAULT = "default"
 
     @property
     def scale(self) -> int | float:
         return {
             "default": 1,
+            "tenth": 0.1,
+            "hundredth": 0.01,
+            "ten_thousandth": 0.0001,
             SensorDeviceClass.TEMPERATURE: 0.1,
             SensorDeviceClass.POWER: 100,
         }[self]
@@ -169,3 +214,113 @@ class OperatingState(StrEnum):
                 return state
 
         return f"Status N/A: {value}"
+
+
+class HeatingCircuitStatus(StrEnum):
+    AUTO = "auto"
+    COMFORT = "comfort"
+    STANDBY = "standby"
+    ECO = "eco"
+    PROTECTION = "protection"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> HeatingCircuitStatus | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
+
+
+class HeatPumpStatus(StrEnum):
+    READY = "ready"
+    LEAD_TIME = "lead_time"
+    BLOCKED = "blocked"
+    LOCKOUT_TIME = "lockout_time"
+    LOCKED = "locked"
+    DISABLED = "disabled"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> HeatPumpStatus | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
+
+
+class HeatPumpSubStatus(StrEnum):
+    OFF = "off"
+    COOLING = "cooling"
+    HEATING = "heating"
+    ALARM = "alarm"
+    TRANSITION_TO_COOLING = "transition_to_cooling"
+    DEFROSTING = "defrosting"
+    WAITING = "waiting"
+    STANDBY = "standby"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> HeatPumpSubStatus | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
+
+
+class HeatPumpMode(StrEnum):
+    COOLING = "cooling"
+    HEATING = "heating"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> HeatPumpMode | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
+
+
+class HeatPumpLockSignal(StrEnum):
+    BLOCKED = "blocked"
+    RELEASED = "released"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> HeatPumpLockSignal | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
+
+
+class CirculationDemandState(StrEnum):
+    STANDBY = "standby"
+    ACTIVE = "active"
+    BLOCKED = "blocked"
+
+    @property
+    def hex_value(self) -> str:
+        return f"{list(type(self)).index(self):02X}"
+
+    @classmethod
+    def from_hex(cls, value: str) -> CirculationDemandState | str:
+        try:
+            return list(cls)[int(value, 16)]
+        except (IndexError, ValueError):
+            return f"Status N/A: {value}"
