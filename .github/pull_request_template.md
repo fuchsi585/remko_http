@@ -2,10 +2,6 @@
 
 Closes #<!-- issue number -->
 
-## Summary
-
-<!-- What does this PR do? -->
-
 ## Changes
 
 -
@@ -13,7 +9,5 @@ Closes #<!-- issue number -->
 ## Checklist
 
 - [ ] Tests pass (`pytest`)
-- [ ] CHANGELOG.md updated
 - [ ] Version bumped in `manifest.json` (if code change)
 - [ ] README updated (if new sensors, features or behavior changes)
-- [ ] No secrets or real device serial numbers in code
