@@ -1,4 +1,4 @@
-"""Config flow for Remko Heatpump integration."""
+"""Config flow for Remko HTTP integration."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for Remk Heatpump."""
+"""Remko Coordinator."""
 
 from __future__ import annotations
 
@@ -24,10 +24,10 @@ from .const import (
     CONF_HOST,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
+    DEVICE_INFO_KEYS,
     DOMAIN,
     ENERGY_SENSORS,
     ENERGY_SENSORS_DEVICE_RAW,
-    HTTP_REQ_SERIAL_NUMBER,
     HTTP_REQS,
     HTTP_TIMEOUT,
     MAX_DIFF_TIME_ENERGY_FACTOR,
@@ -40,7 +40,7 @@ from .const import (
     RemkoSelectDef,
     RemkoSensorDef,
 )
-from .remko_enums import CoordinatorSnapshot, DeviceValue
+from .remko_enums import CoordinatorSnapshot, DeviceValue, ModelType
 from .utils import decode, encode, format_decoded_data, parse_datetime, round_number
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,7 +60,6 @@ class RemkoCoordinator(DataUpdateCoordinator):
             entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
         )
         self._firmware: str | None = None
-        self._serial_number: str | None = None
         self._last_snapshot: CoordinatorSnapshot | None = None
         self._url: str = f"http://{entry.data.get(CONF_HOST)}/cgi-bin/webapi.cgi"
         self._session: AsyncClient | None = None
@@ -71,6 +70,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         # Merker, ob seit dem letzten Save etwas geändert wurde.
         self._storage_dirty = False
         self._unsub_storage = None
+        self._device_info: dict[str, str] = {}
         super().__init__(
             hass,
             _LOGGER,
@@ -79,12 +79,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
         )
 
     @property
-    def firmware(self):
-        return self._firmware
-
-    @property
-    def serial_number(self):
-        return self._serial_number
+    def device_info(self):
+        return self._device_info
 
     async def async_load_storage(self) -> None:
         """Seed the state from disk so the first poll is validated."""
@@ -151,13 +147,41 @@ class RemkoCoordinator(DataUpdateCoordinator):
         if self._session is None:
             self._session = get_async_client(self.hass, verify_ssl=False)
 
-        response = await self._async_read_raw_pump_data([HTTP_REQ_SERIAL_NUMBER])
+        info_reqs = [http_req for _, http_req in DEVICE_INFO_KEYS.items()]
+        response = await self._async_real_all_raw_pump_data(info_reqs)
 
-        # Home Assistant erhält einen definierten Einrichtungsfehler.
-        if response is None:
-            raise ConfigEntryNotReady("Unable to connect to REMKO")
+        if response is None or any(
+            not response.get(http_req) for http_req in DEVICE_INFO_KEYS.values()
+        ):
+            raise ConfigEntryNotReady(
+                "REMKO responded without complete device information"
+            )
 
-        self._serial_number = response.get(HTTP_REQ_SERIAL_NUMBER, "unknown")
+        for name, http_req in DEVICE_INFO_KEYS.items():
+            if name == "model":
+                self._device_info[name] = ModelType.from_hex(
+                    response.get(http_req, "FF")
+                )
+                continue
+            self._device_info[name] = response.get(http_req, "unknown")
+
+        self._device_info["sw_version"] = self._firmware
+
+    async def _async_real_all_raw_pump_data(
+        self, queries: list[int], chunk_size: int = 30
+    ) -> dict[str, str] | None:
+        result = {}
+
+        for start in range(0, len(queries), chunk_size):
+            chunk = queries[start : start + chunk_size]
+            response = await self._async_read_raw_pump_data(chunk)
+
+            if response is None:
+                return None
+
+            result.update(response)
+
+        return result
 
     async def _async_read_raw_pump_data(
         self, queries: list[int]
@@ -177,15 +201,25 @@ class RemkoCoordinator(DataUpdateCoordinator):
             )
             resp.raise_for_status()
             data = resp.json()
-            if "values" in data:
-                data.update(data.pop("values"))
-                for query_id in queries:
-                    result[query_id] = data.get(str(query_id))
+            values = data.get("values")
+            if not isinstance(values, dict):
+                _LOGGER.error("Invalid REMKO response: missing or invalid 'values'")
+                return None
+
+            result = {
+                query_id: value
+                for query_id in queries
+                if (value := values.get(str(query_id))) is not None
+            }
+
+            if not result:
+                _LOGGER.error("REMKO response contains no requested values")
+                return None
 
             if self._firmware is None:
                 self._firmware = data.get("SMT_VERSION", "unknown")
 
-        except (HTTPStatusError, InvalidURL, RequestError) as err:
+        except (HTTPStatusError, InvalidURL, RequestError, ValueError) as err:
             _LOGGER.error(f"Remko-Client error: {repr(err)}")
             return None
 
@@ -343,7 +377,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            raw_data = await self._async_read_raw_pump_data(HTTP_REQS)
+            # raw_data = await self._async_read_raw_pump_data(HTTP_REQS)
+            raw_data = await self._async_real_all_raw_pump_data(HTTP_REQS)
             if raw_data is None:
                 raise UpdateFailed("Unable to retrieve data from Remko")
 

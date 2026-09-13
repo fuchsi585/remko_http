@@ -7,6 +7,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    CONF_HOST,
     DOMAIN,
     RemkoEnergySensorDef,
     RemkoNumberDef,
@@ -29,6 +30,7 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
         | RemkoEnergySensorDef,
     ) -> None:
         super().__init__(coordinator)
+        self._host_ip = entry.data.get(CONF_HOST)
         self._entry_id = entry.entry_id
         self._definition = definition
         self._attr_unique_id = f"{self._entry_id}_{self._definition.key}"
@@ -57,13 +59,13 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
     @property
     def device_info(self) -> DeviceInfo:
         """Return Home Assistant device info."""
+        device_info = self.coordinator.device_info
         info = {
             "identifiers": {(DOMAIN, self._entry_id)},
             "translation_key": "heat_pump",
             "manufacturer": "Remko",
-            "model": "WKF120",
-            "sw_version": self.coordinator.firmware,
-            "serial_number": self.coordinator.serial_number,
+            "configuration_url": f"http://{self._host_ip}/",
+            **device_info,
         }
 
         return DeviceInfo(**info)

@@ -1,4 +1,4 @@
-"""Remko Number integration."""
+"""Remko Select integration."""
 
 from __future__ import annotations
 

@@ -71,6 +71,8 @@ def test_all_scaling_factors() -> None:
     """Test every supported physical-value scaling factor."""
     assert {scale_type: scale_type.scale for scale_type in ScaleType} == {
         ScaleType.DEFAULT: 1,
+        ScaleType.TENTH: 0.1,
+        ScaleType.HUNDREDTH: 0.01,
         ScaleType.TEMPERATURE: 0.1,
         ScaleType.POWER: 100,
     }
