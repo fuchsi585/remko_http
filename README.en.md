@@ -120,18 +120,109 @@ No external server is required for communication.
 
 ## Entities
 
-| Type | Entities |
-|---|---|
-| Temperature | Domestic hot water target and current temperature, heating water target and current temperature, flow, return, circulation, outdoor, mixed outdoor and room temperature |
-| State | Operating mode, domestic hot water request, circulation pump, fan and room climate mode |
-| Power and energy | Electrical power, own consumption, thermal power, calculated electrical energy and device energy counter |
-| Operation | Room humidity, pump speed, compressor starts and runtime |
-| Control | Warmer/cooler offset, domestic hot water target temperature, room climate mode and one-time domestic hot water heating |
+The following table lists every entity currently provided by the sensor platform. The REMKO ID identifies the parameter used by the local HTTP/CGI interface.
 
-Diagnostic and helper entities such as device energy, own consumption and some
-target values are disabled by default. They can be enabled through Home
-Assistant's entity management when needed. The "Calculated energy" value is
-maintained locally using the measured electrical power.
+| Display name | Internal key | REMKO ID | Unit / value type | Description |
+|---|---|---:|---|---|
+| Warmer / cooler | `cold_hotter_state` | `1946` | K | Current warmer/cooler setpoint offset. |
+| Room climate mode | `room_climate_mode` | `1088` | - | Operating mode or state value. |
+| Current operating mode | `operating_status` | `5001` | - | Current overall operating mode of the system. |
+| Hot water target temperature | `water_temp_req` | `1082` | °C | Temperature or target value. |
+| DHW: Tank target temp. | `hot_water_target_temperature` | `5038` | °C | Temperature or target value. |
+| Hot water temperature | `water_temp` | `5039` | °C | Temperature or target value. |
+| Hot water request | `hot_water_req_state` | `5064` | - | Operating mode or state value. |
+| DHW: Switch valve | `hot_water_diverter_valve` | `5162` | On/off | On/off state of the component. |
+| DHW: Heating energy | `hot_water_energy` | `5376` | kWh | Recorded thermal or electrical energy. |
+| DHW: hygiene function | `hot_water_hygiene_function` | `5803` | - | Operating mode or state value. |
+| DHW: Circulation demand | `hot_water_circulation_demand` | `5133` | - | Operating mode or state value. |
+| DHW: Circulation target temp. | `hot_water_circulation_target_temperature` | `5041` | °C | Temperature or target value. |
+| DHW: Circulation temperature | `circulation_temp` | `5027` | °C | Temperature or target value. |
+| DHW: Circulation pump | `circulation_pump_state` | `5151` | On/off | On/off state of the component. |
+| Hydraulics: Requirement | `hydraulics_demand` | `5040` | - | Operating mode or state value. |
+| Heating water target temperature | `heating_req_temp` | `5085` | °C | Temperature or target value. |
+| Heating water temperature | `heating_actual_temp` | `5190` | °C | Temperature or target value. |
+| Hydraulics: Thermal output | `hydraulics_thermal_power` | `5232` | W | Current power value. |
+| Hydraulics: Mixed flow temperature | `mixed_flow_temp` | `5741` | °C | Temperature or target value. |
+| Hydraulics: Mixed return temperature | `mixed_return_temp` | `5476` | °C | Temperature or target value. |
+| Hydraulics: Target volume flow | `hydraulics_target_flow_rate` | `5073` | l/min | Hydraulic volume flow. |
+| Hydraulics: Actual flow rate | `hydraulics_actual_flow_rate` | `5582` | l/min | Hydraulic volume flow. |
+| Hydraulics: Mixed actual flow rate | `hydraulics_actual_flow_rate_mixed` | `5740` | l/min | Hydraulic volume flow. |
+| Hydraulics: Pump speed rel. | `hydraulics_pump_speed` | `5575` | % | Relative measurement or speed value. |
+| Hydraulics: Heating energy | `hydraulics_heating_energy` | `5374` | kWh | Recorded thermal or electrical energy. |
+| Hydraulics: Cooling energy | `hydraulics_cooling_energy` | `5010` | kWh | Recorded thermal or electrical energy. |
+| Hydraulics: Switch valve cooling | `hydraulics_cooling_diverter_valve` | `5166` | On/off | On/off state of the component. |
+| Outdoor temperature | `out_temp` | `5032` | °C | Temperature or target value. |
+| Mixed outdoor temperature | `mixed_temp` | `5055` | °C | Temperature or target value. |
+| Room target temperature | `room_temp_req` | `5075` | °C | Temperature or target value. |
+| Room temperature | `room_temp_act` | `5050` | °C | Temperature or target value. |
+| Room humidity | `room_humidity` | `5066` | % | Relative measurement or speed value. |
+| Pump speed (heating circuit) | `pump_speed` | `5576` | % | Relative measurement or speed value. |
+| Unmixed HC: Operation Mode | `heating_circuit_unmixed_operating_mode` | `5069` | - | Operating mode or state value. |
+| Unmixed HC: Target temperature | `heating_circuit_unmixed_target_temperature` | `5033` | °C | Temperature or target value. |
+| Unmixed HC: Actual temperature | `heating_circuit_unmixed_actual_temperature` | `5034` | °C | Temperature or target value. |
+| Unmixed HC: Dewpoint | `heating_circuit_unmixed_dew_point` | `5070` | °C | Temperature or target value. |
+| Unmixed HC: Status | `heating_circuit_unmixed_status` | `5710` | - | Operating mode or state value. |
+| Unmixed HC: Setpoint Adjustment | `heating_circuit_unmixed_setpoint_adjustment` | `5717` | °C | Temperature or target value. |
+| HP: Status | `heat_pump_status` | `5049` | - | Operating mode or state value. |
+| HP: Sub-status | `heat_pump_sub_status` | `5473` | - | Operating mode or state value. |
+| HP: Mode | `heat_pump_mode` | `5006` | - | Operating mode or state value. |
+| HP: Remaining blocking time | `heat_pump_lockout_time` | `5572` | min | Runtime or time value. |
+| HP: Defrost status | `heat_pump_defrost_status` | `5626` | On/off | On/off state of the component. |
+| HP: Compressor status | `heat_pump_compressor_status` | `5625` | On/off | On/off state of the component. |
+| HP: Error status | `heat_pump_error_status` | `5002` | On/off | On/off state of the component. |
+| HP: Release signal | `heat_pump_enable_signal` | `5004` | On/off | On/off state of the component. |
+| HP: Compressor cut-off | `heat_pump_compressor_lock` | `5005` | On/off | On/off state of the component. |
+| HP: Blocking signal | `heat_pump_lock_signal` | `5174` | - | Operating mode or state value. |
+| HP: Compressor frequency | `heat_pump_compressor_frequency` | `5205` | Hz | Current compressor frequency. |
+| Fan state (outdoor) | `fan_state` | `5135` | On/off | On/off state of the component. |
+| HP: Discharge pipe temp. | `heat_pump_hot_gas_temperature` | `5146` | °C | Temperature or target value. |
+| Power | `power` | `5320` | W | Current power value. |
+| Thermal power | `power_thermal` | `5321` | W | Current power value. |
+| Compressor starts | `compressor_starts` | `5822` | – | Number of compressor starts. |
+| HP: Runtime (minutes) | `heat_pump_runtime_minutes` | `5823` | min | Runtime or time value. |
+| Runtime | `runtime_hours` | `5824` | h | Runtime or time value. |
+| HP: 4-way valve | `heat_pump_four_way_valve` | `5136` | On/off | On/off state of the component. |
+| Electrical energy (hour) | `energy_electrical_hour` | `5388` | kWh | Electrical energy consumption for the stated period. |
+| Electrical energy (day) | `energy_electrical_day` | `5293` | kWh | Electrical energy consumption for the stated period. |
+| Electrical energy (week) | `energy_electrical_week` | `5294` | kWh | Electrical energy consumption for the stated period. |
+| Electrical energy (month) | `energy_electrical_month` | `5295` | kWh | Electrical energy consumption for the stated period. |
+| Electrical energy (year) | `energy_electrical_year` | `5296` | kWh | Electrical energy consumption for the stated period. |
+| Electrical energy (hour, temporary) | `energy_electrical_hour_temporary` | `5389` | kWh | Internal hourly value with four decimal places; marked as diagnostic. |
+| Calculated energy | `energy_electrical` | `5105` | kWh | Total consumption calculated locally from electrical power; ID 5105 supplies the initial value. |
+| Electrical energy (Device) | `energy_electrical_raw` | `5105` | kWh | Direct device energy counter; disabled by default. |
+
+Some target and diagnostic values may be disabled by default in Home Assistant.
+
+### Electrical energy calculation
+
+The **Calculated energy** entity (`energy_electrical`) is a total energy counter
+maintained by the integration. REMKO provides its own energy counter as ID
+`5105`, but that value is not always reliable for continuous use. The integration
+therefore uses ID `5105` primarily as an initial or reference value and calculates
+subsequent consumption from the heat pump's current electrical power, ID `5320`.
+
+The energy between two successful updates is calculated using the trapezoidal
+rule:
+
+```text
+additional energy [kWh]
+  = (previous power [W] + current power [W]) / 2
+    × time difference [h] / 1000
+```
+
+Averaging the previous and current power readings accounts for changes between
+updates more accurately than using only one measurement. If a power reading is
+missing, the existing energy total is retained. If a data gap exceeds four times
+the configured polling interval, no energy is added for that interval, preventing
+unrealistic jumps.
+
+The calculated total is stored locally by Home Assistant: the first valid value
+is saved immediately, subsequent changes are saved every ten minutes, and pending
+changes are saved when the integration shuts down. After a restart, calculation
+continues from the stored value. If no valid stored value exists, the direct REMKO
+counter `5105` is used as the starting value. It remains separately available as
+the disabled-by-default diagnostic entity **Electrical energy (Device)**
+(`energy_electrical_raw`).
 
 ## Troubleshooting
 
