@@ -73,6 +73,7 @@ def test_all_scaling_factors() -> None:
         ScaleType.DEFAULT: 1,
         ScaleType.TENTH: 0.1,
         ScaleType.HUNDREDTH: 0.01,
+        ScaleType.TEN_THOUSANDTH: 0.0001,
         ScaleType.TEMPERATURE: 0.1,
         ScaleType.POWER: 100,
     }

@@ -29,7 +29,7 @@ def test_entity_availability_requires_successful_update_and_value(
         data={key: DeviceValue(key, 0)},
         last_update_success=True,
     )
-    entry = SimpleNamespace(entry_id="remko")
+    entry = SimpleNamespace(entry_id="remko", data={})
     entity = entity_class(coordinator, definition, entry)
 
     assert entity.available is True
@@ -61,7 +61,9 @@ def test_numeric_entity_returns_none_when_current_value_is_missing(
     coordinator = SimpleNamespace(
         data={key: DeviceValue(key, 12.5)}, last_update_success=True
     )
-    entity = entity_class(coordinator, definition, SimpleNamespace(entry_id="remko"))
+    entity = entity_class(
+        coordinator, definition, SimpleNamespace(entry_id="remko", data={})
+    )
 
     assert entity.native_value is not None
 

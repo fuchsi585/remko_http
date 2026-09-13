@@ -82,6 +82,11 @@ class RemkoCoordinator(DataUpdateCoordinator):
     def device_info(self):
         return self._device_info
 
+    @property
+    def serial_number(self) -> str | None:
+        """Return the serial number reported by the heat pump."""
+        return self._device_info.get("serial_number")
+
     async def async_load_storage(self) -> None:
         """Seed the state from disk so the first poll is validated."""
         if (stored := await self._store.async_load()) is None:
@@ -150,26 +155,28 @@ class RemkoCoordinator(DataUpdateCoordinator):
         info_reqs = [http_req for _, http_req in DEVICE_INFO_KEYS.items()]
         response = await self._async_real_all_raw_pump_data(info_reqs)
 
-        if response is None or any(
-            not response.get(http_req) for http_req in DEVICE_INFO_KEYS.values()
-        ):
+        if response is None:
+            raise ConfigEntryNotReady("Unable to connect to REMKO")
+
+        serial_req = DEVICE_INFO_KEYS["serial_number"]
+        if not response.get(serial_req):
             raise ConfigEntryNotReady(
                 "REMKO responded without complete device information"
             )
 
+        self._device_info = {}
         for name, http_req in DEVICE_INFO_KEYS.items():
+            raw_value = response.get(http_req)
             if name == "model":
-                self._device_info[name] = ModelType.from_hex(
-                    response.get(http_req, "FF")
-                )
+                self._device_info[name] = ModelType.from_hex(raw_value or "FF")
                 continue
-            self._device_info[name] = response.get(http_req, "unknown")
+            self._device_info[name] = raw_value or "unknown"
 
         self._device_info["sw_version"] = self._firmware
 
     async def _async_real_all_raw_pump_data(
         self, queries: list[int], chunk_size: int = 30
-    ) -> dict[str, str] | None:
+    ) -> dict[int, str] | None:
         result = {}
 
         for start in range(0, len(queries), chunk_size):
@@ -185,7 +192,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_read_raw_pump_data(
         self, queries: list[int]
-    ) -> dict[str, str] | None:
+    ) -> dict[int, str] | None:
         if not queries or not self._session:
             _LOGGER.warning("HttpClient not initialized or queries is empty!")
             return None
@@ -247,7 +254,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return response
 
-    def _decode_device_values(self, raw_data: dict[str, str]) -> dict[str, DeviceValue]:
+    def _decode_device_values(self, raw_data: dict[int, str]) -> dict[str, DeviceValue]:
         data: dict = {}
         for sensor_definition in (*BUTTONS, *SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
             if hex_value := raw_data.get(sensor_definition.http_req):

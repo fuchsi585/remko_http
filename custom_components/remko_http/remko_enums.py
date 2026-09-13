@@ -85,6 +85,7 @@ class ScaleType(StrEnum):
     POWER = SensorDeviceClass.POWER
     TENTH = "tenth"
     HUNDREDTH = "hundredth"
+    TEN_THOUSANDTH = "ten_thousandth"
     DEFAULT = "default"
 
     @property
@@ -93,6 +94,7 @@ class ScaleType(StrEnum):
             "default": 1,
             "tenth": 0.1,
             "hundredth": 0.01,
+            "ten_thousandth": 0.0001,
             SensorDeviceClass.TEMPERATURE: 0.1,
             SensorDeviceClass.POWER: 100,
         }[self]
