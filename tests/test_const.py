@@ -18,7 +18,11 @@ from custom_components.remko_http.const import (
     SLEEP_TIME_AFTER_SET_REQ,
     STORAGE_KEYS,
 )
-from custom_components.remko_http.remko_enums import RemkoDataType, ScaleType
+from custom_components.remko_http.remko_enums import (
+    HeatPumpSubStatus,
+    RemkoDataType,
+    ScaleType,
+)
 from custom_components.remko_http.utils import decode, encode
 
 ALL_DEFINITIONS = (
@@ -115,8 +119,8 @@ def test_shared_http_ids_have_consistent_decoders() -> None:
         assert len(scales) <= 1
 
 
-def test_read_and_enable_keys_reference_decoded_entities() -> None:
-    """Write and enable references must point to values decoded by the coordinator."""
+def test_read_keys_and_button_availability_are_valid() -> None:
+    """Read keys must resolve and button availability checks must be callable."""
     readable_by_key = {definition.key: definition for definition in READ_DEFINITIONS}
 
     for definition in (*BUTTONS, *SELECTORS, *NUMBERS):
@@ -124,12 +128,7 @@ def test_read_and_enable_keys_reference_decoded_entities() -> None:
         assert definition.http_req == readable_by_key[definition.read_key].http_req
 
     for definition in BUTTONS:
-        if definition.enable_key is None:
-            assert definition.enable_value is None
-            continue
-        enabled_by = readable_by_key[definition.enable_key]
-        assert enabled_by.option is not None
-        assert isinstance(definition.enable_value, enabled_by.option)
+        assert definition.availability is None or callable(definition.availability)
 
 
 def test_number_ranges_are_valid_and_encodable() -> None:
@@ -167,6 +166,25 @@ def test_enum_decoders_round_trip() -> None:
         for member in enum_type:
             assert member.hex_value is not None
             assert enum_type.from_hex(member.hex_value) is member
+
+
+def test_heat_pump_operating_states_match_remko_protocol() -> None:
+    """All appState_t values documented by REMKO ID 5473 must be mapped."""
+    assert {member.hex_value: member.value for member in HeatPumpSubStatus} == {
+        "00": "off",
+        "01": "cooling",
+        "02": "heating",
+        "03": "alarm",
+        "04": "transition_to_cooling",
+        "05": "defrosting",
+        "06": "waiting",
+        "07": "standby",
+        "08": "transition_to_heating",
+        "09": "stop",
+        "0A": "manual",
+        "0B": "start",
+        "0C": "evu_block",
+    }
 
 
 def test_energy_sensor_dependencies_are_consistent() -> None:

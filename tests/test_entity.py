@@ -4,9 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from custom_components.remko_http.const import NUMBERS, SELECTORS, SENSORS
+from custom_components.remko_http.button import RemkoButtonEntity
+from custom_components.remko_http.const import BUTTONS, NUMBERS, SELECTORS, SENSORS
 from custom_components.remko_http.number import RemkoNumber
-from custom_components.remko_http.remko_enums import DeviceValue
+from custom_components.remko_http.remko_enums import DeviceValue, HotWaterReqState
 from custom_components.remko_http.select import RemkoSelectEntity
 from custom_components.remko_http.sensor import RemkoSensor
 
@@ -72,3 +73,43 @@ def test_numeric_entity_returns_none_when_current_value_is_missing(
 
     coordinator.data = None
     assert entity.native_value is None
+
+
+@pytest.mark.parametrize(
+    ("target_temperature", "actual_temperature", "request_state", "expected"),
+    [
+        (50.0, 40.0, HotWaterReqState.STANDBY, True),
+        (50.0, 50.0, HotWaterReqState.STANDBY, False),
+        (50.0, 60.0, HotWaterReqState.STANDBY, False),
+        (50.0, 40.0, HotWaterReqState.ACTIVE, False),
+        (None, 40.0, HotWaterReqState.STANDBY, False),
+        (50.0, None, HotWaterReqState.STANDBY, False),
+        (50.0, 40.0, None, False),
+    ],
+)
+def test_heat_warm_water_button_availability(
+    target_temperature, actual_temperature, request_state, expected
+) -> None:
+    """DHW boost is available only for a cold tank with no active request."""
+    coordinator = SimpleNamespace(
+        data={
+            "action_heat_warm_water": DeviceValue("action_heat_warm_water", 0),
+            "water_temp_req": DeviceValue("water_temp_req", target_temperature),
+            "water_temp": DeviceValue("water_temp", actual_temperature),
+            "hot_water_req_state": DeviceValue("hot_water_req_state", request_state),
+        },
+        last_update_success=True,
+    )
+    entity = RemkoButtonEntity(
+        coordinator,
+        BUTTONS[0],
+        SimpleNamespace(entry_id="remko", data={}),
+    )
+
+    assert entity.available is expected
+
+    coordinator.last_update_success = False
+    assert entity.available is False
+
+    coordinator.data = None
+    assert entity.available is False

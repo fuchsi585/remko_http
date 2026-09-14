@@ -51,13 +51,14 @@ class RemkoButtonEntity(RemkoBaseEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        if self.coordinator.data is None:
+        if not super().available or self.coordinator.data is None:
             return False
 
-        if (value := self.coordinator.data.get(self._definition.enable_key)) is None:
-            return False
+        availability = getattr(self._definition, "availability", None)
+        if availability is not None:
+            return availability(self.coordinator.data)
 
-        return super().available and value.phys_value == self._definition.enable_value
+        return True
 
     async def async_press(self) -> None:
         """Handle button press by sending action command"""
