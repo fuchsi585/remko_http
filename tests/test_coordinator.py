@@ -1,5 +1,6 @@
 """Tests for the Remko coordinator."""
 
+import asyncio
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -8,6 +9,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from custom_components.remko_http.const import NUMBERS
 from custom_components.remko_http.coordinator import RemkoCoordinator
 from custom_components.remko_http.remko_enums import (
     CoordinatorSnapshot,
@@ -25,6 +27,7 @@ def _coordinator() -> RemkoCoordinator:
     coordinator._firmware = None
     coordinator._last_snapshot = None
     coordinator._last_stored_energies = CoordinatorSnapshot({}, None)
+    coordinator._lock = asyncio.Lock()
     return coordinator
 
 
@@ -99,6 +102,8 @@ def test_decode_device_values() -> None:
             5388: "0000000C",  # hourly energy = 12 kWh
             5293: "00000022",  # daily energy = 34 kWh
             5389: "00003039",  # temporary hourly energy = 1.2345 kWh
+            5138: "007B",  # heat-pump current = 12.3 A
+            5796: "59D8",  # auxiliary mains voltage = 230.00 V
         }
     )
 
@@ -112,6 +117,8 @@ def test_decode_device_values() -> None:
     assert result["energy_electrical_hour_temporary"].phys_value == pytest.approx(
         1.2345
     )
+    assert result["heat_pump_current"].phys_value == pytest.approx(12.3)
+    assert result["auxiliary_heat_generator_mains_voltage"].phys_value == 230.0
 
 
 def test_decode_device_values_ignores_unknown_values() -> None:
@@ -216,6 +223,91 @@ async def test_async_write_raw_pump_data() -> None:
         },
         timeout=15,
     )
+
+
+@pytest.mark.asyncio
+async def test_chunked_poll_holds_lock_for_complete_request() -> None:
+    """A writer cannot run between chunks of one polling request."""
+    coordinator = _coordinator()
+    first_chunk_started = asyncio.Event()
+    release_first_chunk = asyncio.Event()
+    call_order: list[str] = []
+
+    async def read_chunk(queries: list[int]) -> dict[int, str]:
+        call_order.append(f"read-{queries[0]}")
+        if queries == [1]:
+            first_chunk_started.set()
+            await release_first_chunk.wait()
+        return {query: "0001" for query in queries}
+
+    async def competing_writer() -> None:
+        async with coordinator._lock:
+            call_order.append("write")
+
+    coordinator._async_read_raw_pump_data = read_chunk
+    poll_task = asyncio.create_task(
+        coordinator._async_real_all_raw_pump_data([1, 2], chunk_size=1)
+    )
+    await first_chunk_started.wait()
+    writer_task = asyncio.create_task(competing_writer())
+    await asyncio.sleep(0)
+
+    assert call_order == ["read-1"]
+
+    release_first_chunk.set()
+    assert await poll_task == {1: "0001", 2: "0001"}
+    await writer_task
+    assert call_order == ["read-1", "read-2", "write"]
+
+
+@pytest.mark.asyncio
+async def test_write_holds_lock_through_readback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A poll cannot run between a write and its verification read."""
+    coordinator = _coordinator()
+    coordinator.data = {}
+    write_started = asyncio.Event()
+    release_write = asyncio.Event()
+    competitor_acquired = asyncio.Event()
+    written_value: str | None = None
+    call_order: list[str] = []
+
+    async def write_value(_remko_id: int, values: dict[str, str]) -> dict[str, str]:
+        nonlocal written_value
+        call_order.append("write")
+        written_value = next(iter(values.values()))
+        write_started.set()
+        await release_write.wait()
+        return values
+
+    async def read_value(queries: list[int]) -> dict[int, str]:
+        call_order.append("readback")
+        assert written_value is not None
+        return {queries[0]: written_value}
+
+    async def competing_poll() -> None:
+        async with coordinator._lock:
+            call_order.append("poll")
+            competitor_acquired.set()
+
+    coordinator._async_write_raw_pump_data = write_value
+    coordinator._async_read_raw_pump_data = read_value
+    monkeypatch.setattr(
+        "custom_components.remko_http.coordinator.SLEEP_TIME_AFTER_SET_REQ", 0
+    )
+
+    write_task = asyncio.create_task(coordinator.async_write_to_pump(NUMBERS[1], 40.0))
+    await asyncio.wait_for(write_started.wait(), timeout=1)
+    poll_task = asyncio.create_task(competing_poll())
+    await asyncio.sleep(0)
+
+    assert not competitor_acquired.is_set()
+
+    release_write.set()
+    await asyncio.wait_for(write_task, timeout=1)
+    await asyncio.wait_for(poll_task, timeout=1)
+    assert call_order == ["write", "readback", "poll"]
 
 
 def test_energy_calculation_initializes_from_raw_energy() -> None:

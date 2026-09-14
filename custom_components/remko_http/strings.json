@@ -313,6 +313,12 @@
       "heat_pump_compressor_frequency": {
         "name": "HP: Compressor frequency"
       },
+      "heat_pump_current": {
+        "name": "HP: Current draw"
+      },
+      "auxiliary_heat_generator_mains_voltage": {
+        "name": "Auxiliary heat generator: Mains voltage"
+      },
       "heat_pump_hot_gas_temperature": {
         "name": "HP: Discharge pipe temp."
       },

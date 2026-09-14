@@ -34,6 +34,7 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
         self._entry_id = entry.entry_id
         self._definition = definition
         self._attr_unique_id = f"{self._entry_id}_{self._definition.key}"
+        # self._attr_suggested_object_id = f"remko_{self._definition.key}"
         self._attr_translation_key = self._definition.key
         self._attr_native_unit_of_measurement = self._definition.unit
         self._attr_icon = self._definition.icon

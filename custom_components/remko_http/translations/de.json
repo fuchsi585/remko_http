@@ -313,6 +313,12 @@
       "heat_pump_compressor_frequency": {
         "name": "WP: Verdichterfrequenz"
       },
+      "heat_pump_current": {
+        "name": "WP: Stromaufnahme"
+      },
+      "auxiliary_heat_generator_mains_voltage": {
+        "name": "Zusatz-Wärmeerzeuger: Netzspannung"
+      },
       "heat_pump_hot_gas_temperature": {
         "name": "WP: Heißgastemperatur"
       },

@@ -71,6 +71,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         self._storage_dirty = False
         self._unsub_storage = None
         self._device_info: dict[str, str] = {}
+        self._lock = asyncio.Lock()
         super().__init__(
             hass,
             _LOGGER,
@@ -178,15 +179,15 @@ class RemkoCoordinator(DataUpdateCoordinator):
         self, queries: list[int], chunk_size: int = 30
     ) -> dict[int, str] | None:
         result = {}
+        async with self._lock:
+            for start in range(0, len(queries), chunk_size):
+                chunk = queries[start : start + chunk_size]
+                response = await self._async_read_raw_pump_data(chunk)
 
-        for start in range(0, len(queries), chunk_size):
-            chunk = queries[start : start + chunk_size]
-            response = await self._async_read_raw_pump_data(chunk)
+                if response is None:
+                    return None
 
-            if response is None:
-                return None
-
-            result.update(response)
+                result.update(response)
 
         return result
 
@@ -450,13 +451,16 @@ class RemkoCoordinator(DataUpdateCoordinator):
         values = {str(sensor_definition.http_req): raw_value}
 
         try:
-            await self._async_write_raw_pump_data(sensor_definition.http_req, values)
-            await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
+            async with self._lock:
+                await self._async_write_raw_pump_data(
+                    sensor_definition.http_req, values
+                )
+                await asyncio.sleep(SLEEP_TIME_AFTER_SET_REQ)
 
-            response = await self._async_read_raw_pump_data(
-                [sensor_definition.http_req]
-            )
-            response_data = response.get(sensor_definition.http_req)
+                response = await self._async_read_raw_pump_data(
+                    [sensor_definition.http_req]
+                )
+                response_data = response.get(sensor_definition.http_req)
 
             if sensor_definition.option:
                 response_value = DeviceValue(
