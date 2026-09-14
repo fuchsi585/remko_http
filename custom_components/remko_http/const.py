@@ -13,6 +13,8 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    UnitOfElectricCurrent,
+    UnitOfElectricPotential,
     UnitOfEnergy,
     UnitOfPower,
     UnitOfTemperature,
@@ -53,7 +55,7 @@ SLEEP_TIME_AFTER_SET_REQ: Final = 0.4
 
 HTTP_REQ_SERIAL_NUMBER: Final = 5700
 HTTP_TIMEOUT: Final = 15
-MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * factor
+MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * MAX_DIFF_TIME_ENERGY_FACTOR
 STORAGE_VERSION: Final = 1
 STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
 
@@ -566,9 +568,32 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         "heat_pump_compressor_frequency", 5205, "Hz", icon="mdi:sine-wave"
     ),
     RemkoSensorDef(
+        key="heat_pump_current",
+        unit=UnitOfElectricCurrent.AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:current-ac",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=1,
+        http_req=5138,
+        data_type=RemkoDataType.INT16,
+        scale_type=ScaleType.TENTH,
+    ),
+    RemkoSensorDef(
+        key="auxiliary_heat_generator_mains_voltage",
+        unit=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:sine-wave",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=2,
+        http_req=5796,
+        data_type=RemkoDataType.UINT16,
+        scale_type=ScaleType.HUNDREDTH,
+    ),
+    RemkoSensorDef(
         key="fan_state",
         device_class=SensorDeviceClass.ENUM,
-        # entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:fan",
         http_req=5135,
         option=SwitchState,
@@ -681,7 +706,6 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         data_type=RemkoDataType.UINT32,
         scale_type=ScaleType.TEN_THOUSANDTH,
     ),
-    # _temperature_sensor("heat_pump_max_flow_temperature", 5061),
 )
 
 # binary_sensor:

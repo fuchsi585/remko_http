@@ -1,0 +1,268 @@
+title: REMKO
+views:
+  - title: Übersicht
+    path: remko
+    icon: mdi:heat-pump
+    type: masonry
+    badges:
+      - type: entity
+        entity: sensor.haus_warmepumpe_aktuelle_betriebsart
+        name: Betriebsart
+        show_name: true
+        show_state: true
+        show_icon: true
+        color: state
+      - type: entity
+        entity: sensor.haus_warmepumpe_aussentemperatur
+        name: Außen
+        show_name: true
+        show_state: true
+        show_icon: true
+        color: blue
+      - type: entity
+        entity: sensor.haus_warmepumpe_leistung
+        name: Aufnahme
+        show_name: true
+        show_state: true
+        show_icon: true
+        color: amber
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.haus_warmepumpe_wp_kompressorstatus
+        name: Verdichter
+        color: state
+    cards:
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: sensor.haus_warmepumpe_wp_fehlerstatus
+            state: 'on'
+        card:
+          type: markdown
+          content: >-
+            ## ⚠️ Störung erkannt Die Wärmepumpe meldet einen Fehler. Bitte
+            Anlagenstatus und Meldungsspeicher prüfen.
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Anlage
+            heading_style: title
+            icon: mdi:heat-pump-outline
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.haus_warmepumpe_aktuelle_betriebsart
+                name: Betriebsart
+                icon: mdi:home-lightning-bolt-outline
+                color: teal
+                vertical: true
+              - type: tile
+                entity: sensor.haus_warmepumpe_wp_sub_status
+                name: Anlagenstatus
+                icon: mdi:list-status
+                color: cyan
+                vertical: true
+                features_position: bottom
+              - type: tile
+                entity: select.haus_warmepumpe_raumklima_modus
+                name: Raumklima
+                icon: mdi:home-thermometer-outline
+                color: indigo
+                vertical: true
+                features:
+                  - type: select-options
+              - type: tile
+                entity: number.haus_warmepumpe_kalter_warmer
+                name: Temperaturkorrektur
+                icon: mdi:tune-variant
+                color: deep-orange
+                vertical: true
+                features:
+                  - type: numeric-input
+                    style: slider
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Temperaturen
+            heading_style: title
+            icon: mdi:thermometer-lines
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: gauge
+                entity: sensor.haus_warmepumpe_wassertank_isttemperatur
+                name: Warmwasser
+                min: 20
+                max: 70
+                needle: true
+                severity:
+                  green: 45
+                  yellow: 55
+                  red: 62
+              - type: gauge
+                entity: sensor.haus_warmepumpe_heizwasser_isttemperatur
+                name: Heizwasser
+                min: 10
+                max: 65
+                needle: true
+                severity:
+                  green: 20
+                  yellow: 42
+                  red: 55
+          - type: history-graph
+            title: Temperaturverlauf · 24 Stunden
+            hours_to_show: 24
+            entities:
+              - entity: sensor.haus_warmepumpe_aussentemperatur
+                name: Außen
+              - entity: sensor.haus_warmepumpe_heizwasser_isttemperatur
+                name: Heizwasser
+              - entity: sensor.haus_warmepumpe_wassertank_isttemperatur
+                name: Warmwasser
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Warmwasser
+            heading_style: title
+            icon: mdi:water-boiler
+          - type: tile
+            entity: number.haus_warmepumpe_wassertank_solltemperatur
+            name: Solltemperatur
+            color: orange
+            features:
+              - type: numeric-input
+                style: slider
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.haus_warmepumpe_warmwasseranforderung
+                name: Anforderung
+                color: blue
+                vertical: true
+              - type: tile
+                entity: sensor.haus_warmepumpe_zirkulationspumpe
+                name: Zirkulation
+                color: state
+                vertical: true
+          - type: button
+            entity: button.haus_warmepumpe_1_x_ww_aufheizen
+            name: Warmwasser einmalig aufheizen
+            icon: mdi:heat-wave
+            icon_height: 32px
+            show_state: false
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Leistung & Effizienz
+            heading_style: title
+            icon: mdi:chart-areaspline
+          - type: gauge
+            entity: sensor.haus_warmepumpe_leistung
+            name: Elektrische Leistung
+            min: 0
+            max: 13000
+            needle: true
+            severity:
+              green: 0
+              yellow: 2500
+              red: 6500
+          - type: history-graph
+            title: Leistung · 12 Stunden
+            hours_to_show: 12
+            entities:
+              - entity: sensor.haus_warmepumpe_leistung
+                name: Elektrisch
+              - entity: sensor.haus_warmepumpe_thermische_leistung
+                name: Thermisch
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.haus_warmepumpe_wp_verdichterfrequenz
+                name: Verdichter
+                icon: mdi:sine-wave
+                color: purple
+                vertical: true
+                features_position: bottom
+              - type: tile
+                entity: sensor.haus_warmepumpe_hydraulik_ist_volumenstrom
+                name: Volumenstrom
+                icon: mdi:waves-arrow-right
+                color: light-blue
+                vertical: true
+                features_position: bottom
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Energie
+            heading_style: title
+            icon: mdi:lightning-bolt-circle
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.haus_warmepumpe_elektr_energie_tag
+                name: Heute
+                icon: mdi:calendar-today
+                color: amber
+                vertical: true
+              - type: tile
+                entity: sensor.haus_warmepumpe_elektr_energie_monat
+                name: Monat
+                icon: mdi:calendar-month
+                color: orange
+                vertical: true
+              - type: tile
+                entity: sensor.haus_warmepumpe_elektr_energie
+                name: Elektrisch (berechnet)
+                icon: mdi:radiator
+                color: deep-orange
+                vertical: true
+                features_position: bottom
+              - type: tile
+                entity: sensor.haus_warmepumpe_elektr_energie_gerat
+                name: Elektrisch (Gerät)
+                icon: mdi:water-boiler
+                color: blue
+                vertical: true
+                features_position: bottom
+      - type: vertical-stack
+        cards:
+          - type: heading
+            heading: Hydraulik & Technik
+            heading_style: title
+            icon: mdi:pipe-valve
+          - color: state
+            type: entities
+            show_header_toggle: false
+            entities:
+              - entity: sensor.haus_warmepumpe_hydraulik_anforderung
+                name: Anforderung
+              - entity: sensor.haus_warmepumpe_heizwasser_solltemperatur
+                name: Heizwasser Soll
+              - entity: sensor.haus_warmepumpe_heizwasser_isttemperatur
+                name: Heizwasser Ist
+              - entity: sensor.haus_warmepumpe_hydraulik_pumpendrehz_rel
+                name: Pumpendrehzahl
+              - entity: sensor.haus_warmepumpe_wp_abtaustatus
+                name: Abtauung
+              - entity: sensor.haus_warmepumpe_lufterstatus_aussen
+                name: Außenlüfter
+              - entity: sensor.haus_warmepumpe_kompressorstarts
+                name: Kompressorstarts
+              - entity: sensor.haus_warmepumpe_laufzeit
+                name: Laufzeit
+

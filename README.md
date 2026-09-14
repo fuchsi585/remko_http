@@ -100,6 +100,32 @@ später über die Optionen der Integration ändern.
 Die Integration unterstützt derzeit genau eine Wärmepumpe pro
 Home-Assistant-Instanz.
 
+## Dashboard
+
+Das Repository enthält eine moderne, responsive Lovelace-Vorlage für die
+wichtigsten Betriebs- und Messwerte der Wärmepumpe. Das Dashboard verwendet nur
+Home-Assistant-Bordmittel und benötigt keine zusätzlichen Frontend-Karten aus
+HACS.
+
+![Modernes REMKO-Dashboard](docs/images/remko-dashboard.png)
+
+Enthalten sind unter anderem:
+
+- Betriebsart, Anlagenstatus und Außentemperatur auf einen Blick
+- Direkte Steuerung von Raumklima-Modus und Temperaturanpassung
+- Warmwasser-Sollwert und einmaliges Aufheizen
+- Temperatur- und Leistungsverläufe
+- Elektrische und thermische Energiewerte
+- Verdichter-, Hydraulik- und Diagnosewerte
+- Hervorgehobene Störungsmeldung bei einem Anlagenfehler
+
+Die vollständige Vorlage liegt unter
+[`docs/remko_dashboard.yaml`](docs/remko_dashboard.yaml). Den Inhalt in den
+Raw-Konfigurationseditor eines Home-Assistant-Dashboards kopieren und speichern.
+Da Home Assistant Entitäts-IDs aus dem Gerätenamen ableiten kann, müssen die IDs
+gegebenenfalls an die eigene Installation angepasst werden. Weitere Hinweise
+stehen in der [`Dashboard-Dokumentation`](docs/dashboard.md).
+
 ## Kommunikation
 
 ```text
@@ -120,78 +146,80 @@ Es werden keine externen Server für die Kommunikation benötigt.
 
 ## Entitäten
 
-Die folgende Tabelle enthält alle aktuell von der Sensorplattform bereitgestellten Entitäten. Die REMKO-ID bezeichnet den Parameter der lokalen HTTP-/CGI-Schnittstelle.
+Die folgende Tabelle enthält alle aktuell von der Sensorplattform bereitgestellten Entitäten. Die REMKO-ID bezeichnet den Parameter der lokalen HTTP-/CGI-Schnittstelle. Die Einträge sind alphabetisch nach Anzeigename sortiert.
 
 | Anzeigename | Interner Key | REMKO-ID | Einheit / Werteart | Beschreibung |
 |---|---|---:|---|---|
-| Kälter / Wärmer | `cold_hotter_state` | `1946` | K | Aktuelle Sollwertverschiebung für wärmer oder kälter. |
-| Raumklima-Modus | `room_climate_mode` | `1088` | - | Gewählter Raumklimamodus: Automatik, Heizen, Standby oder Kühlen. |
-| Aktuelle Betriebsart | `operating_status` | `5001` | - | Aktuelle übergeordnete Betriebsart der Anlage. |
-| Wassertank Solltemperatur | `water_temp_req` | `1082` | °C | Eingestellte Solltemperatur des Warmwasserspeichers. |
-| WW: Speicher Soll-Temp. | `hot_water_target_temperature` | `5038` | °C | Aktuell von der Regelung vorgegebene Solltemperatur des Warmwasserspeichers. |
-| Wassertank Isttemperatur | `water_temp` | `5039` | °C | Gemessene Isttemperatur des Warmwasserspeichers. |
-| Warmwasseranforderung | `hot_water_req_state` | `5064` | - | Zeigt an, ob eine Warmwasseranforderung aktiv ist oder sich im Standby befindet. |
-| WW: Umschaltventil | `hot_water_diverter_valve` | `5162` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WW: Energie | `hot_water_energy` | `5376` | kWh | Für die Warmwasserbereitung erfasste thermische Energie. |
-| WW: Hygienefunktion | `hot_water_hygiene_function` | `5803` | - | Zeigt an, ob die Warmwasser-Hygienefunktion aktiv ist oder sich im Standby befindet. |
-| WW: Anforderung Zirkulation | `hot_water_circulation_demand` | `5133` | - | Status der Zirkulationsanforderung: Standby, aktiv oder gesperrt. |
-| WW: Zirk. Soll-Temp. | `hot_water_circulation_target_temperature` | `5041` | °C | Solltemperatur der Warmwasserzirkulation. |
-| WW: Zirkulationstemperatur | `circulation_temp` | `5027` | °C | Gemessene Temperatur der Warmwasserzirkulation. |
-| WW: Zirkulationspumpe | `circulation_pump_state` | `5151` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| Hydraulik: Anforderung | `hydraulics_demand` | `5040` | - | Von der Hydraulik angeforderter Betriebsmodus: Automatik, Heizen, Standby oder Kühlen. |
-| Heizwasser Solltemperatur | `heating_req_temp` | `5085` | °C | Von der Regelung angeforderte Heizwassertemperatur. |
-| Heizwasser Isttemperatur | `heating_actual_temp` | `5190` | °C | Gemessene Isttemperatur des Heizwassers. |
-| Hydraulik: Leistung therm. | `hydraulics_thermal_power` | `5232` | W | Aktuelle thermische Leistung im Hydraulikkreis. |
-| Hydraulik: Vorlauftemperatur (gemischt) | `mixed_flow_temp` | `5741` | °C | Gemessene Vorlauftemperatur des gemischten Heizkreises. |
-| Hydraulik: Rücklauftemperatur (gemischt) | `mixed_return_temp` | `5476` | °C | Gemessene Rücklauftemperatur des gemischten Heizkreises. |
-| Hydraulik: Soll-Volumenstrom | `hydraulics_target_flow_rate` | `5073` | l/min | Von der Regelung vorgegebener Volumenstrom. |
-| Hydraulik: Ist-Volumenstrom | `hydraulics_actual_flow_rate` | `5582` | l/min | Gemessener Volumenstrom im Hydraulikkreis. |
-| Hydraulik: Ist-Volumenstrom (gemischt) | `hydraulics_actual_flow_rate_mixed` | `5740` | l/min | Gemessener Volumenstrom im gemischten Heizkreis. |
-| Hydraulik: Pumpendrehz. rel. | `hydraulics_pump_speed` | `5575` | % | Relative Drehzahl der Hydraulikpumpe. |
-| Hydraulik: Energie Heizen | `hydraulics_heating_energy` | `5374` | kWh | Kumulierte thermische Energie für den Heizbetrieb. |
-| Hydraulik: Energie Kühlen | `hydraulics_cooling_energy` | `5010` | kWh | Kumulierte thermische Energie für den Kühlbetrieb. |
-| Hydraulik: Umschaltventil Kühlen | `hydraulics_cooling_diverter_valve` | `5166` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| Außentemperatur | `out_temp` | `5032` | °C | Aktuell gemessene Außentemperatur. |
-| Gemischte Außentemperatur | `mixed_temp` | `5055` | °C | Von der Regelung gebildete gemischte Außentemperatur. |
-| Raum Solltemperatur | `room_temp_req` | `5075` | °C | Eingestellte Raum-Solltemperatur. |
-| Raum Isttemperatur | `room_temp_act` | `5050` | °C | Aktuell gemessene Raumtemperatur. |
-| Raumfeuchtigkeit | `room_humidity` | `5066` | % | Aktuell gemessene relative Luftfeuchtigkeit im Raum. |
-| Pumpendrehzahl (Heizkreis) | `pump_speed` | `5576` | % | Relative Drehzahl der Heizkreispumpe. |
-| HK ungemischt: Betriebsmodus | `heating_circuit_unmixed_operating_mode` | `5069` | - | Betriebsmodus des ungemischten Heizkreises: Automatik, Heizen, Standby oder Kühlen. |
-| HK ungemischt: Soll-Temperatur | `heating_circuit_unmixed_target_temperature` | `5033` | °C | Solltemperatur des ungemischten Heizkreises. |
-| HK ungemischt: Ist-Temperatur | `heating_circuit_unmixed_actual_temperature` | `5034` | °C | Gemessene Isttemperatur des ungemischten Heizkreises. |
-| HK ungemischt: Taupunkt | `heating_circuit_unmixed_dew_point` | `5070` | °C | Berechneter Taupunkt für den ungemischten Heizkreis. |
-| HK ungemischt: Status | `heating_circuit_unmixed_status` | `5710` | - | Regelungsstatus des ungemischten Heizkreises: Automatik, Komfort, Standby, Eco oder Schutzbetrieb. |
-| HK ungemischt: Sollwertanpassung | `heating_circuit_unmixed_setpoint_adjustment` | `5717` | °C | Aktuelle Anpassung des Temperatursollwerts im ungemischten Heizkreis. |
-| WP: Status | `heat_pump_status` | `5049` | - | Freigabe- und Sperrstatus der Wärmepumpe, etwa bereit, Vorlaufzeit, gesperrt oder deaktiviert. |
-| WP: Betriebszustand | `heat_pump_sub_status` | `5473` | - | Detaillierter Betriebszustand der Wärmepumpe, etwa Heizen, Kühlen, Abtauen oder Alarm. |
-| WP: Modus | `heat_pump_mode` | `5006` | - | Aktueller Modus der Wärmepumpe: Heizen oder Kühlen. |
-| WP: Verbleibende Sperrzeit | `heat_pump_lockout_time` | `5572` | min | Noch verbleibende Sperrzeit der Wärmepumpe. |
-| WP: Abtaustatus | `heat_pump_defrost_status` | `5626` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Kompressorstatus | `heat_pump_compressor_status` | `5625` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Fehlerstatus | `heat_pump_error_status` | `5002` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Freigabesignal | `heat_pump_enable_signal` | `5004` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Verdichtersperre | `heat_pump_compressor_lock` | `5005` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Sperrsignal | `heat_pump_lock_signal` | `5174` | - | Zeigt an, ob das Sperrsignal die Wärmepumpe sperrt oder freigibt. |
-| WP: Verdichterfrequenz | `heat_pump_compressor_frequency` | `5205` | Hz | Aktuelle Frequenz des Verdichters. |
-| Lüfterstatus (außen) | `fan_state` | `5135` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| WP: Heißgastemperatur | `heat_pump_hot_gas_temperature` | `5146` | °C | Gemessene Heißgastemperatur der Wärmepumpe. |
-| Leistung | `power` | `5320` | W | Aktuelle elektrische Leistungsaufnahme der Wärmepumpe. |
-| Thermische Leistung | `power_thermal` | `5321` | W | Aktuelle thermische Leistung der Wärmepumpe. |
-| Kompressorstarts | `compressor_starts` | `5822` | – | Anzahl der Kompressorstarts. |
-| WP: Laufzeit (Minuten) | `heat_pump_runtime_minutes` | `5823` | min | Laufzeit der Wärmepumpe in Minuten. |
-| Laufzeit | `runtime_hours` | `5824` | h | Kumulierter Betriebsstundenzähler der Wärmepumpe. |
-| WP: 4-Wege Ventil | `heat_pump_four_way_valve` | `5136` | An/Aus | Ein-/Aus-Zustand der Komponente. |
-| Elektr. Energie (Stunde) | `energy_electrical_hour` | `5388` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
-| Elektr. Energie (Tag) | `energy_electrical_day` | `5293` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
-| Elektr. Energie (Woche) | `energy_electrical_week` | `5294` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
-| Elektr. Energie (Monat) | `energy_electrical_month` | `5295` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
-| Elektr. Energie (Jahr) | `energy_electrical_year` | `5296` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
-| Elektr. Energie (Stunde, temporär) | `energy_electrical_hour_temporary` | `5389` | kWh | Interner Stundenwert mit vier Nachkommastellen; als Diagnose markiert. |
+| Aktuelle Betriebsart | `operating_status` | `5001` | Auswahlwert | Aktuelle übergeordnete Betriebsart der Anlage. |
+| Außentemperatur | `out_temp` | `5032` | °C | Temperatur- beziehungsweise Sollwert. |
 | Elektr. Energie | `energy_electrical` | `5105` | kWh | Lokal aus der elektrischen Leistung berechneter Gesamtverbrauch; ID 5105 dient als Startwert. |
 | Elektr. Energie (Gerät) | `energy_electrical_raw` | `5105` | kWh | Direkter, standardmäßig deaktivierter Energiezähler des REMKO-Geräts. |
+| Elektr. Energie (Jahr) | `energy_electrical_year` | `5296` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
+| Elektr. Energie (Monat) | `energy_electrical_month` | `5295` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
+| Elektr. Energie (Stunde) | `energy_electrical_hour` | `5388` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
+| Elektr. Energie (Stunde, temporär) | `energy_electrical_hour_temporary` | `5389` | kWh | Interner Stundenwert mit vier Nachkommastellen; als Diagnose markiert. |
+| Elektr. Energie (Tag) | `energy_electrical_day` | `5293` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
+| Elektr. Energie (Woche) | `energy_electrical_week` | `5294` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
+| Gemischte Außentemperatur | `mixed_temp` | `5055` | °C | Temperatur- beziehungsweise Sollwert. |
+| Heizwasser Isttemperatur | `heating_actual_temp` | `5190` | °C | Temperatur- beziehungsweise Sollwert. |
+| Heizwasser Solltemperatur | `heating_req_temp` | `5085` | °C | Temperatur- beziehungsweise Sollwert. |
+| HK ungemischt: Betriebsmodus | `heating_circuit_unmixed_operating_mode` | `5069` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| HK ungemischt: Ist-Temperatur | `heating_circuit_unmixed_actual_temperature` | `5034` | °C | Temperatur- beziehungsweise Sollwert. |
+| HK ungemischt: Soll-Temperatur | `heating_circuit_unmixed_target_temperature` | `5033` | °C | Temperatur- beziehungsweise Sollwert. |
+| HK ungemischt: Sollwertanpassung | `heating_circuit_unmixed_setpoint_adjustment` | `5717` | °C | Temperatur- beziehungsweise Sollwert. |
+| HK ungemischt: Status | `heating_circuit_unmixed_status` | `5710` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| HK ungemischt: Taupunkt | `heating_circuit_unmixed_dew_point` | `5070` | °C | Temperatur- beziehungsweise Sollwert. |
+| Hydraulik: Anforderung | `hydraulics_demand` | `5040` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| Hydraulik: Energie Heizen | `hydraulics_heating_energy` | `5374` | kWh | Erfasste thermische oder elektrische Energie. |
+| Hydraulik: Energie Kühlen | `hydraulics_cooling_energy` | `5010` | kWh | Erfasste thermische oder elektrische Energie. |
+| Hydraulik: Ist-Volumenstrom | `hydraulics_actual_flow_rate` | `5582` | l/min | Hydraulischer Volumenstrom. |
+| Hydraulik: Ist-Volumenstrom (gemischt) | `hydraulics_actual_flow_rate_mixed` | `5740` | l/min | Hydraulischer Volumenstrom. |
+| Hydraulik: Leistung therm. | `hydraulics_thermal_power` | `5232` | W | Elektrischer oder thermischer Messwert. |
+| Hydraulik: Pumpendrehz. rel. | `hydraulics_pump_speed` | `5575` | % | Relativer Mess- oder Drehzahlwert. |
+| Hydraulik: Rücklauftemperatur (gemischt) | `mixed_return_temp` | `5476` | °C | Temperatur- beziehungsweise Sollwert. |
+| Hydraulik: Soll-Volumenstrom | `hydraulics_target_flow_rate` | `5073` | l/min | Hydraulischer Volumenstrom. |
+| Hydraulik: Umschaltventil Kühlen | `hydraulics_cooling_diverter_valve` | `5166` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| Hydraulik: Vorlauftemperatur (gemischt) | `mixed_flow_temp` | `5741` | °C | Temperatur- beziehungsweise Sollwert. |
+| Kälter / Wärmer | `cold_hotter_state` | `1946` | K | Aktuelle Sollwertverschiebung für wärmer oder kälter. |
+| Kompressorstarts | `compressor_starts` | `5822` | – | Anzahl der Kompressorstarts. |
+| Laufzeit | `runtime_hours` | `5824` | h | Laufzeit- oder Zeitwert. |
+| Leistung | `power` | `5320` | W | Elektrischer oder thermischer Messwert. |
+| Lüfterstatus (außen) | `fan_state` | `5135` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| Pumpendrehzahl (Heizkreis) | `pump_speed` | `5576` | % | Relativer Mess- oder Drehzahlwert. |
+| Raum Isttemperatur | `room_temp_act` | `5050` | °C | Temperatur- beziehungsweise Sollwert. |
+| Raum Solltemperatur | `room_temp_req` | `5075` | °C | Temperatur- beziehungsweise Sollwert. |
+| Raumfeuchtigkeit | `room_humidity` | `5066` | % | Relativer Mess- oder Drehzahlwert. |
+| Raumklima-Modus | `room_climate_mode` | `1088` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| Thermische Leistung | `power_thermal` | `5321` | W | Elektrischer oder thermischer Messwert. |
+| Warmwasseranforderung | `hot_water_req_state` | `5064` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| Wassertank Isttemperatur | `water_temp` | `5039` | °C | Temperatur- beziehungsweise Sollwert. |
+| Wassertank Solltemperatur | `water_temp_req` | `1082` | °C | Temperatur- beziehungsweise Sollwert. |
+| WP: 4-Wege Ventil | `heat_pump_four_way_valve` | `5136` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WP: Abtaustatus | `heat_pump_defrost_status` | `5626` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WP: Betriebszustand | `heat_pump_sub_status` | `5473` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WP: Fehlerstatus | `heat_pump_error_status` | `5002` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WP: Freigabesignal | `heat_pump_enable_signal` | `5004` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WP: Heißgastemperatur | `heat_pump_hot_gas_temperature` | `5146` | °C | Temperatur- beziehungsweise Sollwert. |
+| WP: Kompressorstatus | `heat_pump_compressor_status` | `5625` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WP: Laufzeit (Minuten) | `heat_pump_runtime_minutes` | `5823` | min | Laufzeit- oder Zeitwert. |
+| WP: Modus | `heat_pump_mode` | `5006` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WP: Sperrsignal | `heat_pump_lock_signal` | `5174` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WP: Status | `heat_pump_status` | `5049` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WP: Stromaufnahme | `heat_pump_current` | `5138` | A | Gemessene Stromaufnahme von Wärmepumpe beziehungsweise Außengerät; Diagnosewert. |
+| WP: Verbleibende Sperrzeit | `heat_pump_lockout_time` | `5572` | min | Laufzeit- oder Zeitwert. |
+| WP: Verdichterfrequenz | `heat_pump_compressor_frequency` | `5205` | Hz | Aktuelle Frequenz des Verdichters. |
+| WP: Verdichtersperre | `heat_pump_compressor_lock` | `5005` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WW: Anforderung Zirkulation | `hot_water_circulation_demand` | `5133` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WW: Energie | `hot_water_energy` | `5376` | kWh | Erfasste thermische oder elektrische Energie. |
+| WW: Hygienefunktion | `hot_water_hygiene_function` | `5803` | Auswahlwert | Betriebs-, Modus- oder Zustandswert. |
+| WW: Speicher Soll-Temp. | `hot_water_target_temperature` | `5038` | °C | Temperatur- beziehungsweise Sollwert. |
+| WW: Umschaltventil | `hot_water_diverter_valve` | `5162` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WW: Zirk. Soll-Temp. | `hot_water_circulation_target_temperature` | `5041` | °C | Temperatur- beziehungsweise Sollwert. |
+| WW: Zirkulationspumpe | `circulation_pump_state` | `5151` | An/Aus | Ein-/Aus-Zustand der Komponente. |
+| WW: Zirkulationstemperatur | `circulation_temp` | `5027` | °C | Temperatur- beziehungsweise Sollwert. |
+| Zusatz-Wärmeerzeuger: Netzspannung | `auxiliary_heat_generator_mains_voltage` | `5796` | V | Gemessene Netzspannung des Zusatz-Wärmeerzeugers; Diagnosewert. |
 
-Einzelne Sollwerte und Diagnosewerte können in Home Assistant standardmäßig deaktiviert sein.
+Einzelne Sollwerte und Diagnosewerte können in Home Assistant standardmäßig deaktiviert sein. Der berechnete Wert „Elektr. Energie“ wird lokal aus der gemessenen elektrischen Leistung fortgeschrieben.
 
 ### Berechnung der elektrischen Energie
 
@@ -274,7 +302,7 @@ Die Kommunikation erfolgt direkt zwischen Home Assistant und der REMKO Steuerung
 
 ## Danksagung
 
-Vielen Dank an **Altrec** für die Inspiration und die Vorarbeit rund um die Integration von REMKO Wärmepumpen in Home Assistant. Ebenso vielen Dank an die Home-Assistant-Community für den Austausch und die zahlreichen Erkenntnisse.
+Vielen Dank an **Altrec** und **jovana** für die Inspiration und die Vorarbeit rund um die Integration von REMKO Wärmepumpen in Home Assistant. Ebenso vielen Dank an die Home-Assistant-Community für den Austausch und die zahlreichen Erkenntnisse.
 
 ## Haftungsausschluss
 

@@ -29,6 +29,14 @@ class UnitOfEnergy:
     KILO_WATT_HOUR = "kWh"
 
 
+class UnitOfElectricCurrent:
+    AMPERE = "A"
+
+
+class UnitOfElectricPotential:
+    VOLT = "V"
+
+
 class UnitOfPower:
     WATT = "W"
 
@@ -48,6 +56,8 @@ class UnitOfTime:
 
 
 homeassistant_const.Platform = Platform
+homeassistant_const.UnitOfElectricCurrent = UnitOfElectricCurrent
+homeassistant_const.UnitOfElectricPotential = UnitOfElectricPotential
 homeassistant_const.UnitOfEnergy = UnitOfEnergy
 homeassistant_const.UnitOfPower = UnitOfPower
 homeassistant_const.UnitOfRatio = UnitOfRatio
@@ -131,6 +141,8 @@ class SensorDeviceClass:
     ENERGY = "energy"
     DURATION = "duration"
     ENUM = "enum"
+    CURRENT = "current"
+    VOLTAGE = "voltage"
 
 
 class SensorStateClass:
