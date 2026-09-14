@@ -241,7 +241,7 @@
         }
       },
       "heat_pump_sub_status": {
-        "name": "HP: Sub-status",
+        "name": "HP: Operating state",
         "state": {
           "off": "Off",
           "cooling": "Cooling",
@@ -250,7 +250,12 @@
           "transition_to_cooling": "Transition to cooling",
           "defrosting": "Defrosting",
           "waiting": "Waiting",
-          "standby": "Standby"
+          "standby": "Standby",
+          "transition_to_heating": "Transition to heating",
+          "stop": "Stop",
+          "manual": "Manual",
+          "start": "Start",
+          "evu_block": "Utility lockout"
         }
       },
       "heat_pump_lockout_time": {
@@ -322,7 +327,7 @@
         }
       },
       "heating_circuit_unmixed_operating_mode": {
-        "name": "Unmixed HC: Operation Mode",
+        "name": "Unmixed HC: Operating mode",
         "state": {
           "auto": "Auto",
           "heating": "Heating",
@@ -337,7 +342,7 @@
         "name": "Unmixed HC: Actual temperature"
       },
       "heating_circuit_unmixed_dew_point": {
-        "name": "Unmixed HC: Dewpoint"
+        "name": "Unmixed HC: Dew point"
       },
       "heating_circuit_unmixed_status": {
         "name": "Unmixed HC: Status",
@@ -350,7 +355,7 @@
         }
       },
       "heating_circuit_unmixed_setpoint_adjustment": {
-        "name": "Unmixed HC: Setpoint Adjustment"
+        "name": "Unmixed HC: Setpoint adjustment"
       },
       "hydraulics_heating_energy": {
         "name": "Hydraulics: Heating energy"

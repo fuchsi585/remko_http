@@ -14,6 +14,7 @@ from custom_components.remko_http.const import (
     SELECTORS,
     SENSORS,
 )
+from custom_components.remko_http.remko_enums import HeatPumpSubStatus
 
 INTEGRATION_DIR = Path(__file__).parents[1] / "custom_components" / "remko_http"
 
@@ -66,3 +67,25 @@ def test_entity_translation_keys_match_definitions() -> None:
         platform: set(translations)
         for platform, translations in entity_translations.items()
     } == expected_keys
+
+
+def test_heat_pump_operating_state_translations_are_complete() -> None:
+    """Every heat-pump operating state must have German and English labels."""
+    expected_states = {member.value for member in HeatPumpSubStatus}
+
+    source = _load_json(INTEGRATION_DIR / "strings.json")["entity"]["sensor"][
+        "heat_pump_sub_status"
+    ]
+    german = _load_json(INTEGRATION_DIR / "translations" / "de.json")["entity"][
+        "sensor"
+    ]["heat_pump_sub_status"]
+    english = _load_json(INTEGRATION_DIR / "translations" / "en.json")["entity"][
+        "sensor"
+    ]["heat_pump_sub_status"]
+
+    assert source["name"] == "HP: Operating state"
+    assert german["name"] == "WP: Betriebszustand"
+    assert english["name"] == "HP: Operating state"
+    assert set(source["state"]) == expected_states
+    assert set(german["state"]) == expected_states
+    assert set(english["state"]) == expected_states

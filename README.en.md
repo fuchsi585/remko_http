@@ -125,62 +125,62 @@ The following table lists every entity currently provided by the sensor platform
 | Display name | Internal key | REMKO ID | Unit / value type | Description |
 |---|---|---:|---|---|
 | Warmer / cooler | `cold_hotter_state` | `1946` | K | Current warmer/cooler setpoint offset. |
-| Room climate mode | `room_climate_mode` | `1088` | - | Operating mode or state value. |
+| Room climate mode | `room_climate_mode` | `1088` | - | Selected room climate mode: automatic, heating, standby, or cooling. |
 | Current operating mode | `operating_status` | `5001` | - | Current overall operating mode of the system. |
-| Hot water target temperature | `water_temp_req` | `1082` | °C | Temperature or target value. |
-| DHW: Tank target temp. | `hot_water_target_temperature` | `5038` | °C | Temperature or target value. |
-| Hot water temperature | `water_temp` | `5039` | °C | Temperature or target value. |
-| Hot water request | `hot_water_req_state` | `5064` | - | Operating mode or state value. |
+| Hot water target temperature | `water_temp_req` | `1082` | °C | Configured target temperature of the domestic hot water tank. |
+| DHW: Tank target temp. | `hot_water_target_temperature` | `5038` | °C | Current domestic hot water tank target temperature requested by the controller. |
+| Hot water temperature | `water_temp` | `5039` | °C | Measured temperature of the domestic hot water tank. |
+| Hot water request | `hot_water_req_state` | `5064` | - | Indicates whether a domestic hot water request is active or on standby. |
 | DHW: Switch valve | `hot_water_diverter_valve` | `5162` | On/off | On/off state of the component. |
-| DHW: Heating energy | `hot_water_energy` | `5376` | kWh | Recorded thermal or electrical energy. |
-| DHW: hygiene function | `hot_water_hygiene_function` | `5803` | - | Operating mode or state value. |
-| DHW: Circulation demand | `hot_water_circulation_demand` | `5133` | - | Operating mode or state value. |
-| DHW: Circulation target temp. | `hot_water_circulation_target_temperature` | `5041` | °C | Temperature or target value. |
-| DHW: Circulation temperature | `circulation_temp` | `5027` | °C | Temperature or target value. |
+| DHW: Heating energy | `hot_water_energy` | `5376` | kWh | Thermal energy recorded for domestic hot water production. |
+| DHW: hygiene function | `hot_water_hygiene_function` | `5803` | - | Indicates whether the domestic hot water hygiene function is active or on standby. |
+| DHW: Circulation demand | `hot_water_circulation_demand` | `5133` | - | Circulation demand status: standby, active, or blocked. |
+| DHW: Circulation target temp. | `hot_water_circulation_target_temperature` | `5041` | °C | Target temperature of the domestic hot water circulation system. |
+| DHW: Circulation temperature | `circulation_temp` | `5027` | °C | Measured temperature of the domestic hot water circulation system. |
 | DHW: Circulation pump | `circulation_pump_state` | `5151` | On/off | On/off state of the component. |
-| Hydraulics: Requirement | `hydraulics_demand` | `5040` | - | Operating mode or state value. |
-| Heating water target temperature | `heating_req_temp` | `5085` | °C | Temperature or target value. |
-| Heating water temperature | `heating_actual_temp` | `5190` | °C | Temperature or target value. |
-| Hydraulics: Thermal output | `hydraulics_thermal_power` | `5232` | W | Current power value. |
-| Hydraulics: Mixed flow temperature | `mixed_flow_temp` | `5741` | °C | Temperature or target value. |
-| Hydraulics: Mixed return temperature | `mixed_return_temp` | `5476` | °C | Temperature or target value. |
-| Hydraulics: Target volume flow | `hydraulics_target_flow_rate` | `5073` | l/min | Hydraulic volume flow. |
-| Hydraulics: Actual flow rate | `hydraulics_actual_flow_rate` | `5582` | l/min | Hydraulic volume flow. |
-| Hydraulics: Mixed actual flow rate | `hydraulics_actual_flow_rate_mixed` | `5740` | l/min | Hydraulic volume flow. |
-| Hydraulics: Pump speed rel. | `hydraulics_pump_speed` | `5575` | % | Relative measurement or speed value. |
-| Hydraulics: Heating energy | `hydraulics_heating_energy` | `5374` | kWh | Recorded thermal or electrical energy. |
-| Hydraulics: Cooling energy | `hydraulics_cooling_energy` | `5010` | kWh | Recorded thermal or electrical energy. |
+| Hydraulics: Requirement | `hydraulics_demand` | `5040` | - | Operating mode requested by the hydraulic system: automatic, heating, standby, or cooling. |
+| Heating water target temperature | `heating_req_temp` | `5085` | °C | Heating water temperature requested by the controller. |
+| Heating water temperature | `heating_actual_temp` | `5190` | °C | Measured heating water temperature. |
+| Hydraulics: Thermal output | `hydraulics_thermal_power` | `5232` | W | Current thermal power in the hydraulic circuit. |
+| Hydraulics: Mixed flow temperature | `mixed_flow_temp` | `5741` | °C | Measured flow temperature of the mixed heating circuit. |
+| Hydraulics: Mixed return temperature | `mixed_return_temp` | `5476` | °C | Measured return temperature of the mixed heating circuit. |
+| Hydraulics: Target volume flow | `hydraulics_target_flow_rate` | `5073` | l/min | Volume flow requested by the controller. |
+| Hydraulics: Actual flow rate | `hydraulics_actual_flow_rate` | `5582` | l/min | Measured volume flow in the hydraulic circuit. |
+| Hydraulics: Mixed actual flow rate | `hydraulics_actual_flow_rate_mixed` | `5740` | l/min | Measured volume flow in the mixed heating circuit. |
+| Hydraulics: Pump speed rel. | `hydraulics_pump_speed` | `5575` | % | Relative speed of the hydraulic pump. |
+| Hydraulics: Heating energy | `hydraulics_heating_energy` | `5374` | kWh | Cumulative thermal energy for heating operation. |
+| Hydraulics: Cooling energy | `hydraulics_cooling_energy` | `5010` | kWh | Cumulative thermal energy for cooling operation. |
 | Hydraulics: Switch valve cooling | `hydraulics_cooling_diverter_valve` | `5166` | On/off | On/off state of the component. |
-| Outdoor temperature | `out_temp` | `5032` | °C | Temperature or target value. |
-| Mixed outdoor temperature | `mixed_temp` | `5055` | °C | Temperature or target value. |
-| Room target temperature | `room_temp_req` | `5075` | °C | Temperature or target value. |
-| Room temperature | `room_temp_act` | `5050` | °C | Temperature or target value. |
-| Room humidity | `room_humidity` | `5066` | % | Relative measurement or speed value. |
-| Pump speed (heating circuit) | `pump_speed` | `5576` | % | Relative measurement or speed value. |
-| Unmixed HC: Operation Mode | `heating_circuit_unmixed_operating_mode` | `5069` | - | Operating mode or state value. |
-| Unmixed HC: Target temperature | `heating_circuit_unmixed_target_temperature` | `5033` | °C | Temperature or target value. |
-| Unmixed HC: Actual temperature | `heating_circuit_unmixed_actual_temperature` | `5034` | °C | Temperature or target value. |
-| Unmixed HC: Dewpoint | `heating_circuit_unmixed_dew_point` | `5070` | °C | Temperature or target value. |
-| Unmixed HC: Status | `heating_circuit_unmixed_status` | `5710` | - | Operating mode or state value. |
-| Unmixed HC: Setpoint Adjustment | `heating_circuit_unmixed_setpoint_adjustment` | `5717` | °C | Temperature or target value. |
-| HP: Status | `heat_pump_status` | `5049` | - | Operating mode or state value. |
-| HP: Sub-status | `heat_pump_sub_status` | `5473` | - | Operating mode or state value. |
-| HP: Mode | `heat_pump_mode` | `5006` | - | Operating mode or state value. |
-| HP: Remaining blocking time | `heat_pump_lockout_time` | `5572` | min | Runtime or time value. |
+| Outdoor temperature | `out_temp` | `5032` | °C | Current measured outdoor temperature. |
+| Mixed outdoor temperature | `mixed_temp` | `5055` | °C | Mixed outdoor temperature calculated by the controller. |
+| Room target temperature | `room_temp_req` | `5075` | °C | Configured room target temperature. |
+| Room temperature | `room_temp_act` | `5050` | °C | Current measured room temperature. |
+| Room humidity | `room_humidity` | `5066` | % | Current measured relative humidity in the room. |
+| Pump speed (heating circuit) | `pump_speed` | `5576` | % | Relative speed of the heating circuit pump. |
+| Unmixed HC: Operating mode | `heating_circuit_unmixed_operating_mode` | `5069` | - | Operating mode of the unmixed heating circuit: automatic, heating, standby, or cooling. |
+| Unmixed HC: Target temperature | `heating_circuit_unmixed_target_temperature` | `5033` | °C | Target temperature of the unmixed heating circuit. |
+| Unmixed HC: Actual temperature | `heating_circuit_unmixed_actual_temperature` | `5034` | °C | Measured temperature of the unmixed heating circuit. |
+| Unmixed HC: Dew point | `heating_circuit_unmixed_dew_point` | `5070` | °C | Calculated dew point for the unmixed heating circuit. |
+| Unmixed HC: Status | `heating_circuit_unmixed_status` | `5710` | - | Control status of the unmixed heating circuit: automatic, comfort, standby, eco, or protection. |
+| Unmixed HC: Setpoint adjustment | `heating_circuit_unmixed_setpoint_adjustment` | `5717` | °C | Current temperature setpoint adjustment for the unmixed heating circuit. |
+| HP: Status | `heat_pump_status` | `5049` | - | Heat pump release and lock status, such as ready, lead time, blocked, or disabled. |
+| HP: Operating state | `heat_pump_sub_status` | `5473` | - | Detailed heat pump operating state, such as heating, cooling, defrosting, or alarm. |
+| HP: Mode | `heat_pump_mode` | `5006` | - | Current heat pump mode: heating or cooling. |
+| HP: Remaining blocking time | `heat_pump_lockout_time` | `5572` | min | Remaining heat pump lockout time. |
 | HP: Defrost status | `heat_pump_defrost_status` | `5626` | On/off | On/off state of the component. |
 | HP: Compressor status | `heat_pump_compressor_status` | `5625` | On/off | On/off state of the component. |
 | HP: Error status | `heat_pump_error_status` | `5002` | On/off | On/off state of the component. |
 | HP: Release signal | `heat_pump_enable_signal` | `5004` | On/off | On/off state of the component. |
 | HP: Compressor cut-off | `heat_pump_compressor_lock` | `5005` | On/off | On/off state of the component. |
-| HP: Blocking signal | `heat_pump_lock_signal` | `5174` | - | Operating mode or state value. |
+| HP: Blocking signal | `heat_pump_lock_signal` | `5174` | - | Indicates whether the blocking signal blocks or releases the heat pump. |
 | HP: Compressor frequency | `heat_pump_compressor_frequency` | `5205` | Hz | Current compressor frequency. |
 | Fan state (outdoor) | `fan_state` | `5135` | On/off | On/off state of the component. |
-| HP: Discharge pipe temp. | `heat_pump_hot_gas_temperature` | `5146` | °C | Temperature or target value. |
-| Power | `power` | `5320` | W | Current power value. |
-| Thermal power | `power_thermal` | `5321` | W | Current power value. |
+| HP: Discharge pipe temp. | `heat_pump_hot_gas_temperature` | `5146` | °C | Measured discharge gas temperature of the heat pump. |
+| Power | `power` | `5320` | W | Current electrical power consumption of the heat pump. |
+| Thermal power | `power_thermal` | `5321` | W | Current thermal output of the heat pump. |
 | Compressor starts | `compressor_starts` | `5822` | – | Number of compressor starts. |
-| HP: Runtime (minutes) | `heat_pump_runtime_minutes` | `5823` | min | Runtime or time value. |
-| Runtime | `runtime_hours` | `5824` | h | Runtime or time value. |
+| HP: Runtime (minutes) | `heat_pump_runtime_minutes` | `5823` | min | Heat pump runtime in minutes. |
+| Runtime | `runtime_hours` | `5824` | h | Cumulative heat pump operating-hours counter. |
 | HP: 4-way valve | `heat_pump_four_way_valve` | `5136` | On/off | On/off state of the component. |
 | Electrical energy (hour) | `energy_electrical_hour` | `5388` | kWh | Electrical energy consumption for the stated period. |
 | Electrical energy (day) | `energy_electrical_day` | `5293` | kWh | Electrical energy consumption for the stated period. |

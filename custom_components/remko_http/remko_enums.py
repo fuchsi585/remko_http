@@ -264,6 +264,11 @@ class HeatPumpSubStatus(StrEnum):
     DEFROSTING = "defrosting"
     WAITING = "waiting"
     STANDBY = "standby"
+    TRANSITION_TO_HEATING = "transition_to_heating"
+    STOP = "stop"
+    MANUAL = "manual"
+    START = "start"
+    EVU_BLOCK = "evu_block"
 
     @property
     def hex_value(self) -> str:

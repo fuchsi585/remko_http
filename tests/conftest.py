@@ -137,6 +137,7 @@ class SensorStateClass:
     """Minimal Home Assistant SensorStateClass stub."""
 
     MEASUREMENT = "measurement"
+    TOTAL = "total"
     TOTAL_INCREASING = "total_increasing"
 
 

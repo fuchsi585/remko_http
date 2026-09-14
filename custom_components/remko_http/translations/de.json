@@ -241,7 +241,7 @@
         }
       },
       "heat_pump_sub_status": {
-        "name": "WP: Sub-Status",
+        "name": "WP: Betriebszustand",
         "state": {
           "off": "Aus",
           "cooling": "Kühlen",
@@ -250,7 +250,12 @@
           "transition_to_cooling": "Übergang zum Kühlen",
           "defrosting": "Abtauen",
           "waiting": "Warten",
-          "standby": "Standby"
+          "standby": "Standby",
+          "transition_to_heating": "Übergang zum Heizen",
+          "stop": "Stop",
+          "manual": "Manuell",
+          "start": "Start",
+          "evu_block": "EVU-Sperre"
         }
       },
       "heat_pump_lockout_time": {
@@ -322,7 +327,7 @@
         }
       },
       "heating_circuit_unmixed_operating_mode": {
-        "name": "HK ung.: Betriebsmodus",
+        "name": "HK ungemischt: Betriebsmodus",
         "state": {
           "auto": "Auto",
           "heating": "Heizen",
@@ -331,16 +336,16 @@
         }
       },
       "heating_circuit_unmixed_target_temperature": {
-        "name": "HK ung.: Soll-Temperatur"
+        "name": "HK ungemischt: Soll-Temperatur"
       },
       "heating_circuit_unmixed_actual_temperature": {
-        "name": "HK ung.: Ist-Temperatur"
+        "name": "HK ungemischt: Ist-Temperatur"
       },
       "heating_circuit_unmixed_dew_point": {
-        "name": "HK ung.: Taupunkt"
+        "name": "HK ungemischt: Taupunkt"
       },
       "heating_circuit_unmixed_status": {
-        "name": "HK ung.: Status",
+        "name": "HK ungemischt: Status",
         "state": {
           "auto": "Automatik",
           "comfort": "Komfort",
@@ -350,7 +355,7 @@
         }
       },
       "heating_circuit_unmixed_setpoint_adjustment": {
-        "name": "HK ung.: Sollwertanpassung"
+        "name": "HK ungemischt: Sollwertanpassung"
       },
       "hydraulics_heating_energy": {
         "name": "Hydraulik: Energie Heizen"

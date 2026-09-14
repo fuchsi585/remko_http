@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Final
@@ -29,6 +30,7 @@ except ImportError:
 
 from .remko_enums import (
     CirculationDemandState,
+    DeviceValue,
     HeatingCircuitStatus,
     HeatPumpLockSignal,
     HeatPumpMode,
@@ -73,8 +75,7 @@ class RemkoButtonDef:
     data_type: RemkoDataType | None = None
     scale_type: ScaleType | None = None
     reset_delay: int | None = None
-    enable_key: str | None = None
-    enable_value: type[Enum] | None = None
+    availability: Callable[[dict[str, DeviceValue]], bool] | None = None
 
 
 BUTTONS: list[RemkoButtonDef] = [
@@ -86,8 +87,13 @@ BUTTONS: list[RemkoButtonDef] = [
         option=SwitchState,
         data_type=RemkoDataType.UINT8,
         reset_delay=1,
-        enable_key="hot_water_req_state",
-        enable_value=HotWaterReqState.STANDBY,
+        availability=lambda data: (
+            data["water_temp_req"].phys_value is not None
+            and data["water_temp"].phys_value is not None
+            and data["hot_water_req_state"].phys_value is not None
+            and data["hot_water_req_state"].phys_value == HotWaterReqState.STANDBY
+            and data["water_temp"].phys_value < data["water_temp_req"].phys_value
+        ),
     ),
 ]
 
@@ -667,7 +673,7 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         key="energy_electrical_hour_temporary",
         unit=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         icon="mdi:lightning-bolt",
         entity_category=EntityCategory.DIAGNOSTIC,
         display_precision=4,
