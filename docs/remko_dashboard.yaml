@@ -265,4 +265,3 @@ views:
                 name: Kompressorstarts
               - entity: sensor.haus_warmepumpe_laufzeit
                 name: Laufzeit
-
