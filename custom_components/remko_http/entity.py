@@ -15,6 +15,7 @@ from .const import (
     RemkoSensorDef,
 )
 from .coordinator import RemkoCoordinator
+from .utils import normalize_url_host
 
 
 class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
@@ -30,7 +31,7 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
         | RemkoEnergySensorDef,
     ) -> None:
         super().__init__(coordinator)
-        self._host_ip = entry.data.get(CONF_HOST)
+        self._host = normalize_url_host(entry.data.get(CONF_HOST))
         self._entry_id = entry.entry_id
         self._definition = definition
         self._attr_unique_id = f"{self._entry_id}_{self._definition.key}"
@@ -65,7 +66,7 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
             "identifiers": {(DOMAIN, self._entry_id)},
             "translation_key": "heat_pump",
             "manufacturer": "Remko",
-            "configuration_url": f"http://{self._host_ip}/",
+            "configuration_url": f"http://{self._host}/",
             **device_info,
         }
 

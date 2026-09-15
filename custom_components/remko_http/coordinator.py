@@ -41,7 +41,14 @@ from .const import (
     RemkoSensorDef,
 )
 from .remko_enums import CoordinatorSnapshot, DeviceValue, ModelType
-from .utils import decode, encode, format_decoded_data, parse_datetime, round_number
+from .utils import (
+    decode,
+    encode,
+    format_decoded_data,
+    normalize_url_host,
+    parse_datetime,
+    round_number,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,13 +62,10 @@ class RemkoCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
 
-        self._polling = entry.options.get(
-            CONF_SCAN_INTERVAL,
-            entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
-        )
+        self._polling = entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        _LOGGER.info(f"Polling: {self._polling}")
         self._firmware: str | None = None
         self._last_snapshot: CoordinatorSnapshot | None = None
-        self._url: str = f"http://{entry.data.get(CONF_HOST)}/cgi-bin/webapi.cgi"
         self._session: AsyncClient | None = None
         self._store: Store[dict[str, Any]] = Store(
             hass, STORAGE_VERSION, f"{DOMAIN}.energy_values"
@@ -78,6 +82,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(seconds=self._polling),
         )
+        host = normalize_url_host(entry.data.get(CONF_HOST))
+        self._url: str = f"http://{host}/cgi-bin/webapi.cgi"
 
     @property
     def device_info(self):

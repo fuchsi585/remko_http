@@ -3,6 +3,30 @@
 import pytest
 
 from custom_components.remko_http.remko_enums import RemkoDataType, ScaleType
+from custom_components.remko_http.utils import normalize_url_host
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("192.168.1.50", "192.168.1.50"),
+        ("2001:db8::1", "[2001:db8::1]"),
+        ("2001:0db8:0000:0000:0000:0000:0000:0001", "[2001:db8::1]"),
+        ("::1", "[::1]"),
+    ],
+)
+def test_normalize_url_host(host: str, expected: str) -> None:
+    """IPv4 stays unchanged; IPv6 is compressed and bracketed."""
+    assert normalize_url_host(host) == expected
+
+
+@pytest.mark.parametrize(
+    "host", ["remko.invalid", "[2001:db8::1]", "2001:db8::invalid"]
+)
+def test_normalize_url_host_rejects_invalid_ip(host: str) -> None:
+    """The helper expects a bare, valid IP address, not a URL host."""
+    with pytest.raises(ValueError):
+        normalize_url_host(host)
 
 
 @pytest.mark.parametrize(

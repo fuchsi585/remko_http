@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from ipaddress import IPv6Address, ip_address
 from typing import Any
 
 from .remko_enums import DeviceValue, RemkoDataType
@@ -62,3 +63,11 @@ def parse_datetime(raw: Any) -> datetime | None:
 
 def round_number(value: float) -> float:
     return round(value * 2) / 2
+
+
+def normalize_url_host(host: str) -> str:
+    """Format an IP address for use as a URL host."""
+    address = ip_address(host)
+    if isinstance(address, IPv6Address):
+        return f"[{address.compressed}]"
+    return address.compressed
