@@ -63,7 +63,6 @@ class RemkoCoordinator(DataUpdateCoordinator):
     ) -> None:
 
         self._polling = entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-        _LOGGER.info(f"Polling: {self._polling}")
         self._firmware: str | None = None
         self._last_snapshot: CoordinatorSnapshot | None = None
         self._session: AsyncClient | None = None
