@@ -30,7 +30,7 @@ def test_entity_availability_requires_successful_update_and_value(
         data={key: DeviceValue(key, 0)},
         last_update_success=True,
     )
-    entry = SimpleNamespace(entry_id="remko", data={})
+    entry = SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"})
     entity = entity_class(coordinator, definition, entry)
 
     assert entity.available is True
@@ -63,7 +63,9 @@ def test_numeric_entity_returns_none_when_current_value_is_missing(
         data={key: DeviceValue(key, 12.5)}, last_update_success=True
     )
     entity = entity_class(
-        coordinator, definition, SimpleNamespace(entry_id="remko", data={})
+        coordinator,
+        definition,
+        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
     )
 
     assert entity.native_value is not None
@@ -103,7 +105,7 @@ def test_heat_warm_water_button_availability(
     entity = RemkoButtonEntity(
         coordinator,
         BUTTONS[0],
-        SimpleNamespace(entry_id="remko", data={}),
+        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
     )
 
     assert entity.available is expected
@@ -113,3 +115,18 @@ def test_heat_warm_water_button_availability(
 
     coordinator.data = None
     assert entity.available is False
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [("192.168.1.50", "192.168.1.50"), ("2001:0db8::1", "[2001:db8::1]")],
+)
+def test_entity_configuration_url_uses_normalized_host(
+    host: str, expected: str
+) -> None:
+    """The device link uses the same URL-safe IP format as the CGI client."""
+    coordinator = SimpleNamespace(device_info={})
+    entry = SimpleNamespace(entry_id="remko", data={"host": host})
+    entity = RemkoSensor(coordinator, SENSORS[0], entry)
+
+    assert entity.device_info["configuration_url"] == f"http://{expected}/"

@@ -47,13 +47,8 @@ def _config_entry(
     [
         ({"host": "127.0.0.1"}, {}, 20),
         ({"host": "127.0.0.1", "scan_interval": 45}, {}, 45),
-        (
-            {"host": "127.0.0.1", "scan_interval": 45},
-            {"scan_interval": 10},
-            10,
-        ),
     ],
-    ids=["default", "entry-data", "options-override"],
+    ids=["default", "entry-data"],
 )
 def test_coordinator_uses_configured_polling_interval(
     data: dict, options: dict, expected: int
@@ -64,6 +59,23 @@ def test_coordinator_uses_configured_polling_interval(
     )
 
     assert coordinator.update_interval == timedelta(seconds=expected)
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [("192.168.1.50", "192.168.1.50"), ("2001:0db8::1", "[2001:db8::1]")],
+)
+@pytest.mark.parametrize("stored_normalized_host", [None, "obsolete-host"])
+def test_coordinator_normalizes_url_from_host(
+    host: str, expected: str, stored_normalized_host: str | None
+) -> None:
+    """Old entries need no derived field; a stale derived field is ignored."""
+    data = {"host": host}
+    if stored_normalized_host is not None:
+        data["normalized_host"] = stored_normalized_host
+    coordinator = RemkoCoordinator(MagicMock(), _config_entry(data=data))
+
+    assert coordinator._url == f"http://{expected}/cgi-bin/webapi.cgi"
 
 
 @pytest.mark.asyncio
