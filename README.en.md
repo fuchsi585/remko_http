@@ -50,30 +50,22 @@ A static IP address or DHCP reservation for the heat pump is recommended.
 
 ### HACS
 
+[![Add to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fuchsi585&repository=remko_http&category=integration)
+
+To add it manually:
 1. Open HACS in Home Assistant.
 2. Go to **Integrations**.
 3. Open **⋮ → Custom repositories**.
-4. Add:
-
-   `https://github.com/fuchsi585/remko_http`
-
+4. Add: `https://github.com/fuchsi585/remko_http`
 5. Select **Integration** as repository type.
 6. Install **REMKO HTTP**.
 7. Restart Home Assistant.
 
 ### Manual
 
-Copy the
-
-`custom_components/remko_http`
-
-directory to the Home Assistant configuration directory:
-
-```text
-/config/custom_components/remko_http/
-```
-
-Restart Home Assistant afterwards.
+1. Download the latest release
+2. Copy the `custom_components/remko_http` folder to your HA `config/custom_components/` directory
+3. Restart Home Assistant
 
 ## Configuration
 
