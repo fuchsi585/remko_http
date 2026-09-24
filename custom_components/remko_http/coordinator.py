@@ -75,6 +75,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         self._unsub_storage = None
         self._device_info: dict[str, str] = {}
         self._lock = asyncio.Lock()
+        self._storage_lock = asyncio.Lock()
         super().__init__(
             hass,
             _LOGGER,
@@ -113,36 +114,39 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_storage_flush(self, _now: datetime) -> None:
         """Persist current values every 10 minutes."""
-        if not self._storage_dirty:
-            return
 
-        if (snapshot := self._last_snapshot) is None:
-            return
+        async with self._storage_lock:
+            if not self._storage_dirty:
+                return
 
-        storage_data = {
-            "timestamp": snapshot.timestamp.isoformat(),
-            **{
-                key: asdict(value)
-                for key, value in snapshot.data.items()
-                if key in STORAGE_KEYS
-            },
-        }
+            if (snapshot := self._last_snapshot) is None:
+                return
 
-        await self._store.async_save(storage_data)
+            storage_data = {
+                "timestamp": snapshot.timestamp.isoformat(),
+                **{
+                    key: asdict(value)
+                    for key, value in snapshot.data.items()
+                    if key in STORAGE_KEYS
+                },
+            }
 
-        self._last_stored_energies = CoordinatorSnapshot(
-            data={
-                key: replace(value)
-                for key, value in snapshot.data.items()
-                if key in STORAGE_KEYS
-            },
-            timestamp=snapshot.timestamp,
-        )
+            await self._store.async_save(storage_data)
 
-        self._storage_dirty = False
-        _LOGGER.debug(
-            f"Save last snapshot of energies at {snapshot.timestamp.isoformat()}"
-        )
+            self._last_stored_energies = CoordinatorSnapshot(
+                data={
+                    key: replace(value)
+                    for key, value in snapshot.data.items()
+                    if key in STORAGE_KEYS
+                },
+                timestamp=snapshot.timestamp,
+            )
+
+            # Ein neuer Poll während async_save() bleibt zum Speichern vorgemerkt.
+            self._storage_dirty = self._last_snapshot is not snapshot
+            _LOGGER.debug(
+                f"Save last snapshot of energies at {snapshot.timestamp.isoformat()}"
+            )
 
     async def async_client_shutdown(self) -> None:
         if self._unsub_storage is not None:
@@ -241,6 +245,11 @@ class RemkoCoordinator(DataUpdateCoordinator):
     async def _async_write_raw_pump_data(
         self, remko_id: int, values: dict
     ) -> dict[str, str] | None:
+
+        if not self._session:
+            _LOGGER.warning("HttpClient not initialized!")
+            return None
+
         payload = {
             "SMT_ID": "0000000000000000",
             "query_list": [remko_id],
@@ -255,7 +264,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
             if "values" in response:
                 response.update(response.pop("values"))
         except (HTTPStatusError, InvalidURL, RequestError) as err:
-            _LOGGER.error(f"Remko-Client error: {repr(err)}")
+            _LOGGER.error("Remko-Client error: %s", repr(err))
             return None
 
         return response
@@ -294,7 +303,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
         max_diff_time = timedelta(seconds=self._polling * MAX_DIFF_TIME_ENERGY_FACTOR)
 
         for energy_definition in ENERGY_SENSORS:
-            if not energy_definition.intergrated_power:
+            if not energy_definition.integrated_power:
                 continue
 
             device_energy = result.get(energy_definition.source_key)
@@ -350,8 +359,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
             # Sobald wieder zwei aufeinanderfolgende gültige Messwerte vorliegen,
             # wird die Energieberechnung fortgesetzt.
             result[energy_definition.key] = replace(last_energy)
-            last_power = previous.data.get(energy_definition.intergrated_power)
-            current_power = result.get(energy_definition.intergrated_power)
+            last_power = previous.data.get(energy_definition.integrated_power)
+            current_power = result.get(energy_definition.integrated_power)
 
             if (
                 previous.timestamp is None

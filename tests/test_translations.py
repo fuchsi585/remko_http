@@ -46,6 +46,17 @@ def test_translation_keys_match_strings(language: str) -> None:
     assert _leaf_keys(translation) == _leaf_keys(source)
 
 
+@pytest.mark.parametrize("language", ["de", "en"])
+def test_invalid_host_error_is_translated_in_both_flows(language: str) -> None:
+    """The error code returned by both forms must have a visible message."""
+    source = _load_json(INTEGRATION_DIR / "strings.json")
+    translation = _load_json(INTEGRATION_DIR / "translations" / f"{language}.json")
+
+    for section in ("config", "options"):
+        assert source[section]["error"]["invalid_host"]
+        assert translation[section]["error"]["invalid_host"]
+
+
 def test_entity_translation_keys_match_definitions() -> None:
     """Entity translation keys must match the configured entity definitions."""
     entity_translations = _load_json(INTEGRATION_DIR / "strings.json")["entity"]

@@ -726,7 +726,7 @@ class RemkoEnergySensorDef:
     option: type[Enum] | None = None
     data_type: RemkoDataType = RemkoDataType.UINT32
     scale_type: ScaleType = ScaleType.DEFAULT
-    intergrated_power: str | None = None
+    integrated_power: str | None = None
     source_key: str | None = None
     max_energy_stored_diff: int | None = None
 
@@ -740,7 +740,7 @@ ENERGY_SENSORS: tuple[RemkoEnergySensorDef, ...] = (
         icon="mdi:transmission-tower",
         http_req=5105,
         data_type=RemkoDataType.UINT32,
-        intergrated_power="power",
+        integrated_power="power",
         source_key="energy_electrical_raw",
         max_energy_stored_diff=2,
     ),
