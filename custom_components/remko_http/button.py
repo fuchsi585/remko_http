@@ -56,7 +56,11 @@ class RemkoButtonEntity(RemkoBaseEntity, ButtonEntity):
 
         availability = getattr(self._definition, "availability", None)
         if availability is not None:
-            return availability(self.coordinator.data)
+            try:
+                return availability(self.coordinator.data)
+            except (ValueError, KeyError):
+                # Fehlender Messwert kann sonst die Button-Anzeige stören
+                return False
 
         return True
 

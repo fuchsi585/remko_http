@@ -195,7 +195,7 @@ def test_energy_sensor_dependencies_are_consistent() -> None:
     }
 
     for definition in ENERGY_SENSORS:
-        assert definition.intergrated_power in sensors_by_key
+        assert definition.integrated_power in sensors_by_key
         assert definition.source_key in raw_by_key
         assert definition.http_req == raw_by_key[definition.source_key].http_req
         assert definition.max_energy_stored_diff is not None

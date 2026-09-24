@@ -28,6 +28,7 @@ def _coordinator() -> RemkoCoordinator:
     coordinator._last_snapshot = None
     coordinator._last_stored_energies = CoordinatorSnapshot({}, None)
     coordinator._lock = asyncio.Lock()
+    coordinator._storage_lock = asyncio.Lock()
     return coordinator
 
 
@@ -492,6 +493,55 @@ def test_energy_calculation_skips_large_time_gap() -> None:
     assert result["energy_electrical"].phys_value == 10.0
 
 
+def test_long_gap_recovers_plausible_device_counter_increase() -> None:
+    """Energy accumulated during a long polling gap must not disappear."""
+    coordinator = _coordinator()
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._last_snapshot = CoordinatorSnapshot(
+        {
+            "energy_electrical": DeviceValue("energy_electrical", 100.3),
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
+            "power": DeviceValue("power", 2000),
+        },
+        timestamp,
+    )
+
+    result = coordinator._energy_calculation(
+        {
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 102.0),
+            "power": DeviceValue("power", 2000),
+        },
+        timestamp + timedelta(hours=1),
+    )
+
+    assert result["energy_electrical"].phys_value == pytest.approx(102.3)
+
+
+@pytest.mark.parametrize(
+    "raw_after_gap", [1.0, 10_000.0], ids=["reset", "implausible_jump"]
+)
+def test_long_gap_rejects_unusable_device_delta(raw_after_gap: float) -> None:
+    """A reset or implausible device jump must not alter calculated energy."""
+    coordinator = _coordinator()
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._last_snapshot = CoordinatorSnapshot(
+        {
+            "energy_electrical": DeviceValue("energy_electrical", 100.3),
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
+            "power": DeviceValue("power", 2000),
+        },
+        timestamp,
+    )
+    data = {
+        "energy_electrical_raw": DeviceValue("energy_electrical_raw", raw_after_gap),
+        "power": DeviceValue("power", 2000),
+    }
+
+    result = coordinator._energy_calculation(data, timestamp + timedelta(hours=1))
+
+    assert result["energy_electrical"].phys_value == pytest.approx(100.3)
+
+
 @pytest.mark.parametrize("time_diff", [-20, 0], ids=["negative", "zero"])
 def test_energy_calculation_skips_non_positive_time_delta(time_diff: int) -> None:
     """Test zero and negative time deltas do not change energy."""
@@ -569,16 +619,14 @@ async def test_async_update_saves_first_valid_energy_immediately(
     result = await coordinator._async_update_data()
 
     assert result["energy_electrical"].phys_value == 100.0
-    coordinator._store.async_save.assert_awaited_once_with(
-        {
-            "timestamp": timestamp.isoformat(),
-            "energy_electrical": {
-                "key": "energy_electrical",
-                "phys_value": 100.0,
-                "raw_value": None,
-            },
-        }
-    )
+    coordinator._store.async_save.assert_awaited_once()
+    saved = coordinator._store.async_save.await_args.args[0]
+    assert saved["timestamp"] == timestamp.isoformat()
+    assert saved["energy_electrical"] == {
+        "key": "energy_electrical",
+        "phys_value": 100.0,
+        "raw_value": None,
+    }
     assert (
         coordinator._last_stored_energies.data["energy_electrical"].phys_value == 100.0
     )
@@ -697,6 +745,69 @@ def test_energy_calculation_restores_without_device_counter(
         coordinator._last_snapshot = CoordinatorSnapshot(result, now)
 
 
+@pytest.mark.asyncio
+async def test_restart_recovers_energy_since_last_save_from_device_counter() -> None:
+    """Use the saved raw counter to recover energy lost before a restart."""
+    coordinator = RemkoCoordinator(MagicMock(), _config_entry())
+    stored_at = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._store.async_load = AsyncMock(
+        return_value={
+            "timestamp": stored_at.isoformat(),
+            "energy_electrical": {
+                "key": "energy_electrical",
+                "phys_value": 100.3,
+                "raw_value": None,
+            },
+            "energy_electrical_raw": {
+                "key": "energy_electrical_raw",
+                "phys_value": 100.0,
+                "raw_value": "00000064",
+            },
+        }
+    )
+    await coordinator.async_load_storage()
+
+    result = coordinator._energy_calculation(
+        {
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 102.0),
+            "power": DeviceValue("power", 2000),
+        },
+        stored_at + timedelta(hours=1),
+    )
+
+    assert result["energy_electrical"].phys_value == pytest.approx(102.3)
+
+
+@pytest.mark.asyncio
+async def test_restart_never_restores_below_last_ha_energy_state() -> None:
+    """A stale disk value must not make a total_increasing sensor fall."""
+    hass = MagicMock()
+    hass.states.get.return_value = SimpleNamespace(state="100.04")
+    coordinator = RemkoCoordinator(hass, _config_entry())
+    stored_at = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._store.async_load = AsyncMock(
+        return_value={
+            "timestamp": stored_at.isoformat(),
+            "energy_electrical": {
+                "key": "energy_electrical",
+                "phys_value": 100.0,
+                "raw_value": None,
+            },
+        }
+    )
+    await coordinator.async_load_storage()
+
+    result = coordinator._energy_calculation(
+        {
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
+            "power": DeviceValue("power", 0),
+        },
+        stored_at + timedelta(minutes=2),
+    )
+
+    assert result["energy_electrical"].phys_value >= 100.04
+
+
 @pytest.mark.parametrize("source", ["device", "storage", "snapshot"])
 def test_energy_calculation_does_not_mutate_inputs(source: str) -> None:
     """Results must not modify or share mutable values with their inputs."""
@@ -771,6 +882,69 @@ async def test_storage_flush_persists_snapshot_and_clears_dirty_flag() -> None:
     )
     assert set(coordinator._last_stored_energies.data) == {"energy_electrical"}
     assert coordinator._last_stored_energies.timestamp == timestamp
+    assert coordinator._storage_dirty is False
+
+
+@pytest.mark.asyncio
+async def test_storage_flush_saves_raw_counter_with_calculated_energy() -> None:
+    """A restart needs both counters from the same snapshot for recovery."""
+    coordinator = _coordinator()
+    coordinator._store = MagicMock()
+    coordinator._store.async_save = AsyncMock()
+    coordinator._storage_dirty = True
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._last_snapshot = CoordinatorSnapshot(
+        {
+            "energy_electrical": DeviceValue("energy_electrical", 100.3),
+            "energy_electrical_raw": DeviceValue("energy_electrical_raw", 100.0),
+        },
+        timestamp,
+    )
+
+    await coordinator._async_storage_flush(timestamp)
+
+    saved = coordinator._store.async_save.await_args.args[0]
+    assert saved["energy_electrical"]["phys_value"] == pytest.approx(100.3)
+    assert saved["energy_electrical_raw"]["phys_value"] == pytest.approx(100.0)
+
+
+@pytest.mark.asyncio
+async def test_storage_flush_keeps_new_snapshot_dirty_during_save() -> None:
+    """A poll during disk I/O must leave the newer energy value pending."""
+    coordinator = RemkoCoordinator(MagicMock(), _config_entry())
+    coordinator._storage_dirty = True
+    timestamp = datetime(2026, 9, 11, 12, 0, tzinfo=UTC)
+    coordinator._last_snapshot = CoordinatorSnapshot(
+        {"energy_electrical": DeviceValue("energy_electrical", 42.0)}, timestamp
+    )
+    save_started = asyncio.Event()
+    finish_save = asyncio.Event()
+    saved: list[dict] = []
+
+    async def save(data: dict) -> None:
+        saved.append(data)
+        if len(saved) == 1:
+            save_started.set()
+            await finish_save.wait()
+
+    coordinator._store.async_save = save
+    flush = asyncio.create_task(coordinator._async_storage_flush(timestamp))
+    try:
+        await asyncio.wait_for(save_started.wait(), timeout=1)
+        coordinator._last_snapshot = CoordinatorSnapshot(
+            {"energy_electrical": DeviceValue("energy_electrical", 42.1)},
+            timestamp + timedelta(seconds=20),
+        )
+        coordinator._storage_dirty = True
+    finally:
+        finish_save.set()
+        await flush
+
+    assert saved[0]["energy_electrical"]["phys_value"] == 42.0
+    assert coordinator._storage_dirty is True
+
+    await coordinator._async_storage_flush(timestamp + timedelta(seconds=20))
+    assert saved[1]["energy_electrical"]["phys_value"] == 42.1
     assert coordinator._storage_dirty is False
 
 
