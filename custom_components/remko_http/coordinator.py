@@ -466,7 +466,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 self._unsub_storage = async_track_time_interval(
                     self.hass,
                     self._async_storage_flush,
-                    timedelta(minutes=self._polling * 3),
+                    timedelta(seconds=self._polling * 3),
                     cancel_on_shutdown=True,
                 )
             return deepcopy(result)
