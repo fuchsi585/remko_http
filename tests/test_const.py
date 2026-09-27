@@ -16,7 +16,6 @@ from custom_components.remko_http.const import (
     SELECTORS,
     SENSORS,
     SLEEP_TIME_AFTER_SET_REQ,
-    STORAGE_KEYS,
 )
 from custom_components.remko_http.remko_enums import (
     HeatPumpSubStatus,
@@ -200,4 +199,3 @@ def test_energy_sensor_dependencies_are_consistent() -> None:
         assert definition.http_req == raw_by_key[definition.source_key].http_req
         assert definition.max_energy_stored_diff is not None
         assert definition.max_energy_stored_diff > 0
-
