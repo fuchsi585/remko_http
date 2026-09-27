@@ -118,6 +118,32 @@ def test_heat_warm_water_button_availability(
 
 
 @pytest.mark.parametrize(
+    "missing_key", ["water_temp_req", "water_temp", "hot_water_req_state"]
+)
+def test_heat_warm_water_button_unavailable_when_dependency_is_missing(
+    missing_key: str,
+) -> None:
+    """A partial device response must not break the button availability check."""
+    data = {
+        "action_heat_warm_water": DeviceValue("action_heat_warm_water", 0),
+        "water_temp_req": DeviceValue("water_temp_req", 50.0),
+        "water_temp": DeviceValue("water_temp", 40.0),
+        "hot_water_req_state": DeviceValue(
+            "hot_water_req_state", HotWaterReqState.STANDBY
+        ),
+    }
+    del data[missing_key]
+    coordinator = SimpleNamespace(data=data, last_update_success=True)
+    entity = RemkoButtonEntity(
+        coordinator,
+        BUTTONS[0],
+        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
+    )
+
+    assert entity.available is False
+
+
+@pytest.mark.parametrize(
     ("host", "expected"),
     [("192.168.1.50", "192.168.1.50"), ("2001:0db8::1", "[2001:db8::1]")],
 )

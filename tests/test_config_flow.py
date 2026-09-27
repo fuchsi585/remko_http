@@ -55,7 +55,7 @@ async def test_config_flow_shows_error_for_invalid_ip() -> None:
 
     assert result == {"type": "form"}
     errors = flow.async_show_form.call_args.kwargs["errors"]
-    assert "Wrong IP-Adress" in errors["base"]
+    assert errors["base"] == "invalid_host"
 
 
 @pytest.mark.asyncio
@@ -94,6 +94,6 @@ async def test_options_flow_rejects_invalid_host(host: str) -> None:
     result = await flow.async_step_init({"host": host, "scan_interval": 30})
 
     assert result == {"type": "form"}
-    assert flow.async_show_form.call_args.kwargs["errors"]
+    assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "invalid_host"}
     flow.hass.config_entries.async_update_entry.assert_not_called()
     flow.async_create_entry.assert_not_called()

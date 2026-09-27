@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def _async_reload_entry(hass: HomeAssistant, entry: RemkoCoordinator) -> bool:
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Config entry updated — reloading Remko HTTP")
     await hass.config_entries.async_reload(entry.entry_id)
 

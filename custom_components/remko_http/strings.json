@@ -15,7 +15,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to the heat pump."
+      "invalid_host": "Enter a valid IP address."
     },
     "abort": {
       "single_instance_allowed": "Only one REMKO heat pump can be set up."
@@ -37,7 +37,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Unable to connect to the heat pump."
+      "invalid_host": "Enter a valid IP address."
     }
   },
   "device": {

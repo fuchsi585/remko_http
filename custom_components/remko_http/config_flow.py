@@ -41,8 +41,9 @@ class RemkoHeatPumpConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             host = user_input["host"]
             try:
                 _validate_host(host)
-            except ConnectionError as err:
-                errors["base"] = str(err)
+            except ConnectionError:
+                # Die Fehlermeldung für eine ungültige IP
+                errors["base"] = "invalid_host"
 
             if not errors:
                 return self.async_create_entry(
@@ -85,8 +86,9 @@ class RemkoHeatPumpOptionsFlow(config_entries.OptionsFlow):
             if host != current_host:
                 try:
                     _validate_host(host)
-                except ConnectionError as err:
-                    errors["base"] = str(err)
+                except ConnectionError:
+                    # Die Fehlermeldung für eine ungültige IP
+                    errors["base"] = "invalid_host"
 
             if not errors:
                 # Store settings in entry data and keep options a valid mapping.

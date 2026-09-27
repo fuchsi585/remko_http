@@ -16,7 +16,6 @@ from custom_components.remko_http.const import (
     SELECTORS,
     SENSORS,
     SLEEP_TIME_AFTER_SET_REQ,
-    STORAGE_KEYS,
 )
 from custom_components.remko_http.remko_enums import (
     HeatPumpSubStatus,
@@ -195,17 +194,8 @@ def test_energy_sensor_dependencies_are_consistent() -> None:
     }
 
     for definition in ENERGY_SENSORS:
-        assert definition.intergrated_power in sensors_by_key
+        assert definition.integrated_power in sensors_by_key
         assert definition.source_key in raw_by_key
         assert definition.http_req == raw_by_key[definition.source_key].http_req
         assert definition.max_energy_stored_diff is not None
         assert definition.max_energy_stored_diff > 0
-
-
-def test_storage_keys_reference_calculated_energy_sensors() -> None:
-    """Only calculated energy values may be persisted."""
-    energy_keys = {definition.key for definition in ENERGY_SENSORS}
-
-    assert STORAGE_KEYS
-    assert len(STORAGE_KEYS) == len(set(STORAGE_KEYS))
-    assert set(STORAGE_KEYS) <= energy_keys

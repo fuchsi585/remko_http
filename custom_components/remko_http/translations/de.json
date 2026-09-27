@@ -15,7 +15,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen."
+      "invalid_host": "Bitte eine gültige IP-Adresse eingeben."
     },
     "abort": {
       "single_instance_allowed": "Es kann nur eine REMKO-Wärmepumpe eingerichtet werden."
@@ -37,7 +37,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Verbindung zur Wärmepumpe fehlgeschlagen."
+      "invalid_host": "Bitte eine gültige IP-Adresse eingeben."
     }
   },
   "device": {

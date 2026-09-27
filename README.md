@@ -144,7 +144,7 @@ Die folgende Tabelle enthält alle aktuell von der Sensorplattform bereitgestell
 |---|---|---:|---|---|
 | Aktuelle Betriebsart | `operating_status` | `5001` | Auswahlwert | Aktuelle übergeordnete Betriebsart der Anlage. |
 | Außentemperatur | `out_temp` | `5032` | °C | Aktuell gemessene Außentemperatur. |
-| Elektr. Energie | `energy_electrical` | `5105` | kWh | Lokal aus der elektrischen Leistung berechneter Gesamtverbrauch; ID 5105 dient als Startwert. |
+| Elektr. Energie | `energy_electrical` | `5105` | kWh | Aus der elektrischen Leistung berechneter Gesamtverbrauch; ID 5105 dient als Startwert und zur Wiederherstellung nach einem Neustart. |
 | Elektr. Energie (Gerät) | `energy_electrical_raw` | `5105` | kWh | Direkter, standardmäßig deaktivierter Energiezähler des REMKO-Geräts. |
 | Elektr. Energie (Jahr) | `energy_electrical_year` | `5296` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
 | Elektr. Energie (Monat) | `energy_electrical_month` | `5295` | kWh | Elektrischer Energieverbrauch für den angegebenen Zeitraum. |
@@ -238,13 +238,28 @@ bisherige Energiezähler erhalten. Bei einer Datenlücke, die größer als das
 Vierfache des eingestellten Abfrageintervalls ist, wird für diesen Zeitraum keine
 Energie hinzugerechnet, um unrealistische Sprünge zu vermeiden.
 
-Der berechnete Wert wird lokal in Home Assistant gespeichert: der erste
-gültige Wert sofort, weitere Änderungen regelmäßig im Abstand von zehn Minuten
-und beim Beenden der Integration. Nach einem Neustart wird der gespeicherte Wert
-weitergeführt. Ist noch kein gültiger Speicherwert vorhanden, dient der direkte
-REMKO-Zähler `5105` als Ausgangswert. Dieser bleibt separat als standardmäßig
-deaktivierte Diagnose-Entität **Elektr. Energie (Gerät)**
-(`energy_electrical_raw`) verfügbar.
+Die Integration speichert den berechneten Wert und den gleichzeitig gemessenen
+REMKO-Zählerstand `5105` zusammen. Der erste gültige Wert wird sofort gespeichert;
+danach werden Änderungen über einen Timer und beim regulären Beenden der
+Integration gespeichert. Der Timer verwendet das Dreifache des Zahlenwerts des
+Abfrageintervalls als Minutenangabe. Beim Standardwert von 20 Sekunden erfolgt
+die Speicherung daher alle 60 Minuten.
+
+Nach einem Neustart addiert die Integration beim ersten erfolgreichen Abruf die
+Änderung des REMKO-Zählers seit der letzten Speicherung einmalig zum gespeicherten
+berechneten Wert. Negative Änderungen und Sprünge oberhalb des bei 10 kW
+rechnerisch möglichen Verbrauchs werden verworfen; wegen der 1-kWh-Schritte des
+Gerätezählers gilt ein Zuschlag von 1 kWh. Fehlt ein gespeicherter Gerätezähler,
+wird der bisherige berechnete Wert verwendet; bei einer großen positiven
+Abweichung nach längerer Unterbrechung kann stattdessen der aktuelle Gerätezähler
+als Startwert dienen. Fehlt auch ein gültiger berechneter Wert, dient der aktuelle
+REMKO-Zähler als Startwert.
+
+Längere Datenlücken während des laufenden Betriebs werden weiterhin nicht anhand
+des Gerätezählers nachgetragen. Wegen dessen 1-kWh-Auflösung kann nach einem
+unerwarteten Neustart ein kleiner, noch nicht gespeicherter Verbrauch fehlen.
+Der Gerätezähler bleibt separat als standardmäßig deaktivierte Diagnose-Entität
+**Elektr. Energie (Gerät)** (`energy_electrical_raw`) verfügbar.
 
 ## Fehlerbehebung
 
