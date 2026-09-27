@@ -313,23 +313,51 @@ class RemkoCoordinator(DataUpdateCoordinator):
             # Einmal initialisieren. Nachfolgende polls verwenden den Memory-Wert,
             # unabhängig davon, wann der Snapshot auf der Festplatte gespeichert wird.
             if last_energy is None or last_energy.phys_value is None:
-                initial = self._last_stored_energies.data.get(energy_definition.key)
+                stored = self._last_stored_energies.data.get(energy_definition.key)
+                stored_device = self._last_stored_energies.data.get(
+                    energy_definition.source_key
+                )
+                stored_at = self._last_stored_energies.timestamp
+                initial = (
+                    stored
+                    if stored is not None and stored.phys_value is not None
+                    else device_energy
+                )
 
-                if initial is None or initial.phys_value is None:
-                    initial = device_energy
-                elif device_energy is not None and device_energy.phys_value is not None:
-                    stored_at = self._last_stored_energies.timestamp
-                    # Wenn Differenz > 2kWh zwischen Gerät und Berechnung
-                    # und Zeitstempel > polling * 4  (z.B. 80s),
-                    # dann wird mit dem aktuellen Gerätewert initialisiert
-                    # sonst wird der gespeicherte Wert genommen
+                if stored is not None and stored.phys_value is not None:
                     if (
-                        stored_at is not None
+                        stored_device is not None
+                        and stored_device.phys_value is not None
+                        and device_energy is not None
+                        and device_energy.phys_value is not None
+                    ):
+                        # Nach dem Laden die Gerätezähler-Differenz einmalig
+                        # ergänzen. Negative oder bei 10 kW unplausible Änderungen
+                        # verwerfen. Die 1-kWh-Auflösung erlaubt 1 kWh Zuschlag.
+                        if stored_at is not None and now >= stored_at:
+                            delta = device_energy.phys_value - stored_device.phys_value
+                            elapsed_hours = (now - stored_at).total_seconds() / 3600
+                            plausible_delta_limit = 10 * elapsed_hours + 1.0
+
+                            # Ein negativer Wert deutet auf einen Geräte-Reset hin.
+                            if 0 <= delta <= plausible_delta_limit:
+                                initial = replace(
+                                    stored, phys_value=stored.phys_value + delta
+                                )
+
+                    elif (
+                        device_energy is not None
+                        and device_energy.phys_value is not None
+                        and stored_at is not None
                         and stored_at.tzinfo is not None
                         and now - stored_at > max_diff_time
-                        and device_energy.phys_value - initial.phys_value
+                        and device_energy.phys_value - stored.phys_value
                         > energy_definition.max_energy_stored_diff
                     ):
+                        # Wenn Differenz > 2kWh zwischen Gerät und Berechnung
+                        # und Zeitstempel > polling * 4  (z.B. 80s),
+                        # dann wird mit dem aktuellen Gerätewert initialisiert
+                        # sonst wird der gespeicherte Wert genommen
                         seconds = int((now - stored_at).total_seconds())
                         duration = (
                             f"{seconds // 3600:02d}:"
@@ -342,16 +370,18 @@ class RemkoCoordinator(DataUpdateCoordinator):
                             "%s kWh → %s kWh",
                             energy_definition.key,
                             duration,
-                            round(device_energy.phys_value - initial.phys_value, 2),
+                            round(device_energy.phys_value - stored.phys_value, 2),
                             energy_definition.max_energy_stored_diff,
-                            round(initial.phys_value, 2),
+                            round(stored.phys_value, 2),
                             round(device_energy.phys_value, 2),
                         )
                         initial = device_energy
 
                 if initial is not None and initial.phys_value is not None:
                     result[energy_definition.key] = replace(
-                        initial, key=energy_definition.key, raw_value=None
+                        initial,
+                        key=energy_definition.key,
+                        raw_value=None,
                     )
                 continue
 
@@ -436,7 +466,7 @@ class RemkoCoordinator(DataUpdateCoordinator):
                 self._unsub_storage = async_track_time_interval(
                     self.hass,
                     self._async_storage_flush,
-                    timedelta(minutes=10),
+                    timedelta(minutes=self._polling * 3),
                     cancel_on_shutdown=True,
                 )
             return deepcopy(result)

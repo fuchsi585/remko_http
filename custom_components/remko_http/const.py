@@ -57,7 +57,7 @@ HTTP_REQ_SERIAL_NUMBER: Final = 5700
 HTTP_TIMEOUT: Final = 15
 MAX_DIFF_TIME_ENERGY_FACTOR: Final = 4  # scan_intervall * MAX_DIFF_TIME_ENERGY_FACTOR
 STORAGE_VERSION: Final = 1
-STORAGE_KEYS: tuple[str, ...] = ("energy_electrical",)
+STORAGE_KEYS: tuple[str, ...] = ("energy_electrical", "energy_electrical_raw")
 
 DEVICE_INFO_KEYS: dict[str, int | str] = {
     "model": 5198,

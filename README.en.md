@@ -143,7 +143,7 @@ The following table lists every entity currently provided by the sensor platform
 | Display name | Internal key | REMKO ID | Unit / value type | Description |
 |---|---|---:|---|---|
 | Auxiliary heat generator: Mains voltage | `auxiliary_heat_generator_mains_voltage` | `5796` | V | Measured mains voltage of the auxiliary heat generator; diagnostic value. |
-| Calculated energy | `energy_electrical` | `5105` | kWh | Total consumption calculated locally from electrical power; ID 5105 supplies the initial value. |
+| Calculated energy | `energy_electrical` | `5105` | kWh | Total consumption calculated from electrical power; ID 5105 supplies the initial value and supports recovery after a restart. |
 | Compressor starts | `compressor_starts` | `5822` | – | Number of compressor starts. |
 | Current operating mode | `operating_status` | `5001` | Enumerated | Current overall operating mode of the system. |
 | DHW: Circulation demand | `hot_water_circulation_demand` | `5133` | Enumerated | Operating mode or state value. |
@@ -236,13 +236,27 @@ missing, the existing energy total is retained. If a data gap exceeds four times
 the configured polling interval, no energy is added for that interval, preventing
 unrealistic jumps.
 
-The calculated total is stored locally by Home Assistant: the first valid value
-is saved immediately, subsequent changes are saved every ten minutes, and pending
-changes are saved when the integration shuts down. After a restart, calculation
-continues from the stored value. If no valid stored value exists, the direct REMKO
-counter `5105` is used as the starting value. It remains separately available as
-the disabled-by-default diagnostic entity **Electrical energy (Device)**
-(`energy_electrical_raw`).
+The integration stores the calculated total together with the REMKO counter
+reading `5105` from the same update. The first valid value is saved immediately;
+subsequent changes are saved by a timer and when the integration shuts down
+normally. The timer uses three times the numeric polling interval as a value in
+minutes. With the default setting of 20 seconds, values are therefore saved
+every 60 minutes.
+
+After a restart, the integration adds the change in the REMKO counter since the
+last save to the stored calculated total once, on the first successful update.
+Negative changes and jumps above the consumption possible at 10 kW are rejected;
+the limit includes a 1 kWh allowance for the device counter's 1 kWh steps. If no
+device counter was stored, the previous calculated total is used. After a long
+interruption, a large positive difference can instead make the current device
+counter the starting value. If there is no valid calculated total either, the
+current REMKO counter supplies the starting value.
+
+Long gaps during normal operation are still not filled from the device counter.
+Because it advances in 1 kWh steps, a small amount of unsaved consumption may
+remain missing after an unexpected restart. The device counter remains available
+separately as the disabled-by-default diagnostic entity **Electrical energy
+(Device)** (`energy_electrical_raw`).
 
 ## Troubleshooting
 
