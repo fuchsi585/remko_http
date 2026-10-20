@@ -9,6 +9,10 @@ updates:
     commit-message:
       prefix: "ci"
     open-pull-requests-limit: 3
+    groups:
+      codeql:
+        patterns:
+          - "github/codeql-action/*"
 
   - package-ecosystem: "pip"
     directory: "/"
