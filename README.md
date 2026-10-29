@@ -26,6 +26,19 @@ Die Integration kommuniziert direkt mit der REMKO Steuerung über das lokale Net
 - Kommunikation ohne Benutzername und Passwort bei unterstützten Geräten
 - Eine Wärmepumpe pro Home-Assistant-Instanz
 
+## Diagnose der Rücklauftemperatur
+
+Unter **Einstellungen → Geräte & Dienste → REMKO HTTP** kannst du über das
+Drei-Punkte-Menü des Integrationseintrags **Diagnosedaten herunterladen** wählen.
+Nach einer Aktualisierung der Integrationsdateien ist ein Neustart von Home Assistant nötig.
+
+Beim Download werden die IDs **5581, 5609, 5487, 5471 und 5476** einzeln ausgelesen.
+Der Abschnitt `return_temperature_signals` enthält je ID den Hex-Rohwert
+(`raw_value`), die als INT16 mit Faktor 0,1 dekodierte Temperatur
+(`temperature_c`) und den Status (`decoded`, `unavailable` oder `invalid_response`).
+`decoded` bestätigt nur die Dekodierung; vergleiche den Wert mit der Geräteanzeige,
+um die passende Rücklauftemperatur zu bestimmen. Die regulären Sensoren bleiben unverändert.
+
 ## Unterstützte Geräte
 
 | Gerät / Firmware | Status |

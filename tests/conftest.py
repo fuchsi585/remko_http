@@ -358,3 +358,8 @@ sys.modules["homeassistant.util"] = homeassistant_util
 sys.modules["homeassistant.util.dt"] = homeassistant_dt
 sys.modules["httpx"] = httpx
 sys.modules["voluptuous"] = voluptuous
+
+# Diagnostics redaction is supplied by Home Assistant in production.
+homeassistant_diagnostics = types.ModuleType("homeassistant.components.diagnostics")
+homeassistant_diagnostics.async_redact_data = lambda data, keys: data
+sys.modules["homeassistant.components.diagnostics"] = homeassistant_diagnostics
