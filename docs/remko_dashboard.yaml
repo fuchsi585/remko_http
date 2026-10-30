@@ -61,8 +61,8 @@ views:
                 color: teal
                 vertical: true
               - type: tile
-                entity: sensor.haus_warmepumpe_wp_sub_status
-                name: Anlagenstatus
+                entity: sensor.haus_warmepumpe_wp_4_wege_ventil
+                name: 4-Wege-Ventil
                 icon: mdi:list-status
                 color: cyan
                 vertical: true
@@ -239,6 +239,16 @@ views:
                 color: blue
                 vertical: true
                 features_position: bottom
+          - type: history-graph
+            entities:
+              - entity: sensor.haus_warmepumpe_elektr_energie
+                name: berechnet
+              - entity: sensor.haus_warmepumpe_elektr_energie_gerat
+                name: Gerät
+            title: Energieverlauf · 24 Stunden
+            hours_to_show: 24
+            logarithmic_scale: false
+            expand_legend: false
       - type: vertical-stack
         cards:
           - type: heading
@@ -265,3 +275,5 @@ views:
                 name: Kompressorstarts
               - entity: sensor.haus_warmepumpe_laufzeit
                 name: Laufzeit
+              - entity: sensor.haus_warmepumpe_hk_ung_taupunkt
+                name: Taupunkt

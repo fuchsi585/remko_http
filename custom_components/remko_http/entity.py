@@ -83,3 +83,22 @@ class RemkoBaseEntity(CoordinatorEntity[RemkoCoordinator]):
         value = self.coordinator.data.get(key)
 
         return value is not None and value.phys_value is not None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, int | str | None]:
+        model = self.coordinator.device_info.get("model")
+
+        http_req = (
+            self._definition.resolve_http_req(model)
+            if isinstance(self._definition, RemkoSensorDef)
+            else self._definition.http_req
+        )
+
+        key = getattr(self._definition, "read_key", self._definition.key)
+        data = self.coordinator.data or {}
+        value = data.get(key)
+
+        return {
+            "http_req": http_req,
+            "raw_value": value.raw_value if value is not None else None,
+        }
