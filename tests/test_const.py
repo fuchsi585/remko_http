@@ -11,11 +11,11 @@ from custom_components.remko_http.const import (
     ENERGY_SENSORS,
     ENERGY_SENSORS_DEVICE_RAW,
     HTTP_REQ_SERIAL_NUMBER,
-    HTTP_REQS,
     NUMBERS,
     SELECTORS,
     SENSORS,
     SLEEP_TIME_AFTER_SET_REQ,
+    get_http_reqs,
 )
 from custom_components.remko_http.remko_enums import (
     HeatPumpSubStatus,
@@ -91,12 +91,11 @@ def test_entity_keys_are_unique() -> None:
 def test_http_request_ids_are_valid_and_complete() -> None:
     """Every entity has a valid request ID and is included in the poll list."""
     definition_ids = {definition.http_req for definition in ALL_DEFINITIONS}
+    queries = get_http_reqs()
 
     assert None not in definition_ids
-    assert all(
-        type(http_req) is int and 0 < http_req <= 0xFFFF for http_req in HTTP_REQS
-    )
-    assert set(HTTP_REQS) == definition_ids
+    assert all(type(http_req) is int and 0 < http_req <= 0xFFFF for http_req in queries)
+    assert set(queries) == definition_ids
 
 
 def test_shared_http_ids_have_consistent_decoders() -> None:

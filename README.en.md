@@ -28,9 +28,10 @@ The integration communicates directly with the REMKO controller over the local n
 
 ## Supported Devices
 
-| Device / Firmware | Status |
-|---|---|
-| REMKO WKF120 with firmware 4.25 | ✅ Tested |
+| Device | Firmware | Status |
+|---|---|---|
+| WKF120 | 4.25 | ✅ Tested |
+| WKF70 | 4.24 | ✅ Tested |
 | Other firmware versions | ❓ Untested |
 
 The integration was developed and tested with a REMKO WKF120 using firmware 4.25.

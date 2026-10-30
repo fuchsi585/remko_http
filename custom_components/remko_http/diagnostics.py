@@ -26,6 +26,8 @@ async def _async_get_return_temperature_diagnostics(
         5487: "Wasser Eintrittstemperatur",
         5471: "Rücklauftemp.",
         5476: "Rücklauftemp. gemischt",
+        5485: "Wasser Austrittstemperatur",
+        5339: "Wasser Eintrittstemperatur",
     }
     result = {}
     for signal_id, label in signals.items():

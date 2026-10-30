@@ -32,7 +32,8 @@ Unter **Einstellungen → Geräte & Dienste → REMKO HTTP** kannst du über das
 Drei-Punkte-Menü des Integrationseintrags **Diagnosedaten herunterladen** wählen.
 Nach einer Aktualisierung der Integrationsdateien ist ein Neustart von Home Assistant nötig.
 
-Beim Download werden die IDs **5581, 5609, 5487, 5471 und 5476** einzeln ausgelesen.
+Beim Download werden die IDs **5581, 5609, 5487, 5471, 5476, 5485 und 5339** einzeln ausgelesen.
+ID 5485 liefert als Vergleichswert die Wasser-Austrittstemperatur (Vorlauf).
 Der Abschnitt `return_temperature_signals` enthält je ID den Hex-Rohwert
 (`raw_value`), die als INT16 mit Faktor 0,1 dekodierte Temperatur
 (`temperature_c`) und den Status (`decoded`, `unavailable` oder `invalid_response`).
@@ -41,10 +42,11 @@ um die passende Rücklauftemperatur zu bestimmen. Die regulären Sensoren bleibe
 
 ## Unterstützte Geräte
 
-| Gerät / Firmware | Status |
-|---|---|
-| REMKO WKF120 mit Firmware 4.25 | ✅ Getestet |
-| Andere Firmware-Versionen | ❓ Ungetestet |
+| Gerät | Firmware | Status |
+|---|---|---|
+| WKF120 | 4.25 | ✅ Getestet |
+| WKF70 | 4.24 | ✅ Getestet |
+| Andere Firmware versions | ❓ Ungetested |
 
 Die Integration wurde mit einer REMKO WKF120 auf Basis von Firmware 4.25 entwickelt und getestet.
 Andere Firmware-Versionen können eine abweichende HTTP-/CGI-Schnittstelle verwenden und sind daher nicht automatisch kompatibel.
