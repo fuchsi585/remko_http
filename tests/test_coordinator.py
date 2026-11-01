@@ -14,6 +14,7 @@ from custom_components.remko_http.coordinator import RemkoCoordinator
 from custom_components.remko_http.remko_enums import (
     CoordinatorSnapshot,
     DeviceValue,
+    ModelType,
     OperatingState,
 )
 
@@ -25,6 +26,7 @@ def _coordinator() -> RemkoCoordinator:
     coordinator._session = None
     coordinator._url = "http://127.0.0.1/cgi-bin/webapi.cgi"
     coordinator._firmware = None
+    coordinator._device_info = {}
     coordinator._last_snapshot = None
     coordinator._last_stored_energies = CoordinatorSnapshot({}, None)
     coordinator._lock = asyncio.Lock()
@@ -117,7 +119,8 @@ def test_decode_device_values() -> None:
             5389: "00003039",  # temporary hourly energy = 1.2345 kWh
             5138: "007B",  # heat-pump current = 12.3 A
             5796: "59D8",  # auxiliary mains voltage = 230.00 V
-        }
+        },
+        ModelType.WKF_120_F,
     )
 
     assert result["water_temp"].phys_value == 25.0
@@ -138,7 +141,7 @@ def test_decode_device_values_ignores_unknown_values() -> None:
     """Test unknown response IDs are ignored."""
     coordinator = _coordinator()
 
-    result = coordinator._decode_device_values({9999: "0001"})
+    result = coordinator._decode_device_values({9999: "0001"}, ModelType.WKF_120_F)
 
     assert result == {}
 

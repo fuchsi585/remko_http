@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Final
 
@@ -39,6 +39,7 @@ from .remko_enums import (
     HeatPumpStatus,
     HeatPumpSubStatus,
     HotWaterReqState,
+    ModelType,
     OperatingState,
     RemkoDataType,
     RoomClimateMode,
@@ -180,10 +181,14 @@ class RemkoSensorDef:
     entity_category: str | None = None
     display_precision: int = 1
     http_req: int | None = None
+    http_req_by_model: Mapping[ModelType, int] = field(default_factory=dict)
     disabled_by_default: bool = False
     option: type[Enum] | None = None
     data_type: RemkoDataType = RemkoDataType.UINT16
     scale_type: ScaleType = ScaleType.DEFAULT
+
+    def resolve_http_req(self, model: ModelType | str | None) -> int | None:
+        return self.http_req_by_model.get(model, self.http_req)
 
 
 def _temperature_sensor(key: str, http_req: int) -> RemkoSensorDef:
@@ -392,6 +397,9 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:thermometer-water",
         http_req=5476,
+        http_req_by_model={
+            ModelType.WKF_70_F: 5581,
+        },
         data_type=RemkoDataType.INT16,
         scale_type=ScaleType.TEMPERATURE,
     ),
@@ -761,19 +769,28 @@ ENERGY_SENSORS_DEVICE_RAW: tuple[RemkoEnergySensorDef, ...] = (
     ),
 )
 
-HTTP_REQS: Final = list(
-    {
-        definition.http_req
-        for definition in (
-            *BUTTONS,
-            *SELECTORS,
-            *SENSORS,
-            *NUMBERS,
-            *ENERGY_SENSORS,
-            *ENERGY_SENSORS_DEVICE_RAW,
+
+def get_http_reqs(model: ModelType | str | None = None) -> list[int]:
+    queries: set[int] = set()
+
+    for definition in (
+        *BUTTONS,
+        *SELECTORS,
+        *SENSORS,
+        *NUMBERS,
+        *ENERGY_SENSORS,
+        *ENERGY_SENSORS_DEVICE_RAW,
+    ):
+        http_req = (
+            definition.resolve_http_req(model)
+            if isinstance(definition, RemkoSensorDef)
+            else definition.http_req
         )
-        if definition.http_req is not None
-    }
-)
+
+        if http_req is not None:
+            queries.add(http_req)
+
+    return sorted(queries)
+
 
 # "heating_circ_mode": 1972,  # switch

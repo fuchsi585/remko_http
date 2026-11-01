@@ -28,10 +28,11 @@ Die Integration kommuniziert direkt mit der REMKO Steuerung über das lokale Net
 
 ## Unterstützte Geräte
 
-| Gerät / Firmware | Status |
-|---|---|
-| REMKO WKF120 mit Firmware 4.25 | ✅ Getestet |
-| Andere Firmware-Versionen | ❓ Ungetestet |
+| Gerät | Firmware | Status |
+|---|---|---|
+| WKF120 | 4.25 | ✅ Getestet |
+| WKF70 | 4.24 | ✅ Getestet |
+| Andere Firmware versions | ❓ Ungetested |
 
 Die Integration wurde mit einer REMKO WKF120 auf Basis von Firmware 4.25 entwickelt und getestet.
 Andere Firmware-Versionen können eine abweichende HTTP-/CGI-Schnittstelle verwenden und sind daher nicht automatisch kompatibel.

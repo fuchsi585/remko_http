@@ -28,7 +28,6 @@ from .const import (
     DOMAIN,
     ENERGY_SENSORS,
     ENERGY_SENSORS_DEVICE_RAW,
-    HTTP_REQS,
     HTTP_TIMEOUT,
     MAX_DIFF_TIME_ENERGY_FACTOR,
     SENSORS,
@@ -39,6 +38,7 @@ from .const import (
     RemkoNumberDef,
     RemkoSelectDef,
     RemkoSensorDef,
+    get_http_reqs,
 )
 from .remko_enums import CoordinatorSnapshot, DeviceValue, ModelType
 from .utils import (
@@ -269,10 +269,17 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
         return response
 
-    def _decode_device_values(self, raw_data: dict[int, str]) -> dict[str, DeviceValue]:
+    def _decode_device_values(
+        self, raw_data: dict[int, str], model: ModelType
+    ) -> dict[str, DeviceValue]:
         data: dict = {}
         for sensor_definition in (*BUTTONS, *SENSORS, *ENERGY_SENSORS_DEVICE_RAW):
-            if hex_value := raw_data.get(sensor_definition.http_req):
+            http_req = (
+                sensor_definition.resolve_http_req(model)
+                if isinstance(sensor_definition, RemkoSensorDef)
+                else sensor_definition.http_req
+            )
+            if hex_value := raw_data.get(http_req):
                 entity_value = DeviceValue(sensor_definition.key)
                 entity_value.raw_value = hex_value
                 if sensor_definition.option:
@@ -429,12 +436,13 @@ class RemkoCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            # raw_data = await self._async_read_raw_pump_data(HTTP_REQS)
-            raw_data = await self._async_real_all_raw_pump_data(HTTP_REQS)
+            model = self._device_info.get("model")
+            queries = get_http_reqs(model)
+            raw_data = await self._async_real_all_raw_pump_data(queries)
             if raw_data is None:
                 raise UpdateFailed("Unable to retrieve data from Remko")
 
-            decoded_values = self._decode_device_values(raw_data)
+            decoded_values = self._decode_device_values(raw_data, model)
             now = dt.now()
             result = self._energy_calculation(decoded_values, now)
 
