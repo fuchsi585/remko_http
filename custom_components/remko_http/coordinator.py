@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 from copy import deepcopy
-from dataclasses import asdict, replace
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta
+from math import isfinite
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -53,6 +54,14 @@ from .utils import (
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclass
+class EnergyReference:
+    last_device: float
+    last_seen: datetime
+    device_reference: float | None = None
+    calculated_reference: float | None = None
+
+
 class RemkoCoordinator(DataUpdateCoordinator):
     """Fetches data from Remko via HTTP request."""
 
@@ -84,6 +93,8 @@ class RemkoCoordinator(DataUpdateCoordinator):
         )
         host = normalize_url_host(entry.data.get(CONF_HOST))
         self._url: str = f"http://{host}/cgi-bin/webapi.cgi"
+
+        self._energy_reference: EnergyReference | None = None
 
     @property
     def device_info(self):
@@ -432,7 +443,90 @@ class RemkoCoordinator(DataUpdateCoordinator):
             )
             result[energy_definition.key].phys_value += additional_energy
 
+        self._adjust_energy_calculation(result, now)
         return result
+
+    def _adjust_energy_calculation(
+        self, result: dict[str, DeviceValue], now: datetime
+    ) -> None:
+        """Berechnete Energie regelmäßig mit Geräte-Zuwachs abgleichen."""
+        calculated = result.get("energy_electrical")
+        device = result.get("energy_electrical_raw")
+
+        if (
+            calculated is None
+            or calculated.phys_value is None
+            or device is None
+            or device.phys_value is None
+        ):
+            return
+
+        calculated_kwh = calculated.phys_value
+        device_kwh = device.phys_value
+
+        if not all(
+            isfinite(value) and value >= 0 for value in (calculated_kwh, device_kwh)
+        ):
+            return
+
+        reference = self._energy_reference
+        if reference is None:
+            self._energy_reference = EnergyReference(device_kwh, now)
+            return
+
+        elapsed_hours = (now - reference.last_seen).total_seconds() / 3600
+        if elapsed_hours <= 0:
+            return
+
+        device_step = device_kwh - reference.last_device
+        # Gleiche Plausibilitätsannahme wie beim Wiederherstellen:
+        # maximal 10 kW, zusätzlich 1 kWh für die Geräteauflösung.
+        if device_step < 0 or device_step > 10 * elapsed_hours + 1:
+            _LOGGER.warning(
+                "Gerätezähler geändert oder unplausibel: %s -> %s kWh Energieabgleich ",
+                "wird neu gestartet",
+                reference.last_device,
+                device_kwh,
+            )
+            self._energy_reference = None
+            return
+
+        reference.last_device = device_kwh
+        reference.last_seen = now
+
+        if device_step == 0:
+            return
+
+        # Erst an einer beobachteten Geräte-kWh-Grenze beginnen.
+        # So vermeiden wir ein unbekanntes angebrochenes Startintervall.
+        if reference.device_reference is None:
+            reference.device_reference = device_kwh
+            reference.calculated_reference = calculated_kwh
+            return
+
+        device_delta = device_kwh - reference.device_reference
+        if device_delta < 5:
+            return
+
+        assert reference.calculated_reference is not None
+        target_kwh = reference.calculated_reference + device_delta
+        correction_kwh = max(0.0, target_kwh - calculated_kwh)
+
+        if correction_kwh > 0:
+            result["energy_electrical"] = replace(
+                calculated,
+                phys_value=target_kwh,
+            )
+            _LOGGER.info(
+                "Energieabgleich über %.0f Geräte-kWh: %.3f kWh ergänzt",
+                device_delta,
+                correction_kwh,
+            )
+
+        # Den Referenzpfad fortführen. Ein möglicher Vorlauf der
+        # Integration bleibt dadurch im nächsten Fenster berücksichtigt.
+        reference.device_reference = device_kwh
+        reference.calculated_reference = target_kwh
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
