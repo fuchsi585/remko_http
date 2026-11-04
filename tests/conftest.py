@@ -153,7 +153,7 @@ class SensorStateClass:
     TOTAL_INCREASING = "total_increasing"
 
 
-homeassistant_sensor.EntityCategory = EntityCategory
+homeassistant_const.EntityCategory = EntityCategory
 homeassistant_sensor.SensorDeviceClass = SensorDeviceClass
 homeassistant_sensor.SensorStateClass = SensorStateClass
 
