@@ -12,6 +12,28 @@ from custom_components.remko_http.select import RemkoSelectEntity
 from custom_components.remko_http.sensor import RemkoSensor
 
 
+@pytest.fixture
+def heat_warm_water_button() -> tuple[SimpleNamespace, RemkoButtonEntity]:
+    """Provide a DHW button with healthy data and a 50 °C target."""
+    coordinator = SimpleNamespace(
+        data={
+            "action_heat_warm_water": DeviceValue("action_heat_warm_water", 0),
+            "water_temp_req": DeviceValue("water_temp_req", 50.0),
+            "water_temp": DeviceValue("water_temp", 49.8),
+            "hot_water_req_state": DeviceValue(
+                "hot_water_req_state", HotWaterReqState.STANDBY
+            ),
+        },
+        last_update_success=True,
+    )
+    entity = RemkoButtonEntity(
+        coordinator,
+        BUTTONS[0],
+        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
+    )
+    return coordinator, entity
+
+
 @pytest.mark.parametrize(
     ("entity_class", "definition"),
     [
@@ -81,6 +103,9 @@ def test_numeric_entity_returns_none_when_current_value_is_missing(
     ("target_temperature", "actual_temperature", "request_state", "expected"),
     [
         (50.0, 40.0, HotWaterReqState.STANDBY, True),
+        (50.0, 49.8, HotWaterReqState.STANDBY, True),
+        (50.0, 49.5, HotWaterReqState.STANDBY, True),
+        (50.0, 49.8, HotWaterReqState.ACTIVE, False),
         (50.0, 50.0, HotWaterReqState.STANDBY, False),
         (50.0, 60.0, HotWaterReqState.STANDBY, False),
         (50.0, 40.0, HotWaterReqState.ACTIVE, False),
@@ -90,24 +115,19 @@ def test_numeric_entity_returns_none_when_current_value_is_missing(
     ],
 )
 def test_heat_warm_water_button_availability(
-    target_temperature, actual_temperature, request_state, expected
+    heat_warm_water_button,
+    target_temperature,
+    actual_temperature,
+    request_state,
+    expected,
 ) -> None:
-    """DHW boost is available only for a cold tank with no active request."""
-    coordinator = SimpleNamespace(
-        data={
-            "action_heat_warm_water": DeviceValue("action_heat_warm_water", 0),
-            "water_temp_req": DeviceValue("water_temp_req", target_temperature),
-            "water_temp": DeviceValue("water_temp", actual_temperature),
-            "hot_water_req_state": DeviceValue("hot_water_req_state", request_state),
-        },
-        last_update_success=True,
-    )
-    entity = RemkoButtonEntity(
-        coordinator,
-        BUTTONS[0],
-        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
-    )
+    """Initial availability uses the target directly, without the hysteresis margin."""
+    coordinator, entity = heat_warm_water_button
+    coordinator.data["water_temp_req"].phys_value = target_temperature
+    coordinator.data["water_temp"].phys_value = actual_temperature
+    coordinator.data["hot_water_req_state"].phys_value = request_state
 
+    assert entity.available is expected
     assert entity.available is expected
 
     coordinator.last_update_success = False
@@ -117,28 +137,92 @@ def test_heat_warm_water_button_availability(
     assert entity.available is False
 
 
+def test_heat_warm_water_button_hysteresis(heat_warm_water_button) -> None:
+    """Keep the previous availability inside the band on the same button instance."""
+    coordinator, entity = heat_warm_water_button
+
+    for actual, expected in [
+        (49.8, True),
+        (50.0, False),
+        (50.1, False),
+        (49.8, False),
+        (49.6, False),
+        (49.5, True),
+        (49.4, True),
+        (49.8, True),
+        (50.0, False),
+    ]:
+        coordinator.data["water_temp"].phys_value = actual
+
+        assert entity.available is expected, f"Unexpected availability at {actual} °C"
+        assert entity.available is expected, "Repeated reads must remain stable"
+
+
+@pytest.mark.parametrize("request_state", [HotWaterReqState.ACTIVE, None])
+def test_heat_warm_water_button_request_resets_availability(
+    heat_warm_water_button, request_state
+) -> None:
+    """A blocked request requires reaching the lower threshold before re-enabling."""
+    coordinator, entity = heat_warm_water_button
+    assert entity.available is True
+
+    coordinator.data["hot_water_req_state"].phys_value = request_state
+    assert entity.available is False
+
+    coordinator.data["hot_water_req_state"].phys_value = HotWaterReqState.STANDBY
+    assert entity.available is False
+    assert entity.available is False
+
+    coordinator.data["water_temp"].phys_value = 49.5
+    assert entity.available is True
+
+    coordinator.data["water_temp"].phys_value = 49.8
+    assert entity.available is True
+
+
+@pytest.mark.parametrize("previous", [True, False])
 @pytest.mark.parametrize(
-    "missing_key", ["water_temp_req", "water_temp", "hot_water_req_state"]
+    "interruption",
+    ["failed_update", "missing_data", "missing_temperature", "null_temperature"],
+)
+def test_heat_warm_water_button_preserves_availability_after_data_interruption(
+    heat_warm_water_button, previous: bool, interruption: str
+) -> None:
+    """Temporary data failures must preserve both hysteresis states on recovery."""
+    coordinator, entity = heat_warm_water_button
+    coordinator.data["water_temp"].phys_value = 49.8 if previous else 50.0
+    assert entity.available is previous
+    healthy_data = dict(coordinator.data)
+
+    if interruption == "failed_update":
+        coordinator.last_update_success = False
+    elif interruption == "missing_data":
+        coordinator.data = None
+    elif interruption == "missing_temperature":
+        del coordinator.data["water_temp"]
+    else:
+        coordinator.data["water_temp"] = DeviceValue("water_temp", None)
+
+    assert entity.available is False
+    assert entity.available is False
+
+    coordinator.last_update_success = True
+    coordinator.data = healthy_data
+    coordinator.data["water_temp"].phys_value = 49.8
+    assert entity.available is previous
+    assert entity.available is previous
+
+
+@pytest.mark.parametrize(
+    "missing_key",
+    ["action_heat_warm_water", "water_temp_req", "water_temp", "hot_water_req_state"],
 )
 def test_heat_warm_water_button_unavailable_when_dependency_is_missing(
-    missing_key: str,
+    heat_warm_water_button, missing_key: str
 ) -> None:
     """A partial device response must not break the button availability check."""
-    data = {
-        "action_heat_warm_water": DeviceValue("action_heat_warm_water", 0),
-        "water_temp_req": DeviceValue("water_temp_req", 50.0),
-        "water_temp": DeviceValue("water_temp", 40.0),
-        "hot_water_req_state": DeviceValue(
-            "hot_water_req_state", HotWaterReqState.STANDBY
-        ),
-    }
-    del data[missing_key]
-    coordinator = SimpleNamespace(data=data, last_update_success=True)
-    entity = RemkoButtonEntity(
-        coordinator,
-        BUTTONS[0],
-        SimpleNamespace(entry_id="remko", data={"host": "192.168.1.50"}),
-    )
+    coordinator, entity = heat_warm_water_button
+    del coordinator.data[missing_key]
 
     assert entity.available is False
 

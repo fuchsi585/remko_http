@@ -48,21 +48,25 @@ class RemkoButtonEntity(RemkoBaseEntity, ButtonEntity):
     ) -> None:
         """Initialize the button entity."""
         super().__init__(coordinator, entry, definition)
+        self._availability_state: bool | None = None
 
     @property
     def available(self) -> bool:
         if not super().available or self.coordinator.data is None:
             return False
 
-        availability = getattr(self._definition, "availability", None)
-        if availability is not None:
-            try:
-                return availability(self.coordinator.data)
-            except (ValueError, KeyError):
-                # Fehlender Messwert kann sonst die Button-Anzeige stören
-                return False
+        if self._definition.availability is None:
+            return True
 
-        return True
+        try:
+            self._availability_state = self._definition.availability(
+                self.coordinator.data, self._availability_state
+            )
+        except (ValueError, KeyError):
+            # Fehlender Messwert kann sonst die Button-Anzeige stören
+            return False
+
+        return self._availability_state
 
     async def async_press(self) -> None:
         """Handle button press by sending action command"""

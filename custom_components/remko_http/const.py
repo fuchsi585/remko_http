@@ -46,6 +46,7 @@ from .remko_enums import (
     ScaleType,
     SwitchState,
 )
+from .utils import temperature_hysterese
 
 CONF_HOST: Final = "host"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
@@ -78,7 +79,7 @@ class RemkoButtonDef:
     data_type: RemkoDataType | None = None
     scale_type: ScaleType | None = None
     reset_delay: int | None = None
-    availability: Callable[[dict[str, DeviceValue]], bool] | None = None
+    availability: Callable[[dict[str, DeviceValue], bool | None], bool] | None = None
 
 
 BUTTONS: list[RemkoButtonDef] = [
@@ -90,12 +91,15 @@ BUTTONS: list[RemkoButtonDef] = [
         option=SwitchState,
         data_type=RemkoDataType.UINT8,
         reset_delay=1,
-        availability=lambda data: (
-            data["water_temp_req"].phys_value is not None
-            and data["water_temp"].phys_value is not None
-            and data["hot_water_req_state"].phys_value is not None
+        availability=lambda data, previous: (
+            data["hot_water_req_state"].phys_value is not None
             and data["hot_water_req_state"].phys_value == HotWaterReqState.STANDBY
-            and data["water_temp"].phys_value < data["water_temp_req"].phys_value
+            and temperature_hysterese(
+                actual=data["water_temp"].phys_value,
+                target=data["water_temp_req"].phys_value,
+                previous=previous,
+                width=0.5,
+            )
         ),
     ),
 ]
