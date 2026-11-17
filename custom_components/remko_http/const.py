@@ -612,6 +612,11 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         data_type=RemkoDataType.INT8,
     ),
     _temperature_sensor("heat_pump_hot_gas_temperature", 5146),
+    _temperature_sensor("heat_pump_refrigerant_temperature", 5139),
+    _temperature_sensor("heat_pump_register_temperature", 5200),
+    _measurement_sensor(
+        "heat_pump_expansion_valve_opening", 5615, UNIT_PERCENTAGE, icon="mdi:valve"
+    ),
     RemkoSensorDef(
         key="power",
         unit=UnitOfPower.WATT,

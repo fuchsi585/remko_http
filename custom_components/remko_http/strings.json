@@ -368,6 +368,15 @@
       },
       "hydraulics_cooling_energy": {
         "name": "Hydraulics: Cooling energy"
+      },
+      "heat_pump_refrigerant_temperature": {
+        "name": "HP: Refrigerant temperature"
+      },
+      "heat_pump_register_temperature": {
+        "name": "HP: Register temperature"
+      },
+      "heat_pump_expansion_valve_opening": {
+        "name": "HP: Opening expansion valve"
       }
     },
     "number": {

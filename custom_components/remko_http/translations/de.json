@@ -368,6 +368,15 @@
       },
       "hydraulics_cooling_energy": {
         "name": "Hydraulik: Energie Kühlen"
+      },
+      "heat_pump_refrigerant_temperature": {
+        "name": "WP: Kältemitteltemperatur"
+      },
+      "heat_pump_register_temperature": {
+        "name": "WP: Registertemperatur"
+      },
+      "heat_pump_expansion_valve_opening": {
+        "name": "WP: Öffnungsgrad Expansionsventil"
       }
     },
     "number": {
