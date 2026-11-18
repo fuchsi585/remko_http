@@ -1,0 +1,402 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tepelné čerpadlo Remko",
+        "description": "Zadejte údaje pro připojení k tepelnému čerpadlu Remko.",
+        "data": {
+          "host": "IP adresa",
+          "scan_interval": "Interval dotazování (sekundy)"
+        },
+        "data_description": {
+          "host": "Místní IP adresa tepelného čerpadla",
+          "scan_interval": "Jak často se načítají hodnoty z tepelného čerpadla."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Zadejte platnou IP adresu."
+    },
+    "abort": {
+      "single_instance_allowed": "Lze nastavit pouze jedno tepelné čerpadlo REMKO."
+    }
+  },
+  "device": {
+    "heat_pump": {
+      "name": "Tepelné čerpadlo"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tepelné čerpadlo Remko – Nastavení",
+        "description": "Upravte nastavení připojení a interval dotazování.",
+        "data": {
+          "host": "IP adresa",
+          "scan_interval": "Interval dotazování (sekundy)"
+        },
+        "data_description": {
+          "host": "Místní IP adresa tepelného čerpadla",
+          "scan_interval": "Jak často se načítají hodnoty z tepelného čerpadla."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Zadejte platnou IP adresu."
+    }
+  },
+  "entity": {
+    "button": {
+      "action_heat_warm_water": {
+        "name": "Jednorázový ohřev teplé vody"
+      }
+    },
+    "sensor": {
+      "cold_hotter_state": {
+        "name": "Chladněji / Tepleji"
+      },
+      "water_temp_req": {
+        "name": "Požadovaná teplota teplé vody"
+      },
+      "water_temp": {
+        "name": "Teplota teplé vody"
+      },
+      "heating_req_temp": {
+        "name": "Požadovaná teplota topné vody"
+      },
+      "heating_actual_temp": {
+        "name": "Teplota topné vody"
+      },
+      "mixed_return_temp": {
+        "name": "Hydraulika: teplota směšované vratné vody"
+      },
+      "mixed_flow_temp": {
+        "name": "Hydraulika: teplota směšovaného přívodu"
+      },
+      "circulation_temp": {
+        "name": "TV: teplota cirkulace"
+      },
+      "out_temp": {
+        "name": "Venkovní teplota"
+      },
+      "mixed_temp": {
+        "name": "Smíšená venkovní teplota"
+      },
+      "room_temp_req": {
+        "name": "Požadovaná teplota v místnosti"
+      },
+      "room_temp_act": {
+        "name": "Teplota v místnosti"
+      },
+      "room_humidity": {
+        "name": "Vlhkost vzduchu v místnosti"
+      },
+      "power": {
+        "name": "Elektrický příkon"
+      },
+      "power_thermal": {
+        "name": "Tepelný výkon"
+      },
+      "energy_electrical_raw": {
+        "name": "Elektrická energie (údaj ze zařízení)"
+      },
+      "energy_electrical": {
+        "name": "Vypočtená elektrická energie"
+      },
+      "energy_electrical_hour": {"name": "Elektrická energie (hodina)"},
+      "energy_electrical_day": {"name": "Elektrická energie (den)"},
+      "energy_electrical_week": {"name": "Elektrická energie (týden)"},
+      "energy_electrical_month": {"name": "Elektrická energie (měsíc)"},
+      "energy_electrical_year": {"name": "Elektrická energie (rok)"},
+      "energy_electrical_hour_temporary": {
+        "name": "Elektrická energie (hodina, dočasná)"
+      },
+      "compressor_starts": {
+        "name": "Starty kompresoru"
+      },
+      "runtime_hours": {
+        "name": "Doba chodu (hodiny)"
+      },
+      "fan_state": {
+        "name": "Stav venkovního ventilátoru",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "pump_speed": {
+        "name": "Otáčky čerpadla (topný okruh)"
+      },
+      "operating_status": {
+        "name": "Aktuální provozní režim",
+        "state": {
+          "unknown": "Neznámý stav / Vypnuto",
+          "fault": "Porucha",
+          "defrosting": "Odmrazování",
+          "defrost_buffer": "Nabíjení zásobníku pro odmrazování",
+          "dhw_buffer": "Ohřev zásobníku teplé vody",
+          "energy_storage": "Uložená energie",
+          "heating": "Vytápění",
+          "cooling": "Chlazení",
+          "circulation": "Cirkulace",
+          "standby": "Pohotovost",
+          "frost_protection": "Ochrana proti mrazu",
+          "ready": "Připraveno"
+        }
+      },
+      "hot_water_req_state": {
+        "name": "Požadavek na teplou vodu",
+        "state": {
+          "active": "Aktivní",
+          "standby": "Pohotovost"
+        }
+      },
+      "circulation_pump_state": {
+        "name": "TV: cirkulační čerpadlo",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "room_climate_mode": {
+        "name": "Režim prostorového klimatu",
+        "state": {
+          "auto": "Automaticky",
+          "heating": "Vytápění",
+          "standby": "Pohotovost",
+          "cooling": "Chlazení"
+        }
+      },
+      "hot_water_target_temperature": {
+        "name": "TV: požadovaná teplota zásobníku"
+      },
+      "hot_water_diverter_valve": {
+        "name": "TV: přepínací ventil",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "hot_water_energy": {
+        "name": "TV: energie na ohřev"
+      },
+      "hot_water_hygiene_function": {
+        "name": "TV: hygienická funkce",
+        "state": {
+          "active": "Aktivní",
+          "standby": "Pohotovost"
+        }
+      },
+      "hot_water_circulation_demand": {
+        "name": "TV: požadavek na cirkulaci",
+        "state": {
+          "standby": "Pohotovost",
+          "active": "Aktivní",
+          "blocked": "Blokováno"
+        }
+      },
+      "hot_water_circulation_target_temperature": {
+        "name": "TV: požadovaná teplota cirkulace"
+      },
+      "hydraulics_demand": {
+        "name": "Hydraulika: požadavek",
+        "state": {
+          "auto": "Automaticky",
+          "heating": "Vytápění",
+          "standby": "Pohotovost",
+          "cooling": "Chlazení"
+        }
+      },
+      "hydraulics_thermal_power": {
+        "name": "Hydraulika: tepelný výkon"
+      },
+      "hydraulics_target_flow_rate": {
+        "name": "Hydraulika: požadovaný objemový průtok"
+      },
+      "hydraulics_actual_flow_rate": {
+        "name": "Hydraulika: skutečný objemový průtok"
+      },
+      "hydraulics_actual_flow_rate_mixed": {
+        "name": "Hydraulika: skutečný objemový průtok (směšovaný)"
+      },
+      "hydraulics_pump_speed": {
+        "name": "Hydraulika: relativní otáčky čerpadla"
+      },
+      "hydraulics_cooling_diverter_valve": {
+        "name": "Hydraulika: přepínací ventil chlazení",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_status": {
+        "name": "TČ: stav",
+        "state": {
+          "ready": "Připraveno",
+          "lead_time": "Doba předstihu",
+          "blocked": "Blokováno",
+          "lockout_time": "Doba blokování",
+          "locked": "Uzamčeno",
+          "disabled": "Deaktivováno"
+        }
+      },
+      "heat_pump_sub_status": {
+        "name": "TČ: provozní stav",
+        "state": {
+          "off": "Vypnuto",
+          "cooling": "Chlazení",
+          "heating": "Vytápění",
+          "alarm": "Alarm",
+          "transition_to_cooling": "Přechod na chlazení",
+          "defrosting": "Odmrazování",
+          "waiting": "Čekání",
+          "standby": "Pohotovost",
+          "transition_to_heating": "Přechod na vytápění",
+          "stop": "Zastavení",
+          "manual": "Ruční provoz",
+          "start": "Spuštění",
+          "evu_block": "Blokování dodavatelem elektřiny"
+        }
+      },
+      "heat_pump_lockout_time": {
+        "name": "TČ: zbývající doba blokování"
+      },
+      "heat_pump_defrost_status": {
+        "name": "TČ: stav odmrazování",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_compressor_status": {
+        "name": "TČ: stav kompresoru",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_error_status": {
+        "name": "TČ: stav poruchy",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_enable_signal": {
+        "name": "TČ: signál povolení",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_compressor_lock": {
+        "name": "TČ: blokování kompresoru",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heat_pump_mode": {
+        "name": "TČ: režim",
+        "state": {
+          "cooling": "Chlazení",
+          "heating": "Vytápění"
+        }
+      },
+      "heat_pump_lock_signal": {
+        "name": "TČ: blokovací signál",
+        "state": {
+          "blocked": "Blokováno",
+          "released": "Uvolněno"
+        }
+      },
+      "heat_pump_compressor_frequency": {
+        "name": "TČ: frekvence kompresoru"
+      },
+      "heat_pump_current": {
+        "name": "TČ: odběr proudu"
+      },
+      "auxiliary_heat_generator_mains_voltage": {
+        "name": "Přídavný zdroj tepla: síťové napětí"
+      },
+      "heat_pump_hot_gas_temperature": {
+        "name": "TČ: teplota horkého plynu"
+      },
+      "heat_pump_runtime_minutes": {
+        "name": "TČ: doba chodu (minuty)"
+      },
+      "heat_pump_four_way_valve": {
+        "name": "TČ: čtyřcestný ventil",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto"
+        }
+      },
+      "heating_circuit_unmixed_operating_mode": {
+        "name": "Nesměšovaný topný okruh: provozní režim",
+        "state": {
+          "auto": "Automaticky",
+          "heating": "Vytápění",
+          "standby": "Pohotovost",
+          "cooling": "Chlazení"
+        }
+      },
+      "heating_circuit_unmixed_target_temperature": {
+        "name": "Nesměšovaný topný okruh: požadovaná teplota"
+      },
+      "heating_circuit_unmixed_actual_temperature": {
+        "name": "Nesměšovaný topný okruh: skutečná teplota"
+      },
+      "heating_circuit_unmixed_dew_point": {
+        "name": "Nesměšovaný topný okruh: rosný bod"
+      },
+      "heating_circuit_unmixed_status": {
+        "name": "Nesměšovaný topný okruh: stav",
+        "state": {
+          "auto": "Automaticky",
+          "comfort": "Komfort",
+          "standby": "Pohotovost",
+          "eco": "Eco",
+          "protection": "Ochranný provoz"
+        }
+      },
+      "heating_circuit_unmixed_setpoint_adjustment": {
+        "name": "Nesměšovaný topný okruh: korekce požadované hodnoty"
+      },
+      "hydraulics_heating_energy": {
+        "name": "Hydraulika: energie pro vytápění"
+      },
+      "hydraulics_cooling_energy": {
+        "name": "Hydraulika: energie pro chlazení"
+      },
+      "heat_pump_refrigerant_temperature": {
+        "name": "TČ: teplota chladiva"
+      },
+      "heat_pump_register_temperature": {
+        "name": "TČ: teplota výměníku"
+      },
+      "heat_pump_expansion_valve_opening": {
+        "name": "TČ: stupeň otevření expanzního ventilu"
+      }
+    },
+    "number": {
+      "set_cold_hotter": {
+        "name": "Chladněji / Tepleji"
+      },
+      "set_water_temp_req": {
+        "name": "Požadovaná teplota teplé vody"
+      }
+    },
+    "select": {
+      "set_room_climate_mode": {
+        "name": "Režim prostorového klimatu",
+        "state": {
+          "auto": "Automaticky",
+          "heating": "Vytápění",
+          "standby": "Pohotovost",
+          "cooling": "Chlazení"
+        }
+      }
+    }
+  }
+}

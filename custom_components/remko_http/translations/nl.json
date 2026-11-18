@@ -1,0 +1,402 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Remko-warmtepomp",
+        "description": "Voer de verbindingsgegevens van je Remko-warmtepomp in.",
+        "data": {
+          "host": "IP-adres",
+          "scan_interval": "Uitleesinterval (seconden)"
+        },
+        "data_description": {
+          "host": "Lokaal IP-adres van de warmtepomp",
+          "scan_interval": "Hoe vaak de waarden van de warmtepomp worden uitgelezen."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Voer een geldig IP-adres in."
+    },
+    "abort": {
+      "single_instance_allowed": "Er kan slechts één REMKO-warmtepomp worden ingesteld."
+    }
+  },
+  "device": {
+    "heat_pump": {
+      "name": "Warmtepomp"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Remko-warmtepomp – Instellingen",
+        "description": "Pas de verbindingsinstellingen en het uitleesinterval aan.",
+        "data": {
+          "host": "IP-adres",
+          "scan_interval": "Uitleesinterval (seconden)"
+        },
+        "data_description": {
+          "host": "Lokaal IP-adres van de warmtepomp",
+          "scan_interval": "Hoe vaak de waarden van de warmtepomp worden uitgelezen."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Voer een geldig IP-adres in."
+    }
+  },
+  "entity": {
+    "button": {
+      "action_heat_warm_water": {
+        "name": "Warm water eenmalig opwarmen"
+      }
+    },
+    "sensor": {
+      "cold_hotter_state": {
+        "name": "Kouder / Warmer"
+      },
+      "water_temp_req": {
+        "name": "Gewenste warmwatertemperatuur"
+      },
+      "water_temp": {
+        "name": "Warmwatertemperatuur"
+      },
+      "heating_req_temp": {
+        "name": "Gewenste temperatuur van het verwarmingswater"
+      },
+      "heating_actual_temp": {
+        "name": "Temperatuur van het verwarmingswater"
+      },
+      "mixed_return_temp": {
+        "name": "Hydrauliek: gemengde retourtemperatuur"
+      },
+      "mixed_flow_temp": {
+        "name": "Hydrauliek: gemengde aanvoertemperatuur"
+      },
+      "circulation_temp": {
+        "name": "SWW: circulatietemperatuur"
+      },
+      "out_temp": {
+        "name": "Buitentemperatuur"
+      },
+      "mixed_temp": {
+        "name": "Gemengde buitentemperatuur"
+      },
+      "room_temp_req": {
+        "name": "Gewenste kamertemperatuur"
+      },
+      "room_temp_act": {
+        "name": "Kamertemperatuur"
+      },
+      "room_humidity": {
+        "name": "Luchtvochtigheid in de kamer"
+      },
+      "power": {
+        "name": "Elektrisch vermogen"
+      },
+      "power_thermal": {
+        "name": "Thermisch vermogen"
+      },
+      "energy_electrical_raw": {
+        "name": "Elektrische energie (apparaat)"
+      },
+      "energy_electrical": {
+        "name": "Berekende elektrische energie"
+      },
+      "energy_electrical_hour": {"name": "Elektrische energie (uur)"},
+      "energy_electrical_day": {"name": "Elektrische energie (dag)"},
+      "energy_electrical_week": {"name": "Elektrische energie (week)"},
+      "energy_electrical_month": {"name": "Elektrische energie (maand)"},
+      "energy_electrical_year": {"name": "Elektrische energie (jaar)"},
+      "energy_electrical_hour_temporary": {
+        "name": "Elektrische energie (uur, tijdelijk)"
+      },
+      "compressor_starts": {
+        "name": "Compressorstarts"
+      },
+      "runtime_hours": {
+        "name": "Draaitijd (uren)"
+      },
+      "fan_state": {
+        "name": "Status buitenventilator",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "pump_speed": {
+        "name": "Pomptoerental (verwarmingscircuit)"
+      },
+      "operating_status": {
+        "name": "Actuele bedrijfsmodus",
+        "state": {
+          "unknown": "Onbekend / Uit",
+          "fault": "Storing",
+          "defrosting": "Ontdooien",
+          "defrost_buffer": "Ontdooibuffer laden",
+          "dhw_buffer": "Warmwaterboiler laden",
+          "energy_storage": "Opgeslagen energie",
+          "heating": "Verwarmen",
+          "cooling": "Koelen",
+          "circulation": "Circulatie",
+          "standby": "Stand-by",
+          "frost_protection": "Vorstbeveiliging",
+          "ready": "Gereed"
+        }
+      },
+      "hot_water_req_state": {
+        "name": "Warmwatervraag",
+        "state": {
+          "active": "Actief",
+          "standby": "Stand-by"
+        }
+      },
+      "circulation_pump_state": {
+        "name": "SWW: circulatiepomp",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "room_climate_mode": {
+        "name": "Ruimteklimaatmodus",
+        "state": {
+          "auto": "Automatisch",
+          "heating": "Verwarmen",
+          "standby": "Stand-by",
+          "cooling": "Koelen"
+        }
+      },
+      "hot_water_target_temperature": {
+        "name": "SWW: gewenste boilertemperatuur"
+      },
+      "hot_water_diverter_valve": {
+        "name": "SWW: omschakelventiel",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "hot_water_energy": {
+        "name": "SWW: energie voor warm water"
+      },
+      "hot_water_hygiene_function": {
+        "name": "SWW: hygiënefunctie",
+        "state": {
+          "active": "Actief",
+          "standby": "Stand-by"
+        }
+      },
+      "hot_water_circulation_demand": {
+        "name": "SWW: circulatievraag",
+        "state": {
+          "standby": "Stand-by",
+          "active": "Actief",
+          "blocked": "Geblokkeerd"
+        }
+      },
+      "hot_water_circulation_target_temperature": {
+        "name": "SWW: gewenste circulatietemperatuur"
+      },
+      "hydraulics_demand": {
+        "name": "Hydrauliek: vraag",
+        "state": {
+          "auto": "Automatisch",
+          "heating": "Verwarmen",
+          "standby": "Stand-by",
+          "cooling": "Koelen"
+        }
+      },
+      "hydraulics_thermal_power": {
+        "name": "Hydrauliek: thermisch vermogen"
+      },
+      "hydraulics_target_flow_rate": {
+        "name": "Hydrauliek: gewenst debiet"
+      },
+      "hydraulics_actual_flow_rate": {
+        "name": "Hydrauliek: actueel debiet"
+      },
+      "hydraulics_actual_flow_rate_mixed": {
+        "name": "Hydrauliek: actueel debiet (gemengd)"
+      },
+      "hydraulics_pump_speed": {
+        "name": "Hydrauliek: relatief pomptoerental"
+      },
+      "hydraulics_cooling_diverter_valve": {
+        "name": "Hydrauliek: omschakelventiel koeling",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_status": {
+        "name": "WP: status",
+        "state": {
+          "ready": "Gereed",
+          "lead_time": "Voorlooptijd",
+          "blocked": "Geblokkeerd",
+          "lockout_time": "Blokkeertijd",
+          "locked": "Vergrendeld",
+          "disabled": "Uitgeschakeld"
+        }
+      },
+      "heat_pump_sub_status": {
+        "name": "WP: bedrijfstoestand",
+        "state": {
+          "off": "Uit",
+          "cooling": "Koelen",
+          "heating": "Verwarmen",
+          "alarm": "Alarm",
+          "transition_to_cooling": "Overgang naar koelen",
+          "defrosting": "Ontdooien",
+          "waiting": "Wachten",
+          "standby": "Stand-by",
+          "transition_to_heating": "Overgang naar verwarmen",
+          "stop": "Stop",
+          "manual": "Handmatig",
+          "start": "Start",
+          "evu_block": "Blokkering door de netbeheerder"
+        }
+      },
+      "heat_pump_lockout_time": {
+        "name": "WP: resterende blokkeertijd"
+      },
+      "heat_pump_defrost_status": {
+        "name": "WP: ontdooistatus",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_compressor_status": {
+        "name": "WP: compressorstatus",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_error_status": {
+        "name": "WP: storingsstatus",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_enable_signal": {
+        "name": "WP: vrijgavesignaal",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_compressor_lock": {
+        "name": "WP: compressorblokkering",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heat_pump_mode": {
+        "name": "WP: modus",
+        "state": {
+          "cooling": "Koelen",
+          "heating": "Verwarmen"
+        }
+      },
+      "heat_pump_lock_signal": {
+        "name": "WP: blokkeringssignaal",
+        "state": {
+          "blocked": "Geblokkeerd",
+          "released": "Vrijgegeven"
+        }
+      },
+      "heat_pump_compressor_frequency": {
+        "name": "WP: compressorfrequentie"
+      },
+      "heat_pump_current": {
+        "name": "WP: opgenomen stroom"
+      },
+      "auxiliary_heat_generator_mains_voltage": {
+        "name": "Hulpwarmtegenerator: netspanning"
+      },
+      "heat_pump_hot_gas_temperature": {
+        "name": "WP: persgastemperatuur"
+      },
+      "heat_pump_runtime_minutes": {
+        "name": "WP: draaitijd (minuten)"
+      },
+      "heat_pump_four_way_valve": {
+        "name": "WP: vierwegventiel",
+        "state": {
+          "off": "Uit",
+          "on": "Aan"
+        }
+      },
+      "heating_circuit_unmixed_operating_mode": {
+        "name": "Ongemengd verwarmingscircuit: bedrijfsmodus",
+        "state": {
+          "auto": "Automatisch",
+          "heating": "Verwarmen",
+          "standby": "Stand-by",
+          "cooling": "Koelen"
+        }
+      },
+      "heating_circuit_unmixed_target_temperature": {
+        "name": "Ongemengd verwarmingscircuit: gewenste temperatuur"
+      },
+      "heating_circuit_unmixed_actual_temperature": {
+        "name": "Ongemengd verwarmingscircuit: actuele temperatuur"
+      },
+      "heating_circuit_unmixed_dew_point": {
+        "name": "Ongemengd verwarmingscircuit: dauwpunt"
+      },
+      "heating_circuit_unmixed_status": {
+        "name": "Ongemengd verwarmingscircuit: status",
+        "state": {
+          "auto": "Automatisch",
+          "comfort": "Comfort",
+          "standby": "Stand-by",
+          "eco": "Eco",
+          "protection": "Beveiliging"
+        }
+      },
+      "heating_circuit_unmixed_setpoint_adjustment": {
+        "name": "Ongemengd verwarmingscircuit: setpointcorrectie"
+      },
+      "hydraulics_heating_energy": {
+        "name": "Hydrauliek: verwarmingsenergie"
+      },
+      "hydraulics_cooling_energy": {
+        "name": "Hydrauliek: koelenergie"
+      },
+      "heat_pump_refrigerant_temperature": {
+        "name": "WP: koelmiddeltemperatuur"
+      },
+      "heat_pump_register_temperature": {
+        "name": "WP: registertemperatuur"
+      },
+      "heat_pump_expansion_valve_opening": {
+        "name": "WP: openingsgraad expansieventiel"
+      }
+    },
+    "number": {
+      "set_cold_hotter": {
+        "name": "Kouder / Warmer"
+      },
+      "set_water_temp_req": {
+        "name": "Gewenste warmwatertemperatuur"
+      }
+    },
+    "select": {
+      "set_room_climate_mode": {
+        "name": "Ruimteklimaatmodus",
+        "state": {
+          "auto": "Automatisch",
+          "heating": "Verwarmen",
+          "standby": "Stand-by",
+          "cooling": "Koelen"
+        }
+      }
+    }
+  }
+}
