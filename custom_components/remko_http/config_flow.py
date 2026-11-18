@@ -10,6 +10,7 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
+    CONF_DIAGNOSTIC_IDS,
     CONF_HOST,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
@@ -114,6 +115,15 @@ class RemkoHeatPumpOptionsFlow(config_entries.OptionsFlow):
                             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                         ),
                     ): vol.All(int, vol.Range(min=10, max=60)),
+                    vol.Optional(
+                        CONF_DIAGNOSTIC_IDS,
+                        default="",
+                        description={
+                            "suggested_value": self._config_entry.data.get(
+                                CONF_DIAGNOSTIC_IDS, ""
+                            ),
+                        },
+                    ): str,
                 }
             ),
             errors=errors,

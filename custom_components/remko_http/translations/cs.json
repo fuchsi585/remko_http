@@ -33,11 +33,13 @@
         "description": "Upravte nastavení připojení a interval dotazování.",
         "data": {
           "host": "IP adresa",
-          "scan_interval": "Interval dotazování (sekundy)"
+          "scan_interval": "Interval dotazování (sekundy)",
+          "diagnostic_ids": "Diagnostická ID"
         },
         "data_description": {
           "host": "Místní IP adresa tepelného čerpadla",
-          "scan_interval": "Jak často se načítají hodnoty z tepelného čerpadla."
+          "scan_interval": "Jak často se načítají hodnoty z tepelného čerpadla.",
+          "diagnostic_ids": "Zadejte ID parametrů REMKO oddělená čárkami, např. 5581, 5487. Nezpracované hodnoty se načtou při stažení diagnostiky."
         }
       }
     },

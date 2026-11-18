@@ -285,12 +285,6 @@ homeassistant_sensor.SensorEntity = type("SensorEntity", (), {})
 homeassistant_data_entry_flow = types.ModuleType("homeassistant.data_entry_flow")
 homeassistant_data_entry_flow.FlowResult = dict
 
-voluptuous = types.ModuleType("voluptuous")
-voluptuous.Required = lambda key, default=None: key
-voluptuous.All = lambda *validators: validators
-voluptuous.Range = lambda **kwargs: kwargs
-voluptuous.Schema = lambda schema: schema
-
 homeassistant_util = types.ModuleType("homeassistant.util")
 homeassistant_dt = types.ModuleType("homeassistant.util.dt")
 
@@ -357,7 +351,6 @@ sys.modules["homeassistant.helpers.entity_platform"] = homeassistant_entity_plat
 sys.modules["homeassistant.util"] = homeassistant_util
 sys.modules["homeassistant.util.dt"] = homeassistant_dt
 sys.modules["httpx"] = httpx
-sys.modules["voluptuous"] = voluptuous
 
 # Diagnostics redaction is supplied by Home Assistant in production.
 homeassistant_diagnostics = types.ModuleType("homeassistant.components.diagnostics")

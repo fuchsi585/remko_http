@@ -28,11 +28,13 @@
         "description": "Adjust the connection and polling settings.",
         "data": {
           "host": "IP address",
-          "scan_interval": "Polling interval (seconds)"
+          "scan_interval": "Polling interval (seconds)",
+          "diagnostic_ids": "Diagnostic IDs"
         },
         "data_description": {
           "host": "Local IP address of the heat pump",
-          "scan_interval": "How often the heat pump values are queried."
+          "scan_interval": "How often the heat pump values are queried.",
+          "diagnostic_ids": "Enter comma-separated REMKO parameter IDs, e.g. 5581, 5487. The raw values are read when you download diagnostics."
         }
       }
     },

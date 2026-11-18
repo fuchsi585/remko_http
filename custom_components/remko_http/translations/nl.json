@@ -33,11 +33,13 @@
         "description": "Pas de verbindingsinstellingen en het uitleesinterval aan.",
         "data": {
           "host": "IP-adres",
-          "scan_interval": "Uitleesinterval (seconden)"
+          "scan_interval": "Uitleesinterval (seconden)",
+          "diagnostic_ids": "Diagnose-ID’s"
         },
         "data_description": {
           "host": "Lokaal IP-adres van de warmtepomp",
-          "scan_interval": "Hoe vaak de waarden van de warmtepomp worden uitgelezen."
+          "scan_interval": "Hoe vaak de waarden van de warmtepomp worden uitgelezen.",
+          "diagnostic_ids": "Voer de ID’s van REMKO-parameters in, gescheiden door komma’s, bijv. 5581, 5487. De ruwe waarden worden uitgelezen wanneer je de diagnosegegevens downloadt."
         }
       }
     },

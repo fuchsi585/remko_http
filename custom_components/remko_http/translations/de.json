@@ -28,11 +28,13 @@
         "description": "Verbindungs- und Abfrageeinstellungen anpassen.",
         "data": {
           "host": "IP-Adresse",
-          "scan_interval": "Abfrageintervall (Sekunden)"
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "diagnostic_ids": "Diagnose-IDs"
         },
         "data_description": {
           "host": "Lokale IP-Adresse der Wärmepumpe",
-          "scan_interval": "Wie oft die Werte der Wärmepumpe abgefragt werden."
+          "scan_interval": "Wie oft die Werte der Wärmepumpe abgefragt werden.",
+          "diagnostic_ids": "Gib REMKO-Parameter-IDs durch Kommas getrennt ein, z. B. 5581, 5487. Die Rohwerte werden beim Diagnose-Download abgefragt."
         }
       }
     },

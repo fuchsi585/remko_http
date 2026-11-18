@@ -33,11 +33,13 @@
         "description": "Modifica le impostazioni di connessione e l’intervallo di interrogazione.",
         "data": {
           "host": "Indirizzo IP",
-          "scan_interval": "Intervallo di interrogazione (secondi)"
+          "scan_interval": "Intervallo di interrogazione (secondi)",
+          "diagnostic_ids": "ID di diagnostica"
         },
         "data_description": {
           "host": "Indirizzo IP locale della pompa di calore",
-          "scan_interval": "Frequenza di lettura dei valori della pompa di calore."
+          "scan_interval": "Frequenza di lettura dei valori della pompa di calore.",
+          "diagnostic_ids": "Inserisci gli ID dei parametri REMKO separati da virgole, ad es. 5581, 5487. I valori grezzi vengono letti quando scarichi i dati diagnostici."
         }
       }
     },

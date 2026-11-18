@@ -50,6 +50,7 @@ from .utils import temperature_hysterese
 
 CONF_HOST: Final = "host"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
+CONF_DIAGNOSTIC_IDS: Final = "diagnostic_ids"
 
 DOMAIN: Final = "remko_http"
 DEFAULT_SCAN_INTERVAL: Final = 20  # seconds
