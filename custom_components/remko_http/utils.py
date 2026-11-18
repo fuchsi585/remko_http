@@ -71,3 +71,24 @@ def normalize_url_host(host: str) -> str:
     if isinstance(address, IPv6Address):
         return f"[{address.compressed}]"
     return address.compressed
+
+
+def temperature_hysterese(
+    actual: float | None,
+    target: float | None,
+    previous: bool | None,
+    width: float,
+    *,
+    above: bool = False,
+) -> bool:
+    if actual is None or target is None:
+        raise ValueError("Missing temperature")
+
+    if width <= 0:
+        raise ValueError("Hysteresis width must be positive")
+
+    if previous is None or previous:
+        # initial Zustand oder alter Zustand ist True
+        return actual > target if above else actual < target
+
+    return actual >= target + width if above else actual <= target - width

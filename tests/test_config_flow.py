@@ -67,7 +67,7 @@ async def test_options_flow_returns_mapping_for_storage(host: str) -> None:
     flow = RemkoHeatPumpOptionsFlow(entry)
     flow.hass = MagicMock()
     flow.async_create_entry = MagicMock(side_effect=lambda **kwargs: kwargs)
-    user_input = {"host": host, "scan_interval": 30}
+    user_input = {"host": host, "scan_interval": 30, "diagnostic_ids": ""}
 
     result = await flow.async_step_init(user_input)
 
@@ -76,6 +76,25 @@ async def test_options_flow_returns_mapping_for_storage(host: str) -> None:
     )
     assert isinstance(result["data"], dict)
     assert dict(result["data"]) == {}
+
+
+@pytest.mark.asyncio
+async def test_options_flow_clears_saved_diagnostic_ids() -> None:
+    """Submitting a cleared field overwrites the previous IDs with an empty string."""
+    submitted_data = {"host": "192.168.1.50", "scan_interval": 20}
+    entry = MagicMock(data={**submitted_data, "diagnostic_ids": "5581, 5487"})
+    flow = RemkoHeatPumpOptionsFlow(entry)
+    flow.hass = MagicMock()
+    flow.async_show_form = MagicMock(side_effect=lambda **kwargs: kwargs)
+    flow.async_create_entry = MagicMock()
+
+    form = await flow.async_step_init()
+    user_input = form["data_schema"](submitted_data)
+    await flow.async_step_init(user_input)
+
+    flow.hass.config_entries.async_update_entry.assert_called_once_with(
+        entry, data={**submitted_data, "diagnostic_ids": ""}
+    )
 
 
 @pytest.mark.asyncio
@@ -91,7 +110,9 @@ async def test_options_flow_rejects_invalid_host(host: str) -> None:
     flow.async_show_form = MagicMock(return_value={"type": "form"})
     flow.async_create_entry = MagicMock()
 
-    result = await flow.async_step_init({"host": host, "scan_interval": 30})
+    result = await flow.async_step_init(
+        {"host": host, "scan_interval": 30, "diagnostic_ids": ""}
+    )
 
     assert result == {"type": "form"}
     assert flow.async_show_form.call_args.kwargs["errors"] == {"base": "invalid_host"}

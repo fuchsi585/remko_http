@@ -4,54 +4,58 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from custom_components.remko_http.const import CONF_DIAGNOSTIC_IDS, DOMAIN
 from custom_components.remko_http.diagnostics import (
-    _async_get_return_temperature_diagnostics,
+    _async_get_return_diagnostic_ids,
+    async_get_config_entry_diagnostics,
 )
 
 
 @pytest.mark.asyncio
-async def test_return_temperature_diagnostics_isolate_unsupported_signals() -> None:
-    """Missing or malformed IDs must not prevent decoding the other candidates."""
-    coordinator = MagicMock()
-    coordinator._async_real_all_raw_pump_data = AsyncMock(
-        side_effect=[
-            {5581: "012C"},
-            None,
-            {5487: "FFF6"},
-            {5471: "invalid"},
-            {5476: "0001FF"},
-            {5485: "0104"},
-            {5339: "00FA"},
-        ]
+@pytest.mark.parametrize(
+    ("response", "expected"),
+    [
+        (
+            {5581: "012C", 5487: "FFF6"},
+            {"5581": "012C", "5609": "unavailable", "5487": "FFF6"},
+        ),
+        (None, {"5581": "unavailable", "5609": "unavailable", "5487": "unavailable"}),
+    ],
+    ids=["partial_response", "no_response"],
+)
+async def test_diagnostics_export_configured_ids(
+    response: dict[int, str] | None, expected: dict[str, str]
+) -> None:
+    """Export raw values for configured IDs and skip invalid tokens."""
+    entry = MagicMock(
+        entry_id="remko",
+        data={CONF_DIAGNOSTIC_IDS: "5581, 5609, invalid, 5487"},
     )
+    entry.as_dict.return_value = {"data": entry.data}
+    read_raw_data = AsyncMock(return_value=response)
+    coordinator = MagicMock(device_info={}, _async_real_all_raw_pump_data=read_raw_data)
+    hass = MagicMock(data={DOMAIN: {entry.entry_id: coordinator}})
 
-    result = await _async_get_return_temperature_diagnostics(coordinator)
+    result = await async_get_config_entry_diagnostics(hass, entry)
 
-    assert result["5581"] == {
-        "label": "Rücklauftemp.",
-        "raw_value": "012C",
-        "temperature_c": 30.0,
-        "status": "decoded",
-    }
-    assert result["5609"]["status"] == "unavailable"
-    assert result["5609"]["temperature_c"] is None
-    assert result["5487"]["temperature_c"] == -1.0
-    assert result["5471"]["status"] == "invalid_response"
-    assert result["5476"]["status"] == "invalid_response"
-    assert result["5476"]["raw_value"] == "0001FF"
-    assert result["5485"] == {
-        "label": "Wasser Austrittstemperatur",
-        "raw_value": "0104",
-        "temperature_c": 26.0,
-        "status": "decoded",
-    }
-    assert result["5339"] == {
-        "label": "Wasser Eintrittstemperatur",
-        "raw_value": "00FA",
-        "temperature_c": 25.0,
-        "status": "decoded",
-    }
-    assert [
-        call.args[0]
-        for call in coordinator._async_real_all_raw_pump_data.call_args_list
-    ] == [[5581], [5609], [5487], [5471], [5476], [5485], [5339]]
+    assert result["return_diagnostic_ids"] == expected
+    read_raw_data.assert_awaited_once()
+    assert list(read_raw_data.await_args.args[0]) == [5581, 5609, 5487]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "entry_data",
+    [{}, {CONF_DIAGNOSTIC_IDS: ""}, {CONF_DIAGNOSTIC_IDS: " , invalid, "}],
+    ids=["unset", "empty", "invalid"],
+)
+async def test_diagnostics_skip_read_when_no_ids_are_configured(
+    entry_data: dict[str, str],
+) -> None:
+    """Skip the device request when the setting yields no IDs."""
+    entry = MagicMock(data=entry_data)
+    read_raw_data = AsyncMock()
+    coordinator = MagicMock(_async_real_all_raw_pump_data=read_raw_data)
+
+    assert await _async_get_return_diagnostic_ids(coordinator, entry) == {}
+    read_raw_data.assert_not_awaited()

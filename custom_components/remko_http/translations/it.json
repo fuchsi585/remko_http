@@ -1,0 +1,422 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pompa di calore Remko",
+        "description": "Inserisci i dati di connessione della pompa di calore Remko.",
+        "data": {
+          "host": "Indirizzo IP",
+          "scan_interval": "Intervallo di interrogazione (secondi)"
+        },
+        "data_description": {
+          "host": "Indirizzo IP locale della pompa di calore",
+          "scan_interval": "Frequenza di lettura dei valori della pompa di calore."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Inserisci un indirizzo IP valido."
+    },
+    "abort": {
+      "single_instance_allowed": "È possibile configurare una sola pompa di calore REMKO."
+    }
+  },
+  "device": {
+    "heat_pump": {
+      "name": "Pompa di calore"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pompa di calore Remko – Impostazioni",
+        "description": "Modifica le impostazioni di connessione e l’intervallo di interrogazione.",
+        "data": {
+          "host": "Indirizzo IP",
+          "scan_interval": "Intervallo di interrogazione (secondi)",
+          "diagnostic_ids": "ID di diagnostica"
+        },
+        "data_description": {
+          "host": "Indirizzo IP locale della pompa di calore",
+          "scan_interval": "Frequenza di lettura dei valori della pompa di calore.",
+          "diagnostic_ids": "Inserisci gli ID dei parametri REMKO separati da virgole, ad es. 5581, 5487. I valori grezzi vengono letti quando scarichi i dati diagnostici."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Inserisci un indirizzo IP valido."
+    }
+  },
+  "entity": {
+    "button": {
+      "action_heat_warm_water": {
+        "name": "Riscalda l’acqua calda una volta"
+      }
+    },
+    "sensor": {
+      "cold_hotter_state": {
+        "name": "Più freddo / Più caldo"
+      },
+      "water_temp_req": {
+        "name": "Temperatura nominale dell’acqua calda"
+      },
+      "water_temp": {
+        "name": "Temperatura dell’acqua calda"
+      },
+      "heating_req_temp": {
+        "name": "Temperatura nominale dell’acqua di riscaldamento"
+      },
+      "heating_actual_temp": {
+        "name": "Temperatura dell’acqua di riscaldamento"
+      },
+      "mixed_return_temp": {
+        "name": "Idraulica: temperatura di ritorno miscelata"
+      },
+      "mixed_flow_temp": {
+        "name": "Idraulica: temperatura di mandata miscelata"
+      },
+      "circulation_temp": {
+        "name": "ACS: temperatura di ricircolo"
+      },
+      "out_temp": {
+        "name": "Temperatura esterna"
+      },
+      "mixed_temp": {
+        "name": "Temperatura esterna composta"
+      },
+      "room_temp_req": {
+        "name": "Temperatura ambiente nominale"
+      },
+      "room_temp_act": {
+        "name": "Temperatura ambiente"
+      },
+      "room_humidity": {
+        "name": "Umidità ambiente"
+      },
+      "power": {
+        "name": "Potenza elettrica"
+      },
+      "power_input": {
+        "name": "Potenza assorbita (5579)"
+      },
+      "power_thermal": {
+        "name": "Potenza termica"
+      },
+      "energy_electrical_raw": {
+        "name": "Energia elettrica (contatore del dispositivo)"
+      },
+      "energy_electrical": {
+        "name": "Energia elettrica calcolata"
+      },
+      "energy_electrical_hour": {"name": "Energia elettrica (ora)"},
+      "energy_electrical_day": {"name": "Energia elettrica (giorno)"},
+      "energy_electrical_week": {"name": "Energia elettrica (settimana)"},
+      "energy_electrical_month": {"name": "Energia elettrica (mese)"},
+      "energy_electrical_year": {"name": "Energia elettrica (anno)"},
+      "energy_electrical_hour_temporary": {
+        "name": "Energia elettrica (ora, temporanea)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Energia elettrica (giorno, temporanea)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Energia elettrica media (ora)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Energia elettrica media (giorno)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Conteggio impulsi del contatore"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Costante del contatore (codice)"
+      },
+      "compressor_starts": {
+        "name": "Avviamenti del compressore"
+      },
+      "runtime_hours": {
+        "name": "Tempo di funzionamento (ore)"
+      },
+      "fan_state": {
+        "name": "Stato del ventilatore esterno",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "pump_speed": {
+        "name": "Velocità della pompa (circuito di riscaldamento)"
+      },
+      "operating_status": {
+        "name": "Modalità di funzionamento attuale",
+        "state": {
+          "unknown": "Sconosciuto / Spento",
+          "fault": "Guasto",
+          "defrosting": "Sbrinamento",
+          "defrost_buffer": "Carica dell’accumulo di sbrinamento",
+          "dhw_buffer": "Carica del bollitore ACS",
+          "energy_storage": "Energia accumulata",
+          "heating": "Riscaldamento",
+          "cooling": "Raffreddamento",
+          "circulation": "Ricircolo",
+          "standby": "Standby",
+          "frost_protection": "Protezione antigelo",
+          "ready": "Pronto"
+        }
+      },
+      "hot_water_req_state": {
+        "name": "Richiesta di acqua calda",
+        "state": {
+          "active": "Attivo",
+          "standby": "Standby"
+        }
+      },
+      "circulation_pump_state": {
+        "name": "ACS: pompa di ricircolo",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "room_climate_mode": {
+        "name": "Modalità clima ambiente",
+        "state": {
+          "auto": "Auto",
+          "heating": "Riscaldamento",
+          "standby": "Standby",
+          "cooling": "Raffreddamento"
+        }
+      },
+      "hot_water_target_temperature": {
+        "name": "ACS: temperatura nominale del bollitore"
+      },
+      "hot_water_diverter_valve": {
+        "name": "ACS: valvola deviatrice",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "hot_water_energy": {
+        "name": "ACS: energia per il riscaldamento dell’acqua"
+      },
+      "hot_water_hygiene_function": {
+        "name": "ACS: funzione igienica",
+        "state": {
+          "active": "Attivo",
+          "standby": "Standby"
+        }
+      },
+      "hot_water_circulation_demand": {
+        "name": "ACS: richiesta di ricircolo",
+        "state": {
+          "standby": "Standby",
+          "active": "Attivo",
+          "blocked": "Bloccato"
+        }
+      },
+      "hot_water_circulation_target_temperature": {
+        "name": "ACS: temperatura nominale di ricircolo"
+      },
+      "hydraulics_demand": {
+        "name": "Idraulica: richiesta",
+        "state": {
+          "auto": "Auto",
+          "heating": "Riscaldamento",
+          "standby": "Standby",
+          "cooling": "Raffreddamento"
+        }
+      },
+      "hydraulics_thermal_power": {
+        "name": "Idraulica: potenza termica"
+      },
+      "hydraulics_target_flow_rate": {
+        "name": "Idraulica: portata nominale"
+      },
+      "hydraulics_actual_flow_rate": {
+        "name": "Idraulica: portata effettiva"
+      },
+      "hydraulics_actual_flow_rate_mixed": {
+        "name": "Idraulica: portata effettiva (circuito miscelato)"
+      },
+      "hydraulics_pump_speed": {
+        "name": "Idraulica: velocità relativa della pompa"
+      },
+      "hydraulics_cooling_diverter_valve": {
+        "name": "Idraulica: valvola deviatrice per il raffreddamento",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_status": {
+        "name": "PDC: stato",
+        "state": {
+          "ready": "Pronto",
+          "lead_time": "Tempo di preavvio",
+          "blocked": "Bloccato",
+          "lockout_time": "Tempo di blocco",
+          "locked": "In blocco",
+          "disabled": "Disattivato"
+        }
+      },
+      "heat_pump_sub_status": {
+        "name": "PDC: stato di funzionamento",
+        "state": {
+          "off": "Spento",
+          "cooling": "Raffreddamento",
+          "heating": "Riscaldamento",
+          "alarm": "Allarme",
+          "transition_to_cooling": "Passaggio al raffreddamento",
+          "defrosting": "Sbrinamento",
+          "waiting": "In attesa",
+          "standby": "Standby",
+          "transition_to_heating": "Passaggio al riscaldamento",
+          "stop": "Arresto",
+          "manual": "Manuale",
+          "start": "Avvio",
+          "evu_block": "Blocco del gestore elettrico"
+        }
+      },
+      "heat_pump_lockout_time": {
+        "name": "PDC: tempo di blocco residuo"
+      },
+      "heat_pump_defrost_status": {
+        "name": "PDC: stato di sbrinamento",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_compressor_status": {
+        "name": "PDC: stato del compressore",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_error_status": {
+        "name": "PDC: stato di guasto",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_enable_signal": {
+        "name": "PDC: segnale di abilitazione",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_compressor_lock": {
+        "name": "PDC: blocco del compressore",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heat_pump_mode": {
+        "name": "PDC: modalità",
+        "state": {
+          "cooling": "Raffreddamento",
+          "heating": "Riscaldamento"
+        }
+      },
+      "heat_pump_lock_signal": {
+        "name": "PDC: segnale di blocco",
+        "state": {
+          "blocked": "Bloccato",
+          "released": "Sbloccato"
+        }
+      },
+      "heat_pump_compressor_frequency": {
+        "name": "PDC: frequenza del compressore"
+      },
+      "heat_pump_current": {
+        "name": "PDC: corrente assorbita"
+      },
+      "auxiliary_heat_generator_mains_voltage": {
+        "name": "Generatore di calore ausiliario: tensione di rete"
+      },
+      "heat_pump_hot_gas_temperature": {
+        "name": "PDC: temperatura di mandata del compressore"
+      },
+      "heat_pump_runtime_minutes": {
+        "name": "PDC: tempo di funzionamento (minuti)"
+      },
+      "heat_pump_four_way_valve": {
+        "name": "PDC: valvola a quattro vie",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso"
+        }
+      },
+      "heating_circuit_unmixed_operating_mode": {
+        "name": "Circuito diretto: modalità operativa",
+        "state": {
+          "auto": "Auto",
+          "heating": "Riscaldamento",
+          "standby": "Standby",
+          "cooling": "Raffreddamento"
+        }
+      },
+      "heating_circuit_unmixed_target_temperature": {
+        "name": "Circuito diretto: temperatura nominale"
+      },
+      "heating_circuit_unmixed_actual_temperature": {
+        "name": "Circuito diretto: temperatura effettiva"
+      },
+      "heating_circuit_unmixed_dew_point": {
+        "name": "Circuito diretto: punto di rugiada"
+      },
+      "heating_circuit_unmixed_status": {
+        "name": "Circuito diretto: stato",
+        "state": {
+          "auto": "Auto",
+          "comfort": "Comfort",
+          "standby": "Standby",
+          "eco": "Eco",
+          "protection": "Protezione"
+        }
+      },
+      "heating_circuit_unmixed_setpoint_adjustment": {
+        "name": "Circuito diretto: correzione del valore nominale"
+      },
+      "hydraulics_heating_energy": {
+        "name": "Idraulica: energia per il riscaldamento"
+      },
+      "hydraulics_cooling_energy": {
+        "name": "Idraulica: energia per il raffreddamento"
+      },
+      "heat_pump_refrigerant_temperature": {
+        "name": "PDC: temperatura del refrigerante"
+      },
+      "heat_pump_register_temperature": {
+        "name": "PDC: temperatura della batteria di scambio"
+      },
+      "heat_pump_expansion_valve_opening": {
+        "name": "PDC: grado di apertura della valvola di espansione"
+      }
+    },
+    "number": {
+      "set_cold_hotter": {
+        "name": "Più freddo / Più caldo"
+      },
+      "set_water_temp_req": {
+        "name": "Temperatura nominale dell’acqua calda"
+      }
+    },
+    "select": {
+      "set_room_climate_mode": {
+        "name": "Modalità clima ambiente",
+        "state": {
+          "auto": "Auto",
+          "heating": "Riscaldamento",
+          "standby": "Standby",
+          "cooling": "Raffreddamento"
+        }
+      }
+    }
+  }
+}

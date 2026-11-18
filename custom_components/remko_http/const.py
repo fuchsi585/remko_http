@@ -46,9 +46,11 @@ from .remko_enums import (
     ScaleType,
     SwitchState,
 )
+from .utils import temperature_hysterese
 
 CONF_HOST: Final = "host"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
+CONF_DIAGNOSTIC_IDS: Final = "diagnostic_ids"
 
 DOMAIN: Final = "remko_http"
 DEFAULT_SCAN_INTERVAL: Final = 20  # seconds
@@ -78,7 +80,7 @@ class RemkoButtonDef:
     data_type: RemkoDataType | None = None
     scale_type: ScaleType | None = None
     reset_delay: int | None = None
-    availability: Callable[[dict[str, DeviceValue]], bool] | None = None
+    availability: Callable[[dict[str, DeviceValue], bool | None], bool] | None = None
 
 
 BUTTONS: list[RemkoButtonDef] = [
@@ -90,12 +92,15 @@ BUTTONS: list[RemkoButtonDef] = [
         option=SwitchState,
         data_type=RemkoDataType.UINT8,
         reset_delay=1,
-        availability=lambda data: (
-            data["water_temp_req"].phys_value is not None
-            and data["water_temp"].phys_value is not None
-            and data["hot_water_req_state"].phys_value is not None
+        availability=lambda data, previous: (
+            data["hot_water_req_state"].phys_value is not None
             and data["hot_water_req_state"].phys_value == HotWaterReqState.STANDBY
-            and data["water_temp"].phys_value < data["water_temp_req"].phys_value
+            and temperature_hysterese(
+                actual=data["water_temp"].phys_value,
+                target=data["water_temp_req"].phys_value,
+                previous=previous,
+                width=0.5,
+            )
         ),
     ),
 ]
@@ -608,6 +613,11 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         data_type=RemkoDataType.INT8,
     ),
     _temperature_sensor("heat_pump_hot_gas_temperature", 5146),
+    _temperature_sensor("heat_pump_refrigerant_temperature", 5139),
+    _temperature_sensor("heat_pump_register_temperature", 5200),
+    _measurement_sensor(
+        "heat_pump_expansion_valve_opening", 5615, UNIT_PERCENTAGE, icon="mdi:valve"
+    ),
     RemkoSensorDef(
         key="power",
         unit=UnitOfPower.WATT,
@@ -617,6 +627,18 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         display_precision=0,
         http_req=5320,
         scale_type=ScaleType.POWER,
+    ),
+    RemkoSensorDef(
+        key="power_input",
+        unit=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:transmission-tower",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=2,
+        http_req=5579,
+        data_type=RemkoDataType.UINT32,
+        scale_type=ScaleType.HUNDREDTH,
     ),
     RemkoSensorDef(
         key="power_thermal",
@@ -713,6 +735,55 @@ SENSORS: tuple[RemkoSensorDef, ...] = (
         http_req=5389,
         data_type=RemkoDataType.UINT32,
         scale_type=ScaleType.TEN_THOUSANDTH,
+    ),
+    RemkoSensorDef(
+        key="energy_electrical_day_temporary",
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        icon="mdi:lightning-bolt",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=4,
+        http_req=5332,
+        data_type=RemkoDataType.UINT32,
+        scale_type=ScaleType.TEN_THOUSANDTH,
+    ),
+    RemkoSensorDef(
+        key="energy_electrical_hour_average",
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        icon="mdi:lightning-bolt",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=4,
+        http_req=5685,
+        data_type=RemkoDataType.UINT32,
+        scale_type=ScaleType.TEN_THOUSANDTH,
+    ),
+    RemkoSensorDef(
+        key="energy_electrical_day_average",
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        icon="mdi:lightning-bolt",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=4,
+        http_req=5686,
+        data_type=RemkoDataType.UINT32,
+        scale_type=ScaleType.TEN_THOUSANDTH,
+    ),
+    RemkoSensorDef(
+        key="heat_pump_meter_pulse_count",
+        icon="mdi:counter",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=0,
+        http_req=5108,
+        data_type=RemkoDataType.UINT16,
+    ),
+    RemkoSensorDef(
+        key="heat_pump_meter_constant_code",
+        icon="mdi:counter",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        display_precision=0,
+        http_req=1848,
+        data_type=RemkoDataType.INT8,
     ),
 )
 

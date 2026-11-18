@@ -17,6 +17,7 @@ from custom_components.remko_http.const import (
 from custom_components.remko_http.remko_enums import HeatPumpSubStatus
 
 INTEGRATION_DIR = Path(__file__).parents[1] / "custom_components" / "remko_http"
+LANGUAGES = ("cs", "de", "en", "fr", "it", "nl")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -37,7 +38,7 @@ def _leaf_keys(value: Any, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]
     }
 
 
-@pytest.mark.parametrize("language", ["de", "en"])
+@pytest.mark.parametrize("language", LANGUAGES)
 def test_translation_keys_match_strings(language: str) -> None:
     """Every language must have exactly the keys declared in strings.json."""
     source = _load_json(INTEGRATION_DIR / "strings.json")
@@ -46,7 +47,7 @@ def test_translation_keys_match_strings(language: str) -> None:
     assert _leaf_keys(translation) == _leaf_keys(source)
 
 
-@pytest.mark.parametrize("language", ["de", "en"])
+@pytest.mark.parametrize("language", LANGUAGES)
 def test_invalid_host_error_is_translated_in_both_flows(language: str) -> None:
     """The error code returned by both forms must have a visible message."""
     source = _load_json(INTEGRATION_DIR / "strings.json")
@@ -80,23 +81,24 @@ def test_entity_translation_keys_match_definitions() -> None:
     } == expected_keys
 
 
-def test_heat_pump_operating_state_translations_are_complete() -> None:
-    """Every heat-pump operating state must have German and English labels."""
+@pytest.mark.parametrize("language", LANGUAGES)
+def test_heat_pump_operating_state_translations_are_complete(language: str) -> None:
+    """Every heat-pump operating state must have a label in each language."""
     expected_states = {member.value for member in HeatPumpSubStatus}
+    expected_names = {"de": "WP: Betriebszustand", "en": "HP: Operating state"}
 
     source = _load_json(INTEGRATION_DIR / "strings.json")["entity"]["sensor"][
         "heat_pump_sub_status"
     ]
-    german = _load_json(INTEGRATION_DIR / "translations" / "de.json")["entity"][
-        "sensor"
-    ]["heat_pump_sub_status"]
-    english = _load_json(INTEGRATION_DIR / "translations" / "en.json")["entity"][
-        "sensor"
-    ]["heat_pump_sub_status"]
+    translation = _load_json(INTEGRATION_DIR / "translations" / f"{language}.json")[
+        "entity"
+    ]["sensor"]["heat_pump_sub_status"]
 
-    assert source["name"] == "HP: Operating state"
-    assert german["name"] == "WP: Betriebszustand"
-    assert english["name"] == "HP: Operating state"
+    assert source["name"] == expected_names["en"]
     assert set(source["state"]) == expected_states
-    assert set(german["state"]) == expected_states
-    assert set(english["state"]) == expected_states
+    assert set(translation["state"]) == expected_states
+    for state, label in translation["state"].items():
+        assert label.strip(), state
+
+    if language in expected_names:
+        assert translation["name"] == expected_names[language]
