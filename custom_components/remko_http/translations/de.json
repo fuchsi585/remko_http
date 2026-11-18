@@ -96,6 +96,9 @@
       "power": {
         "name": "Leistung"
       },
+      "power_input": {
+        "name": "Leistungsaufnahme (5579)"
+      },
       "power_thermal": {
         "name": "Thermische Leistung"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Elektr. Energie (Jahr)"},
       "energy_electrical_hour_temporary": {
         "name": "Elektr. Energie (Stunde, temporär)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Elektr. Energie (Tag, temporär)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Mittlere elektr. Energie (Stunde)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Mittlere elektr. Energie (Tag)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Zählimpulse Wärmepumpe"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Zählerkonstante Wärmepumpe (Code)"
       },
       "compressor_starts": {
         "name": "Kompressorstarts"

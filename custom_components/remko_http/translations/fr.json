@@ -96,6 +96,9 @@
       "power": {
         "name": "Puissance électrique"
       },
+      "power_input": {
+        "name": "Puissance absorbée (5579)"
+      },
       "power_thermal": {
         "name": "Puissance thermique"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Énergie électrique (année)"},
       "energy_electrical_hour_temporary": {
         "name": "Énergie électrique (heure, temporaire)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Énergie électrique (jour, temporaire)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Énergie électrique moyenne (heure)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Énergie électrique moyenne (jour)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Nombre d’impulsions du compteur"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Constante du compteur (code)"
       },
       "compressor_starts": {
         "name": "Démarrages du compresseur"

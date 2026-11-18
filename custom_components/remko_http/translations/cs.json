@@ -96,6 +96,9 @@
       "power": {
         "name": "Elektrický příkon"
       },
+      "power_input": {
+        "name": "Příkon (5579)"
+      },
       "power_thermal": {
         "name": "Tepelný výkon"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Elektrická energie (rok)"},
       "energy_electrical_hour_temporary": {
         "name": "Elektrická energie (hodina, dočasná)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Elektrická energie (den, dočasná)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Průměrná elektrická energie (hodina)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Průměrná elektrická energie (den)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Počet impulzů elektroměru"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Konstanta elektroměru (kód)"
       },
       "compressor_starts": {
         "name": "Starty kompresoru"

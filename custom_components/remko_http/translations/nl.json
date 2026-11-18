@@ -96,6 +96,9 @@
       "power": {
         "name": "Elektrisch vermogen"
       },
+      "power_input": {
+        "name": "Opgenomen vermogen (5579)"
+      },
       "power_thermal": {
         "name": "Thermisch vermogen"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Elektrische energie (jaar)"},
       "energy_electrical_hour_temporary": {
         "name": "Elektrische energie (uur, tijdelijk)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Elektrische energie (dag, tijdelijk)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Gemiddelde elektrische energie (uur)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Gemiddelde elektrische energie (dag)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Aantal meterimpulsen"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Meterconstante (code)"
       },
       "compressor_starts": {
         "name": "Compressorstarts"

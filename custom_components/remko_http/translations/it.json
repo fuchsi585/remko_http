@@ -96,6 +96,9 @@
       "power": {
         "name": "Potenza elettrica"
       },
+      "power_input": {
+        "name": "Potenza assorbita (5579)"
+      },
       "power_thermal": {
         "name": "Potenza termica"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Energia elettrica (anno)"},
       "energy_electrical_hour_temporary": {
         "name": "Energia elettrica (ora, temporanea)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Energia elettrica (giorno, temporanea)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Energia elettrica media (ora)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Energia elettrica media (giorno)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Conteggio impulsi del contatore"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Costante del contatore (codice)"
       },
       "compressor_starts": {
         "name": "Avviamenti del compressore"

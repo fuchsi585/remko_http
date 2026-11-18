@@ -96,6 +96,9 @@
       "power": {
         "name": "Power"
       },
+      "power_input": {
+        "name": "Power input (5579)"
+      },
       "power_thermal": {
         "name": "Thermal power"
       },
@@ -112,6 +115,21 @@
       "energy_electrical_year": {"name": "Electrical energy (year)"},
       "energy_electrical_hour_temporary": {
         "name": "Electrical energy (hour, temporary)"
+      },
+      "energy_electrical_day_temporary": {
+        "name": "Electrical energy (day, temporary)"
+      },
+      "energy_electrical_hour_average": {
+        "name": "Average electrical energy (hour)"
+      },
+      "energy_electrical_day_average": {
+        "name": "Average electrical energy (day)"
+      },
+      "heat_pump_meter_pulse_count": {
+        "name": "Meter pulse count"
+      },
+      "heat_pump_meter_constant_code": {
+        "name": "Meter pulse configuration (code)"
       },
       "compressor_starts": {
         "name": "Compressor starts"

@@ -41,7 +41,8 @@ async def _async_get_return_diagnostic_ids(
 
     for id in ids:
         raw_value = (response or {}).get(id)
-        result[str(id)] = raw_value if raw_value is not None else "unavailable"
+        if str(id) not in result:
+            result[str(id)] = raw_value if raw_value is not None else "unavailable"
 
     return result
 
